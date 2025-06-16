@@ -31,6 +31,7 @@ const router = createBrowserRouter([
       { path: "alerts", element: <Alerts /> },
       { path: "history", element: <History /> },
       { path: "profile", element: <Profile /> },
+      { path: "projects/create", element: <CreateProject /> },
     ],
   },
   {
