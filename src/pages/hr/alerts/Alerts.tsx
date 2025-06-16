@@ -7,6 +7,7 @@ import {
   CalendarClock,
   UserCircle2,
 } from "lucide-react"
+import RequestCard from "./components/RequestCard"
 
 export type Priority = "high" | "medium" | "low"
 export interface AlertRequest {
@@ -79,7 +80,7 @@ export default function Alerts() {
           className="flex items-center gap-2"
         >
           <BadgeAlert className="h-4 w-4" />
-          {unreadTotal}&nbsp;New
+          {unreadTotal} New
         </Button>
       </header>
 

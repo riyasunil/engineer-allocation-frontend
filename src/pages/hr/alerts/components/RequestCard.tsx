@@ -9,78 +9,91 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AlertRequest, Priority } from "../Alerts";
+import { CalendarClock, UserCircle2 } from "lucide-react";
 
 function PriorityBadge({ level }: { level: Priority }) {
-  const colorMap: Record<Priority, string> = {
+  const colorMap: Record<Priority, "destructive" | "secondary" | "default"> = {
     high: "destructive",
     medium: "secondary",
     low: "default",
-  };
+  }
+
   return (
     <Badge variant={colorMap[level]} className="capitalize">
-      {level} priority
+      {level} Priority
     </Badge>
-  );
+  )
 }
 
 function SkillTag({ skill }: { skill: string }) {
   return (
-    <Badge variant="outline" className="text-xs font-medium">
+    <Badge variant="outline" className="text-xs font-medium px-2 py-0.5">
       {skill}
     </Badge>
-  );
+  )
 }
 
-export default function RequestCard({ request }: { request: AlertRequest }) {
+export default function RequestCard({
+  request,
+}: {
+  request: AlertRequest
+}) {
   return (
-    <Card className="border-muted">
-      <CardHeader className="flex-row items-start justify-between pb-2">
-        <div className="flex items-center gap-2">
-          {request.unread && (
-            <Badge variant="destructive" className="text-xs px-2">
-              New
-            </Badge>
-          )}
-          <CardTitle>{request.project}</CardTitle>
+    <Card className="rounded-2xl border border-muted bg-background shadow-sm hover:shadow-md transition-shadow pt-5 pb-5">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            {request.unread && (
+              <Badge variant="destructive" className="text-xs px-2">
+                New
+              </Badge>
+            )}
+            <CardTitle className="text-xl font-semibold">
+              {request.project}
+            </CardTitle>
+          </div>
+          <PriorityBadge level={request.priority} />
         </div>
-        <PriorityBadge level={request.priority} />
+        <CardDescription className="mt-1 text-sm text-muted-foreground">
+          Requested by <span className="font-medium">{request.requester}</span>
+        </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        <CardDescription>Requested by {request.requester}</CardDescription>
-
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <UserCircle2 className="h-4 w-4 shrink-0" />
-          <span className="font-medium">
-            {request.quantity}× {request.roleNeeded}
-          </span>
-
-          <CalendarClock className="ml-6 h-4 w-4 shrink-0" />
-          <span>
-            Required by&nbsp;
-            <span className="font-medium">{request.dueDate}</span>
-          </span>
+      <CardContent className="space-y-4 pt-2">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <div className="flex items-center gap-2">
+            <UserCircle2 className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">
+              {request.quantity}× {request.roleNeeded}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CalendarClock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Required by <span className="font-medium">{request.dueDate}</span>
+            </span>
+          </div>
         </div>
 
         <div>
-          <p className="text-sm font-semibold mb-1">Required Skills:</p>
+          <p className="text-sm font-semibold text-foreground mb-1">Required Skills:</p>
           <div className="flex flex-wrap gap-2">
-            {request.skills.map((s) => (
-              <SkillTag key={s} skill={s} />
+            {request.skills.map((skill) => (
+              <SkillTag key={skill} skill={skill} />
             ))}
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-semibold mb-1">Justification:</p>
-          <p className="text-sm leading-relaxed">{request.justification}</p>
+          <p className="text-sm font-semibold text-foreground mb-1">Justification:</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {request.justification}
+          </p>
         </div>
       </CardContent>
 
-      <CardFooter className="gap-3">
-        <Button size="sm" variant="default">
-          Approve
-        </Button>
+      <CardFooter className="flex flex-wrap gap-3 pt-4">
+        <Button size="sm">Approve</Button>
         <Button size="sm" variant="destructive">
           Reject
         </Button>
@@ -89,5 +102,5 @@ export default function RequestCard({ request }: { request: AlertRequest }) {
         </Button>
       </CardFooter>
     </Card>
-  );
+  )
 }
