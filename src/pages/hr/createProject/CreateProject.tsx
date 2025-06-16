@@ -296,7 +296,7 @@ const CreateProject = () => {
         {/* Form Actions */}
         <div className="flex gap-4 pt-3">
           <Button type="submit" className="w-48">Create Project</Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/projects')} className="w-48">Cancel</Button>
+          <Button type="button" variant="outline" onClick={() => navigate('/hr/projects')} className="w-48">Cancel</Button>
         </div>
       </form>
     </div>
