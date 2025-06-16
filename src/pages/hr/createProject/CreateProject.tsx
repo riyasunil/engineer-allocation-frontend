@@ -139,7 +139,7 @@ const CreateProject = () => {
 
   return (
     <div className="max-w-5xl px-4 py-8">
-        <div className="mb-10">
+      <div className="mb-10">
         <h1 className="text-3xl font-bold text-foreground">Create New Project</h1>
         <p className="text-muted-foreground">Define project details, assign leads, and set requirements</p>
       </div>
@@ -147,55 +147,60 @@ const CreateProject = () => {
 
         {/* Project Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Project ID</label>
-              <input name="project_id" value={formData.project_id} onChange={handleChange} required className="w-full px-4 py-2 border border-border rounded-lg" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Project Name</label>
-              <input name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2 border border-border rounded-lg" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Start Date</label>
-              <input type="date" name="startdate" value={formData.startdate} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">End Date</label>
-              <input type="date" name="enddate" value={formData.enddate} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
-            </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
+            <label className="block text-base font-medium mb-2">Project ID</label>
+            <input name="project_id" value={formData.project_id} onChange={handleChange} required className="w-full px-4 py-2 border border-border rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-base font-medium mb-2">Project Name</label>
+            <input name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2 border border-border rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-base font-medium mb-2">Start Date</label>
+            <input type="date" name="startdate" value={formData.startdate} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-base font-medium mb-2">End Date</label>
+            <input type="date" name="enddate" value={formData.enddate} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-base font-medium mb-2">Status</label>
             <input name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
           </div>
         </div>
 
         {/* PM & Lead */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <select name="pmId" value={formData.pmId} onChange={handleChange} className="border rounded-lg px-3 py-2 w-full" required>
-            <option value="">Select Project Manager</option>
-            {dummyEmployees.map(emp => (
-              <option key={emp.id} value={emp.id}>{emp.name}</option>
-            ))}
-          </select>
-
-          <select name="leadId" value={formData.leadId} onChange={handleChange} className="border rounded-lg px-3 py-2 w-full" required>
-            <option value="">Select Team Lead</option>
-            {dummyEmployees.map(emp => (
-              <option key={emp.id} value={emp.id}>{emp.name}</option>
-            ))}
-          </select>
+          <div>
+            <label className="block text-base font-medium mb-2">Project Manager</label>
+            <select name="pmId" value={formData.pmId} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" required>
+              <option value="">Select Project Manager</option>
+              {dummyEmployees.map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-base font-medium mb-2">Team Lead</label>
+            <select name="leadId" value={formData.leadId} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" required>
+              <option value="">Select Team Lead</option>
+              {dummyEmployees.map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Tech Stack */}
         <div>
-          <label className="block mb-2 font-semibold">Tech Stack</label>
+          <label className="block text-base font-medium mb-2">Tech Stack</label>
           <div className="flex gap-2">
             <input
               value={techInput}
               onChange={e => setTechInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
               placeholder="e.g., React"
-              className="border rounded-lg px-3 py-2 flex-1"
+              className="w-full px-4 py-2 border border-border rounded-lg flex-1"
             />
             <Button type="button" onClick={handleAddTech}>Add</Button>
           </div>
@@ -211,26 +216,33 @@ const CreateProject = () => {
 
         {/* Project Requirements */}
         <div>
-          <label className="block mb-2 font-semibold">Project Requirements</label>
+          <label className="block text-base font-medium mb-2">Project Requirements</label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <select value={newReq.role} onChange={e => setNewReq({ ...newReq, role: e.target.value })} className="border rounded-lg px-3 py-2 w-full">
-              <option value="">Select Role</option>
-              {roles.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-
-            <select value={newReq.skills} onChange={e => setNewReq({ ...newReq, skills: e.target.value })} className="border rounded-lg px-3 py-2 w-full">
-              <option value="">Select Skill</option>
-              {skills.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-
-            <input
-              type="number"
-              min={1}
-              value={newReq.count}
-              onChange={e => setNewReq({ ...newReq, count: parseInt(e.target.value) })}
-              placeholder="Count"
-              className="border rounded-lg px-3 py-2 w-full"
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">Role</label>
+              <select value={newReq.role} onChange={e => setNewReq({ ...newReq, role: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg">
+                <option value="">Select Role</option>
+                {roles.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Required Skill</label>
+              <select value={newReq.skills} onChange={e => setNewReq({ ...newReq, skills: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg">
+                <option value="">Select Skill</option>
+                {skills.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Count</label>
+              <input
+                type="number"
+                min={1}
+                value={newReq.count}
+                onChange={e => setNewReq({ ...newReq, count: parseInt(e.target.value) })}
+                placeholder="Count"
+                className="w-full px-4 py-2 border border-border rounded-lg"
+              />
+            </div>
           </div>
           <Button type="button" onClick={handleAddRequirement} className="mt-3">Add Requirement</Button>
           <ul className="mt-4 space-y-2">
@@ -245,21 +257,26 @@ const CreateProject = () => {
 
         {/* Engineers */}
         <div>
-          <label className="block mb-1 font-semibold">Assign Engineers</label>
+          <label className="block text-base font-medium mb-2">Assign Engineers</label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <select value={selectedEngineerId} onChange={e => setSelectedEngineerId(parseInt(e.target.value))} className="border rounded-lg px-3 py-2 w-full">
-              <option value="">Select Engineer</option>
-              {dummyEmployees
-                .filter(emp => !formData.engineers.find(e => e.id === emp.id))
-                .map(emp => (
-                  <option key={emp.id} value={emp.id}>{emp.name}</option>
-                ))}
-            </select>
-
-            <select value={selectedEngineerDesignation} onChange={e => setSelectedEngineerDesignation(e.target.value)} className="border rounded-lg px-3 py-2 w-full">
-              <option value="">Select Designation</option>
-              {designations.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+            <div>
+              <label className="block text-sm font-medium mb-2">Engineer</label>
+              <select value={selectedEngineerId} onChange={e => setSelectedEngineerId(parseInt(e.target.value))} className="w-full px-4 py-2 border border-border rounded-lg">
+                <option value="">Select Engineer</option>
+                {dummyEmployees
+                  .filter(emp => !formData.engineers.find(e => e.id === emp.id))
+                  .map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.name}</option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Designation</label>
+              <select value={selectedEngineerDesignation} onChange={e => setSelectedEngineerDesignation(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg">
+                <option value="">Select Designation</option>
+                {designations.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
           </div>
 
           <Button type="button" onClick={handleAddEngineer} className="mt-3">Add Engineer</Button>
