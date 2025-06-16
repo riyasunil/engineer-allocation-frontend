@@ -138,96 +138,151 @@ const CreateProject = () => {
   };
 
   return (
-    <div className="max-w-5xl px-4 py-8">
+    <div className="mx-auto px-4 py-8">
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-foreground">Create New Project</h1>
         <p className="text-muted-foreground">Define project details, assign leads, and set requirements</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-10">
 
-        {/* Project Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-base font-medium mb-2">Project ID</label>
-            <input name="project_id" value={formData.project_id} onChange={handleChange} required className="w-full px-4 py-2 border border-border rounded-lg" />
-          </div>
-          <div>
-            <label className="block text-base font-medium mb-2">Project Name</label>
-            <input name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2 border border-border rounded-lg" />
-          </div>
-          <div>
-            <label className="block text-base font-medium mb-2">Start Date</label>
-            <input type="date" name="startdate" value={formData.startdate} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
-          </div>
-          <div>
-            <label className="block text-base font-medium mb-2">End Date</label>
-            <input type="date" name="enddate" value={formData.enddate} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
-          </div>
-          <div>
-            <label className="block text-base font-medium mb-2">Status</label>
-            <input name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" />
+        {/* Project Details Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-base font-medium mb-2">Project ID</label>
+              <input 
+                name="project_id" 
+                value={formData.project_id} 
+                onChange={handleChange} 
+                required 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
+            <div>
+              <label className="block text-base font-medium mb-2">Project Name</label>
+              <input 
+                name="name" 
+                value={formData.name} 
+                onChange={handleChange} 
+                required 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
+            <div>
+              <label className="block text-base font-medium mb-2">Start Date</label>
+              <input 
+                type="date" 
+                name="startdate" 
+                value={formData.startdate} 
+                onChange={handleChange} 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
+            <div>
+              <label className="block text-base font-medium mb-2">End Date</label>
+              <input 
+                type="date" 
+                name="enddate" 
+                value={formData.enddate} 
+                onChange={handleChange} 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
+            <div>
+              <label className="block text-base font-medium mb-2">Status</label>
+              <input 
+                name="status" 
+                value={formData.status} 
+                onChange={handleChange} 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
           </div>
         </div>
 
-        {/* PM & Lead */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-base font-medium mb-2">Project Manager</label>
-            <select name="pmId" value={formData.pmId} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" required>
-              <option value="">Select Project Manager</option>
-              {dummyEmployees.map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-base font-medium mb-2">Team Lead</label>
-            <select name="leadId" value={formData.leadId} onChange={handleChange} className="w-full px-4 py-2 border border-border rounded-lg" required>
-              <option value="">Select Team Lead</option>
-              {dummyEmployees.map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name}</option>
-              ))}
-            </select>
+        {/* Project Management Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Management</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-base font-medium mb-2">Project Manager</label>
+              <select 
+                name="pmId" 
+                value={formData.pmId} 
+                onChange={handleChange} 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                required
+              >
+                <option value="">Select Project Manager</option>
+                {dummyEmployees.map(emp => (
+                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-base font-medium mb-2">Team Lead</label>
+              <select 
+                name="leadId" 
+                value={formData.leadId} 
+                onChange={handleChange} 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                required
+              >
+                <option value="">Select Team Lead</option>
+                {dummyEmployees.map(emp => (
+                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Tech Stack */}
-        <div>
-          <label className="block text-base font-medium mb-2">Tech Stack</label>
-          <div className="flex gap-2">
+        {/* Tech Stack Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Tech Stack</h2>
+          <div className="flex gap-2 mb-4">
             <input
               value={techInput}
               onChange={e => setTechInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
               placeholder="e.g., React"
-              className="w-full px-4 py-2 border border-border rounded-lg flex-1"
+              className="max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1"
             />
             <Button type="button" onClick={handleAddTech}>Add</Button>
           </div>
-          <div className="flex gap-2 flex-wrap mt-3">
+          <div className="flex gap-2 flex-wrap">
             {formData.techStack.map((tech, i) => (
-              <span key={i} className="bg-gray-200 text-sm px-2 py-1 rounded-lg flex items-center gap-1">
+              <span key={i} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full flex items-center gap-2">
                 {tech}
-                <button type="button" onClick={() => handleRemoveTech(tech)} className="text-red-500">×</button>
+                <button type="button" onClick={() => handleRemoveTech(tech)} className="text-red-500 hover:text-red-700">×</button>
               </span>
             ))}
           </div>
         </div>
 
-        {/* Project Requirements */}
-        <div>
-          <label className="block text-base font-medium mb-2">Project Requirements</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* Project Requirements Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-2">Role</label>
-              <select value={newReq.role} onChange={e => setNewReq({ ...newReq, role: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg">
+              <select 
+                value={newReq.role} 
+                onChange={e => setNewReq({ ...newReq, role: e.target.value })} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
                 <option value="">Select Role</option>
                 {roles.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Required Skill</label>
-              <select value={newReq.skills} onChange={e => setNewReq({ ...newReq, skills: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg">
+              <select 
+                value={newReq.skills} 
+                onChange={e => setNewReq({ ...newReq, skills: e.target.value })} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
                 <option value="">Select Skill</option>
                 {skills.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -240,28 +295,34 @@ const CreateProject = () => {
                 value={newReq.count}
                 onChange={e => setNewReq({ ...newReq, count: parseInt(e.target.value) })}
                 placeholder="Count"
-                className="w-full px-4 py-2 border border-border rounded-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
-          <Button type="button" onClick={handleAddRequirement} className="mt-3">Add Requirement</Button>
-          <ul className="mt-4 space-y-2">
-            {formData.requirements.map((req, i) => (
-              <li key={i} className="bg-gray-100 p-2 rounded flex justify-between items-center">
-                <span>{req.count} × {req.role} ({req.skills})</span>
-                <button onClick={() => handleRemoveRequirement(i)} className="text-red-500">Remove</button>
-              </li>
-            ))}
-          </ul>
+          <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
+          {formData.requirements.length > 0 && (
+            <div className="space-y-2">
+              {formData.requirements.map((req, i) => (
+                <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                  <span className="text-sm">{req.count} × {req.role} ({req.skills})</span>
+                  <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Engineers */}
-        <div>
-          <label className="block text-base font-medium mb-2">Assign Engineers</label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Engineer Allocation Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Engineer Allocation</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-2">Engineer</label>
-              <select value={selectedEngineerId} onChange={e => setSelectedEngineerId(parseInt(e.target.value))} className="w-full px-4 py-2 border border-border rounded-lg">
+              <select 
+                value={selectedEngineerId} 
+                onChange={e => setSelectedEngineerId(parseInt(e.target.value))} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
                 <option value="">Select Engineer</option>
                 {dummyEmployees
                   .filter(emp => !formData.engineers.find(e => e.id === emp.id))
@@ -272,25 +333,30 @@ const CreateProject = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Designation</label>
-              <select value={selectedEngineerDesignation} onChange={e => setSelectedEngineerDesignation(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg">
+              <select 
+                value={selectedEngineerDesignation} 
+                onChange={e => setSelectedEngineerDesignation(e.target.value)} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
                 <option value="">Select Designation</option>
                 {designations.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
           </div>
-
-          <Button type="button" onClick={handleAddEngineer} className="mt-3">Add Engineer</Button>
-          <ul className="mt-4 space-y-2">
-            {formData.engineers.map(({ id, designation }) => {
-              const emp = dummyEmployees.find(e => e.id === id);
-              return (
-                <li key={id} className="bg-gray-100 p-2 rounded-lg flex justify-between items-center">
-                  <span>{emp?.name} — {designation}</span>
-                  <button onClick={() => handleRemoveEngineer(id)} className="text-red-500">Remove</button>
-                </li>
-              );
-            })}
-          </ul>
+          <Button type="button" onClick={handleAddEngineer} className="mb-4">Add Engineer</Button>
+          {formData.engineers.length > 0 && (
+            <div className="space-y-2">
+              {formData.engineers.map(({ id, designation }) => {
+                const emp = dummyEmployees.find(e => e.id === id);
+                return (
+                  <div key={id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                    <span className="text-sm">{emp?.name} — {designation}</span>
+                    <button onClick={() => handleRemoveEngineer(id)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Form Actions */}
