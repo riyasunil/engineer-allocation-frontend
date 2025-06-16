@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   TypographyH1,
   TypographyH2,
   TypographyH4,
   TypographyP,
 } from "@/components/ui/typography";
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -80,13 +82,21 @@ const Projects = () => {
   });
   return (
     <div>
-      <div className="title-header-group flex flex-row align-middle justify-between w-full">
+      <div className="title-header-group flex flex-row items-center justify-between w-full">
         <div className="title-text-group flex flex-col">
           <TypographyH2 text="Projects" />
           <TypographyP muted text="Manage all projects and their allocations" />
         </div>
-        <Button variant={"default"} >Create Project</Button>
+        <Button variant={"default"} size="lg" className="p-6">
+          <Plus /> <TypographyP text="Create Project" />
+        </Button>
       </div>
+      <div className="content-group">
+        <Input type="text" placeholder="Search for Projects"/>
+      </div>
+      {projects.map((project) => {
+        
+      })}
     </div>
   );
 };
