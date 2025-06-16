@@ -35,71 +35,71 @@ function SkillTag({ skill }: { skill: string }) {
 
 export default function RequestCard({
   request,
+  onApprove,
+  onReject,
+  onMarkAsRead,
 }: {
   request: AlertRequest
+  onApprove: (id: number) => void
+  onReject: (id: number) => void
+  onMarkAsRead: (id: number) => void
 }) {
   return (
-    <Card className="rounded-2xl border border-muted bg-background shadow-sm hover:shadow-md transition-shadow pt-5 pb-5">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            {request.unread && (
-              <Badge variant="destructive" className="text-xs px-2">
-                New
-              </Badge>
-            )}
-            <CardTitle className="text-xl font-semibold">
-              {request.project}
-            </CardTitle>
-          </div>
-          <PriorityBadge level={request.priority} />
+    <Card className="border-muted p-5 shadow-sm transition hover:shadow-md">
+      <CardHeader className="flex-row items-start justify-between pb-2">
+        <div className="flex items-center gap-2">
+          {request.unread && (
+            <Badge variant="destructive" className="text-xs px-2">
+              New
+            </Badge>
+          )}
+          <CardTitle>{request.project}</CardTitle>
         </div>
-        <CardDescription className="mt-1 text-sm text-muted-foreground">
-          Requested by <span className="font-medium">{request.requester}</span>
-        </CardDescription>
+        <PriorityBadge level={request.priority} />
       </CardHeader>
 
-      <CardContent className="space-y-4 pt-2">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <UserCircle2 className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">
-              {request.quantity}× {request.roleNeeded}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CalendarClock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Required by <span className="font-medium">{request.dueDate}</span>
-            </span>
-          </div>
+      <CardContent className="space-y-3">
+        <CardDescription>Requested by {request.requester}</CardDescription>
+
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <UserCircle2 className="h-4 w-4 shrink-0" />
+          <span className="font-medium">
+            {request.quantity}× {request.roleNeeded}
+          </span>
+          <CalendarClock className="ml-6 h-4 w-4 shrink-0" />
+          <span>
+            Required by&nbsp;
+            <span className="font-medium">{request.dueDate}</span>
+          </span>
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-foreground mb-1">Required Skills:</p>
+          <p className="text-sm font-semibold mb-1">Required Skills:</p>
           <div className="flex flex-wrap gap-2">
-            {request.skills.map((skill) => (
-              <SkillTag key={skill} skill={skill} />
+            {request.skills.map((s) => (
+              <SkillTag key={s} skill={s} />
             ))}
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-foreground mb-1">Justification:</p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {request.justification}
-          </p>
+          <p className="text-sm font-semibold mb-1">Justification:</p>
+          <p className="text-sm leading-relaxed">{request.justification}</p>
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-wrap gap-3 pt-4">
-        <Button size="sm">Approve</Button>
-        <Button size="sm" variant="destructive">
+      <CardFooter className="gap-3">
+        <Button size="sm" onClick={() => onApprove(request.id)}>
+          Approve
+        </Button>
+        <Button size="sm" variant="destructive" onClick={() => onReject(request.id)}>
           Reject
         </Button>
-        <Button size="sm" variant="outline">
-          Mark as Read
-        </Button>
+        {request.unread && (
+          <Button size="sm" variant="outline" onClick={() => onMarkAsRead(request.id)}>
+            Mark as Read
+          </Button>
+        )}
       </CardFooter>
     </Card>
   )
