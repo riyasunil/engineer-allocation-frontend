@@ -2,7 +2,7 @@ import React from 'react';
 import { TextField, Button, Card, CardContent, Typography } from '@mui/material';
 import logo from '../../../assets/logo.png'; // Adjust path if needed
 
-const LoginPage = () => {
+const Login = () => {
   return (
     <div className="w-full h-screen grid grid-cols-1 md:grid-cols-[3fr_2fr] bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-900 text-white">
       {/* Left side content - takes up more space */}
@@ -54,4 +54,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Login;
