@@ -8,8 +8,8 @@ const DashboardLayout = () => {
     <div className="flex">
       <SidebarProvider>
         <DashboardSidebar />
-        <main>
-          <Outlet />
+        <main className="p-5 w-full">
+          <Outlet/>
         </main>
       </SidebarProvider>
     </div>
