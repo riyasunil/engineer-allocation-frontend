@@ -10,6 +10,7 @@ import Engineers from "./pages/hr/engineers/Engineers";
 import Alerts from "./pages/hr/alerts/Alerts";
 import History from "./pages/hr/history/History";
 import Profile from "./pages/hr/profile/Profile";
+import AddEngineer from "./pages/hr/engineers/AddEngineer";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,8 @@ const router = createBrowserRouter([
       { path: "alerts", element: <Alerts /> },
       { path: "history", element: <History /> },
       { path: "profile", element: <Profile /> },
+      { path: "addengineer", element: <AddEngineer /> },
+
     ],
   },
   {
