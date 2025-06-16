@@ -85,7 +85,7 @@ const Projects = () => {
           <TypographyH2 text="Projects" />
           <TypographyP muted text="Manage all projects and their allocations" />
         </div>
-        <Button variant={"default"} >Create Project</Button>
+        <Button variant={"default"} onClick={() => navigate("/hr/projects/create")}>Create Project</Button>
       </div>
     </div>
   );
