@@ -1,25 +1,26 @@
-// import baseApi from "../api";
+import { Project } from "@/utils/types";
+import baseApi from "../api";
 
-// export const employeeApi = baseApi.injectEndpoints({
-//   endpoints: (builder) => ({
-//     createEmployee: builder.mutation<Employee, Employee>({
-//       query: (payload) => ({
-//         url: "/employee",
-//         method: "POST",
-//         body: payload,
-//       }),
-//     }),
+export const employeeApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    createProject: builder.mutation<Project, Project>({
+      query: (payload) => ({
+        url: "/project",
+        method: "POST",
+        body: payload,
+      }),
+    }),
 
-//     getEmployeeById: builder.query<Employee, number>({
-//       query: (id) => ({
-//         url: `/employee/${id}`,
-//         method: "GET",
-//       }),
-//     }),
-//   }),
-// });
+    getProjectById: builder.query<Project, string>({
+      query: (id) => ({
+        url: `/project/${id}`,
+        method: "GET",
+      }),
+    }),
+  }),
+});
 
-// export const {
-//   useCreateEmployeeMutation,
-//   useGetEmployeeByIdQuery,
-// } = employeeApi;
+export const {
+  useCreateProjectMutation,
+  useGetProjectByIdQuery,
+} = employeeApi;
