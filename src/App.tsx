@@ -10,15 +10,16 @@ import Engineers from "./pages/hr/engineers/Engineers";
 import Alerts from "./pages/hr/alerts/Alerts";
 import History from "./pages/hr/history/History";
 import Profile from "./pages/hr/profile/Profile";
+import LoginPage from "./pages/auth/login/Login";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: "/login",
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: "/hr",
