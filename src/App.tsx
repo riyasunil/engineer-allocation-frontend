@@ -10,6 +10,11 @@ import Engineers from "./pages/hr/engineers/Engineers";
 import Alerts from "./pages/hr/alerts/Alerts";
 import History from "./pages/hr/history/History";
 import Profile from "./pages/hr/profile/Profile";
+import EngineerDashboardLayout from "./components/engineerDashboardLayout/EngineerDashboardLayout";
+import EngineerDashboard from "./pages/engineer/engineerDashboard/EngineerDashboard";
+import EngineerProfile from "./pages/engineer/engineerProfile/EngineerProfile";
+import EngineerProjectList from "./pages/engineer/projectList/ProjectList";
+import EngineerProjectDetails from "./pages/engineer/engineerProjectDetails/EngineerProjectDetails";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +37,16 @@ const router = createBrowserRouter([
       { path: "history", element: <History /> },
       { path: "profile", element: <Profile /> },
       { path: "projects/create", element: <CreateProject /> },
+    ],
+  },
+  {
+    path: "/engineer",
+    element: <EngineerDashboardLayout />,
+    children: [
+      { path: "dashboard", element: <EngineerDashboard /> },
+      { path: "projects", element: <EngineerProjectList /> },
+      { path: "projects/:id", element: <EngineerProjectDetails /> },
+      { path: "profile", element: <EngineerProfile /> },
     ],
   },
   {
