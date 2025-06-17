@@ -11,6 +11,8 @@ import Alerts from "./pages/hr/alerts/Alerts";
 import History from "./pages/hr/history/History";
 import Profile from "./pages/hr/profile/Profile";
 import AddEngineer from "./pages/hr/engineers/AddEngineer";
+import { Provider } from "react-redux";
+import store from "./store/store";
 // import LoginPage from "./pages/auth/login/Login";
 
 const router = createBrowserRouter([
@@ -47,11 +49,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      {/* <Suspense fallback={<LoadingScreen />}>
-        <Provider store={store}> */}
-      <RouterProvider router={router} />
-      {/* </Provider>
-      </Suspense> */}
+      <Provider store={store}>
+        <RouterProvider router={router}></RouterProvider>
+      </Provider>
     </>
   );
 }

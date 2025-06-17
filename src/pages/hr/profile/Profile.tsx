@@ -106,7 +106,7 @@ const Profile = () => {
               </Button>
               <Button variant="outline" className="h-24 flex-col gap-3 text-lg" size="lg">
                 <BarChart3 className="h-6 w-6" />
-                View Reports
+                View Analytics
               </Button>
             </div>
           </CardContent>
