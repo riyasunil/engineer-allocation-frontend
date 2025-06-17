@@ -3,6 +3,7 @@ import EngineerCard from "@/components/ui/engineerCard";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const engineers = [
   {
@@ -46,6 +47,8 @@ export default function Engineers() {
   });
 
   const total = engineers.length;
+  const navigate = useNavigate();
+
   const available = engineers.filter(
     (e) => e.availability === "AVAILABLE"
   ).length;
@@ -62,7 +65,7 @@ export default function Engineers() {
         title="Engineers"
         description="Manage engineer profiles and availability"
         buttonText="Add Engineer"
-        onButtonClick={() => console.log("Add engineer")}
+        onButtonClick={() => navigate("/hr/addengineer")}
       />
 
       <SearchFilterBar
