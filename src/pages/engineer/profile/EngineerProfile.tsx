@@ -2,6 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { PenLine, User, CalendarDays, Star, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useGetUserByIdQuery } from "@/api-service/user/user.api";
+import ProfileLoader from "./ProfileLoader";
 
 const userProfile = {
   initials: "JD",
@@ -14,9 +16,21 @@ const userProfile = {
   skills: [
     { name: "React", level: "Expert", color: "bg-green-200 text-green-800" },
     { name: "Node.js", level: "Advanced", color: "bg-blue-100 text-blue-800" },
-    { name: "TypeScript", level: "Advanced", color: "bg-blue-100 text-blue-800" },
-    { name: "PostgreSQL", level: "Intermediate", color: "bg-yellow-100 text-yellow-800" },
-    { name: "AWS", level: "Intermediate", color: "bg-yellow-100 text-yellow-800" },
+    {
+      name: "TypeScript",
+      level: "Advanced",
+      color: "bg-blue-100 text-blue-800",
+    },
+    {
+      name: "PostgreSQL",
+      level: "Intermediate",
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    {
+      name: "AWS",
+      level: "Intermediate",
+      color: "bg-yellow-100 text-yellow-800",
+    },
   ],
   strengths: ["Problem Solving", "Team Leadership", "Code Review"],
   interests: ["Machine Learning", "Cloud Architecture", "Mobile Development"],
@@ -39,6 +53,9 @@ const EngineerProfile = () => {
     summary,
   } = userProfile;
 
+  const { data, isLoading } = useGetUserByIdQuery("KV10");
+  console.log(data)
+  if (isLoading) return <ProfileLoader />
   return (
     <div className="space-y-6">
       <PageHeader
@@ -52,6 +69,7 @@ const EngineerProfile = () => {
       {/* Profile Overview and Skills */}
       <div className="flex flex-col md:flex-row gap-4 w-full">
         {/* Profile Overview */}
+        {data && 
         <Card className="w-full md:w-1/2">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center gap-3">
@@ -63,31 +81,32 @@ const EngineerProfile = () => {
                 {initials}
               </div>
               <div>
-                <h3 className="text-md font-semibold">{fullName}</h3>
-                <p className="text-muted-foreground">{email}</p>
-                <p className="text-sm">{role}</p>
+                <h3 className="text-md font-semibold">{data?.name}</h3>
+                <p className="text-muted-foreground">{data?.email}</p>
+                <p className="text-sm">{data?.role.role_name}</p>
               </div>
             </div>
 
             <div className="space-y-2 text-sm text-accent-foreground">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4" />
-                <span>{experience}</span>
+                <span>{data?.experience}</span>
               </div>
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4" />
-                <span>Joined {joinedDate}</span>
+                <span>Joined {data?.joined_at?.toString()}</span>
               </div>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Star className="w-4 h-4" />
                 <span>{activeProjects} Active Projects</span>
-              </div>
+              </div> */}
             </div>
             <Button variant="outline" className="w-full mt-2">
               View My Projects
             </Button>
           </CardContent>
         </Card>
+      }
 
         {/* Skills & Expertise */}
         <Card className="w-full md:w-1/2">
@@ -97,18 +116,18 @@ const EngineerProfile = () => {
             <div>
               <p className="font-medium">Technical Skills</p>
               <ul className="space-y-1 mt-2">
-                {skills.map((skill) => (
-                  <li key={skill.name} className="flex justify-between">
-                    <span>{skill.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${skill.color}`}>
-                      {skill.level}
+                {data?.userSkills && data?.userSkills.map((s) => (
+                  <li key={s.skill.id} className="flex justify-between">
+                    <span className="text-sm">{s.skill.skill_name}</span>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full bg-amber-100 border-amber-300 flex justify-center items-center text-amber-600 font-medium`}
+                    >
+                      Beginner
                     </span>
                   </li>
                 ))}
               </ul>
             </div>
-
-          
           </CardContent>
         </Card>
       </div>
@@ -134,10 +153,6 @@ const EngineerProfile = () => {
 };
 
 export default EngineerProfile;
-
-
-
-
 
 //skills and interests section
 //    <div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Clock4, CheckCircle } from "lucide-react";
 import { useGetUserByIdQuery } from "../../../api-service/user/user.api";
 import { Project, ProjectUser } from "@/utils/types";
-
+import SkeletonCard from "./SkeletonLoader";
 
 const StatusBadge = ({ label }: { label: string }) => {
   const base = "text-xs px-2 py-0.5 rounded-full";
@@ -30,8 +30,10 @@ const StatusBadge = ({ label }: { label: string }) => {
   }
 };
 
+
+
 const ProjectList = () => {
-  const { data } = useGetUserByIdQuery("KV10");
+  const { data, isLoading } = useGetUserByIdQuery("KV10");
 
   const filterProjects = (projects: Project[] = []) => {
     const currentProjects = projects.filter(
@@ -124,7 +126,8 @@ const ProjectList = () => {
       {/* Current Projects */}
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Current Projects</h2>
+          <h2 className="text-lg font-semibold ">Current Projects</h2>
+          {isLoading && <SkeletonCard />}
           {allCurrentProjects.map((project) => (
             <div
               key={project.id}
@@ -256,6 +259,8 @@ const ProjectList = () => {
       <Card>
         <CardContent className="p-6 space-y-4">
           <h2 className="text-lg font-semibold">Past Projects</h2>
+          {isLoading && <SkeletonCard />}
+
           {allCompletedProjects.map((project) => (
             <div
               key={project.id}
