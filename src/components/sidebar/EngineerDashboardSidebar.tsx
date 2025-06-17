@@ -1,7 +1,8 @@
 import {
   LayoutDashboard,
   FolderKanban,
-  User
+  User,
+  MoreVertical,
 } from "lucide-react";
 
 import {
@@ -15,6 +16,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavLink, useLocation } from "react-router-dom";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 const items = [
   {
@@ -31,11 +38,17 @@ const items = [
     title: "My Profile",
     url: "/engineer/profile",
     icon: User,
-  }
+  },
 ];
 
 export default function EngineerDashboardSidebar() {
   const location = useLocation();
+
+  const handleLogout = () => {
+    alert("Engineer Logged out (dummy)");
+    // Replace with real logout logic
+  };
+
   return (
     <Sidebar className="h-screen w-64 border-r bg-white flex flex-col justify-between">
       <SidebarContent className="p-6">
@@ -59,7 +72,7 @@ export default function EngineerDashboardSidebar() {
                         to={item.url}
                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm w-full transition-colors ${
                           isActive
-                            ? "bg-primary text-white "
+                            ? "bg-primary text-white"
                             : "hover:bg-muted hover:text-foreground"
                         }`}
                       >
@@ -75,17 +88,34 @@ export default function EngineerDashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <NavLink to="/engineer/profile">
-        <div className="p-4 border-t flex items-center gap-3">
+      <div className="p-4 border-t flex items-center justify-between gap-3">
+        <NavLink to="/engineer/profile" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
             E
           </div>
-          <div>
+          <div className="text-left">
             <p className="text-sm font-medium text-black">Engineer</p>
             <p className="text-xs text-muted-foreground">User Role</p>
           </div>
-        </div>
-      </NavLink>
+        </NavLink>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button size="icon" variant="ghost" className="ml-auto">
+              <MoreVertical className="h-5 w-5 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-32 p-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-sm"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </PopoverContent>
+        </Popover>
+      </div>
     </Sidebar>
   );
 }
