@@ -13,6 +13,8 @@ import Profile from "./pages/hr/profile/Profile";
 import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import AddEngineer from "./pages/hr/engineers/AddEngineer";
 import ProjectList from "./pages/engineer/projectList/ProjectList";
+import { Provider } from "react-redux";
+import store from "./store/store";
 // import LoginPage from "./pages/auth/login/Login";
 
 const router = createBrowserRouter([
@@ -57,11 +59,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      {/* <Suspense fallback={<LoadingScreen />}>
-        <Provider store={store}> */}
-      <RouterProvider router={router} />
-      {/* </Provider>
-      </Suspense> */}
+      <Provider store={store}>
+        <RouterProvider router={router}></RouterProvider>
+      </Provider>
     </>
   );
 }
