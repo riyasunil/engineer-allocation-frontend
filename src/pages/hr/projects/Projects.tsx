@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/pageHeader";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import ProjectCard from "@/components/ui/projectCard";
 import { Project } from "@/utils/types";
-import { useGetAllProjectsQuery} from "@/api-service/projects/projects.api";
+import { useGetAllProjectsQuery } from "@/api-service/projects/projects.api";
 
 export default function Projects() {
   const [search, setSearch] = useState("");

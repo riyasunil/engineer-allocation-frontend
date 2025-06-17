@@ -48,7 +48,6 @@ export const projectApi = baseApi.injectEndpoints({
       invalidatesTags: ["PROJECT"],
     }),
 
-    // Get all projects (HR only)
     getAllProjects: builder.query<Project[], void>({
       query: () => ({
         url: "/project",
@@ -131,4 +130,4 @@ export const {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
   useAssignEngineerToProjectMutation,
-} = projectApi;
+} = projectApi; 
