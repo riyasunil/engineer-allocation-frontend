@@ -1,7 +1,7 @@
 import { Project } from "@/utils/types";
 import baseApi from "../api";
 
-export const employeeApi = baseApi.injectEndpoints({
+export const projectApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createProject: builder.mutation<Project, Project>({
       query: (payload) => ({
@@ -23,4 +23,4 @@ export const employeeApi = baseApi.injectEndpoints({
 export const {
   useCreateProjectMutation,
   useGetProjectByIdQuery,
-} = employeeApi;
+} = projectApi;
