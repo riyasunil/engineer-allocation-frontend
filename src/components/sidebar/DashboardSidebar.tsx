@@ -5,6 +5,7 @@ import {
   Users2,
   Bell,
   History,
+  User,
 } from "lucide-react";
 
 import {
@@ -20,46 +21,64 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { Badge } from "../ui/badge";
 
-export default function DashboardSidebar() {
+type UserRole = "hr" | "pm" | "lead" | "engineer";
+
+interface DashboardSidebarProps {
+  userRole: UserRole;
+}
+
+export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const location = useLocation();
   const newAlertsCount = 2;
 
   const items = [
     {
       title: "Dashboard",
-      url: "/hr/dashboard",
+      url: `/${userRole}/dashboard`,
       icon: LayoutDashboard,
+      roles: ["hr", "pm", "lead"],
     },
     {
       title: "Analytics",
-      url: "/hr/analytics",
+      url: `/${userRole}/analytics`,
       icon: BarChart,
+      roles: ["hr", "pm"],
     },
     {
       title: "Projects",
-      url: "/hr/projects",
+      url: `/${userRole}/projects`,
       icon: FolderKanban,
+      roles: ["hr", "pm", "lead", "engineer"],
     },
     {
       title: "Engineers",
-      url: "/hr/engineers",
+      url: `/${userRole}/engineers`,
       icon: Users2,
+      roles: ["hr", "pm", "lead"],
     },
     {
       title: "Alerts",
-      url: "/hr/alerts",
+      url: `/${userRole}/alerts`,
       icon: Bell,
-      label: "Alerts",
-      roles: ["hr"],
+      roles: ["hr", "pm", "lead"],
       hasNotification: newAlertsCount > 0,
       notificationCount: newAlertsCount,
     },
     {
       title: "History",
-      url: "/hr/history",
+      url: `/${userRole}/history`,
       icon: History,
+      roles: ["hr", "pm", "lead"],
+    },
+    {
+      title: "Profile",
+      url: `/${userRole}/profile`,
+      icon: User,
+      roles: ["engineer"],
     },
   ];
+
+  const filteredItems = items.filter((item) => item.roles.includes(userRole));
 
   return (
     <Sidebar className="h-screen w-64 border-r bg-white flex flex-col justify-between">
@@ -74,7 +93,7 @@ export default function DashboardSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {items.map((item) => {
+              {filteredItems.map((item) => {
                 const isActive = location.pathname.startsWith(item.url);
 
                 return (
@@ -108,13 +127,15 @@ export default function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <NavLink to="/hr/profile">
+      <NavLink to={`/${userRole}/profile`}>
         <div className="p-4 border-t flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-            HR
+            {userRole.toUpperCase().slice(0, 2)}
           </div>
           <div>
-            <p className="text-sm font-medium text-black">Hr</p>
+            <p className="text-sm font-medium text-black">
+              {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+            </p>
             <p className="text-xs text-muted-foreground">User Role</p>
           </div>
         </div>

@@ -10,7 +10,9 @@ import Engineers from "./pages/hr/engineers/Engineers";
 import Alerts from "./pages/hr/alerts/Alerts";
 import History from "./pages/hr/history/History";
 import Profile from "./pages/hr/profile/Profile";
+import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import AddEngineer from "./pages/hr/engineers/AddEngineer";
+import ProjectList from "./pages/engineer/projectList/ProjectList";
 // import LoginPage from "./pages/auth/login/Login";
 
 const router = createBrowserRouter([
@@ -36,6 +38,14 @@ const router = createBrowserRouter([
       { path: "projects/create", element: <CreateProject /> },
       { path: "addengineer", element: <AddEngineer /> },
 
+    ],
+  },
+  {
+    path: "/engineer",
+    element: <DashboardLayout />,
+    children: [
+      { path: "projects", element: <ProjectList /> },
+      { path: "profile", element: <EngineerProfile /> },
     ],
   },
   {
