@@ -3,13 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Users, Clock, ArrowLeft, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
+import { useGetNotesByProjectIdQuery } from '@/api-service/notes/notes.api';
 
 const EngineerProjectDetails = () => {
-  const { id } = useParams();
+  const { id: projectId } = useParams();
   const navigate = useNavigate();
 
-  // Mock data - replace with actual API call later
+console.log("projectId from useParams:", projectId);
+const { data: notes = [], isLoading, error } = useGetNotesByProjectIdQuery(projectId!, {
+  skip: !projectId
+});
+console.log("API Notes:", notes);
+console.log("API Error:", error);
+  // Mock data - everything else unchanged
   const project = {
     id: '1',
     name: 'E-Commerce Platform',
@@ -51,20 +57,7 @@ const EngineerProjectDetails = () => {
         isShadow: true
       }
     ],
-    notes: [
-      {
-        id: '1',
-        date: '2024-02-15',
-        author: 'John Doe',
-        content: 'Initial API integration completed. Payment gateway integration is taking longer than expected due to additional security requirements.'
-      },
-      {
-        id: '2',
-        date: '2024-03-01',
-        author: 'Jane Smith',
-        content: 'UI components are progressing well. Need to discuss responsive design requirements for mobile views.'
-      }
-    ]
+    notes: notes, // ✅ use API response instead of hardcoded notes
   };
 
   const formatDate = (dateString: string) =>
@@ -230,15 +223,21 @@ const EngineerProjectDetails = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {project.notes.map((note) => (
-              <div key={note.id} className="p-4 border border-border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-sm">{note.author}</span>
-                  <span className="text-xs text-muted-foreground">{formatDate(note.date)}</span>
+            {isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading notes...</p>
+            ) : (
+              project.notes.map((note) => (
+                <div key={note.id} className="p-4 border border-border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-sm">{note.author?.name || 'Unknown'}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {note.createdAt ? formatDate(note.createdAt) : ''}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{note.content}</p>
                 </div>
-                <p className="text-sm text-muted-foreground">{note.content}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

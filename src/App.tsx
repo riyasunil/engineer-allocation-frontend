@@ -16,6 +16,8 @@ import EngineerDashboard from "./pages/engineer/engineerDashboard/EngineerDashbo
 import EngineerProfile from "./pages/engineer/engineerProfile/EngineerProfile";
 import EngineerProjectList from "./pages/engineer/projectList/ProjectList";
 import EngineerProjectDetails from "./pages/engineer/engineerProjectDetails/EngineerProjectDetails";
+import { Provider } from "react-redux";
+import store from "./store/store";
 
 const router = createBrowserRouter([
   {
@@ -61,11 +63,11 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      {/* <Suspense fallback={<LoadingScreen />}>
-        <Provider store={store}> */}
+      {/* <Suspense fallback={<LoadingScreen />}> */}
+        <Provider store={store}>
       <RouterProvider router={router} />
-      {/* </Provider>
-      </Suspense> */}
+      </Provider>
+      {/* </Suspense> */}
     </>
   );
 }
