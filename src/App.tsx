@@ -53,16 +53,6 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/engineer",
-    element: <EngineerDashboardLayout />,
-    children: [
-      { path: "dashboard", element: <EngineerDashboard /> },
-      { path: "projects", element: <EngineerProjectList /> },
-      { path: "projects/:id", element: <EngineerProjectDetails /> },
-      { path: "profile", element: <EngineerProfile /> },
-    ],
-  },
-  {
     path: "*",
     element: <NotFound />,
   },
