@@ -25,14 +25,16 @@ import {
   PopoverTrigger
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export default function DashboardSidebar() {
   const location = useLocation();
   const newAlertsCount = 2;
+  const navigate=useNavigate()
 
   const handleLogout = () => {
-    alert("Logged out (dummy)");
-    // Replace with real logout logic
+    localStorage.removeItem("token")
+    navigate('/')
   };
 
   const items = [

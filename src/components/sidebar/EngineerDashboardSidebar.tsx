@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const items = [
   {
@@ -44,9 +45,11 @@ const items = [
 export default function EngineerDashboardSidebar() {
   const location = useLocation();
 
+  const navigate=useNavigate()
+
   const handleLogout = () => {
-    alert("Engineer Logged out (dummy)");
-    // Replace with real logout logic
+    localStorage.removeItem("token")
+    navigate('/')
   };
 
   return (
