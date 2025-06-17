@@ -1,4 +1,12 @@
-export interface User{
+// Base interface for entities extending AbstractEntity
+interface AbstractEntity {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// User related interfaces
+export interface User extends AbstractEntity {
   user_id: string;
   name: string;
   email: string;
@@ -14,18 +22,18 @@ export interface User{
   designations?: UserDesignation[];
 }
 
-export interface UserDesignation {
+export interface UserDesignation extends AbstractEntity {
   user: User;
   designation: Designation;
 }
 
-export interface UserSkill {
+export interface UserSkill extends AbstractEntity {
   user: User;
   skill: Skill;
 }
 
 // Designation interface
-export interface Designation {
+export interface Designation extends AbstractEntity {
   name: string;
   userDesignations?: UserDesignation[];
   requirements?: ProjectEngineerRequirement[];
@@ -33,14 +41,14 @@ export interface Designation {
 }
 
 // Role interface
-export interface Role {
+export interface Role extends AbstractEntity {
   role_id: number;
   role_name: string;
   users?: User[];
 }
 
 // Skill interface
-export interface Skill {
+export interface Skill extends AbstractEntity {
   skill_id: number;
   skill_name: string;
   userSkills?: UserSkill[];
@@ -48,7 +56,7 @@ export interface Skill {
 }
 
 // Project related interfaces
-export interface Project {
+export interface Project extends AbstractEntity {
   project_id: string;
   name: string;
   startdate?: Date;
@@ -61,7 +69,7 @@ export interface Project {
   requirements?: ProjectEngineerRequirement[];
 }
 
-export interface ProjectUser {
+export interface ProjectUser extends AbstractEntity {
   project: Project;
   user: User;
   is_shadow: boolean;
@@ -71,7 +79,7 @@ export interface ProjectUser {
   designation_id?: number;
 }
 
-export interface ProjectEngineerRequirement {
+export interface ProjectEngineerRequirement extends AbstractEntity {
   project: Project;
   designation: Designation;
   required_count: number;
@@ -79,10 +87,11 @@ export interface ProjectEngineerRequirement {
   requirementSkills?: ProjectEngineerRequirementSkill[];
 }
 
-export interface ProjectEngineerRequirementSkill {
+export interface ProjectEngineerRequirementSkill extends AbstractEntity {
   requirement: ProjectEngineerRequirement;
   skill: Skill;
 }
+
 
 // Note interface (for responses)
 export interface Note {

@@ -24,6 +24,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
   }),
 });
 

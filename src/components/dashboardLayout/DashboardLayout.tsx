@@ -23,7 +23,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex">
       <SidebarProvider>
-        <DashboardSidebar />
+        <DashboardSidebar userRole="engineer" />
         <main className="flex-1 p-6 overflow-auto bg-background">
           <Outlet />
         </main>
