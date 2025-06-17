@@ -3,59 +3,73 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import ProjectCard from "@/components/ui/projectCard";
-
-const projects = [
-  {
-    id: "1",
-    name: "Project Alpha",
-    status: "NEW",
-    duration: "6 months",
-    startDate: "2025-01-01",
-    endDate: "2025-06-30",
-    requiredEngineers: 5,
-    assignedEngineers: 3,
-    techStack: ["Node.js", "React", "PostgreSQL"],
-    isOverStaffed: false,
-    isUnderStaffed: true,
-    nearingCompletion: false,
-  },
-  {
-    id: "2",
-    name: "Project Beta",
-    status: "CLOSED",
-    duration: "3 months",
-    startDate: "2024-10-01",
-    endDate: "2024-12-31",
-    requiredEngineers: 4,
-    assignedEngineers: 4,
-    techStack: ["Django", "Vue.js", "MySQL"],
-    isOverStaffed: false,
-    isUnderStaffed: false,
-    nearingCompletion: false,
-  },
-  {
-    id: "3",
-    name: "Project Gamma",
-    status: "IN_PROGRESS",
-    duration: "2 months",
-    startDate: "2025-05-01",
-    endDate: "2025-06-30",
-    requiredEngineers: 4,
-    assignedEngineers: 5,
-    techStack: ["Go", "Svelte", "MongoDB", "Redis"],
-    isOverStaffed: true,
-    isUnderStaffed: false,
-    nearingCompletion: true,
-  },
-];
+import { Project } from "@/utils/types";
+import { useGetAllProjectsQuery } from "@/api-service/projects/projects.api";
 
 export default function Projects() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<
-    "ALL" | "NEW" | "IN_PROGRESS" | "CLOSED"
+    "ALL" | "NEW" | "IN PROGRESS" | "CLOSED"
   >("ALL");
 
-  const filteredProjects = projects.filter((project) => {
+  // Fetch projects data from API
+  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery();
+  console.log("Projects data:", projects);
+
+  // Transform API data to match the expected format for the UI
+  const transformedProjects = projects.map((project: Project) => {
+    const assignedEngineers = project.projectUsers?.length || 0;
+    const requiredEngineers =
+      project.requirements?.reduce(
+        (sum, req) => sum + (req.required_count || 1),
+        0
+      ) || 0;
+
+    // Calculate duration if start and end dates are available
+    const duration =
+      project.startdate && project.enddate
+        ? Math.ceil(
+            (new Date(project.enddate).getTime() -
+              new Date(project.startdate).getTime()) /
+              (1000 * 60 * 60 * 24 * 30)
+          ) + " months"
+        : "N/A";
+
+    // Check if project is nearing completion (within 30 days of end date)
+    const nearingCompletion = project.enddate
+      ? new Date(project.enddate).getTime() - new Date().getTime() <=
+        30 * 24 * 60 * 60 * 1000
+      : false;
+
+    return {
+      id: project.project_id,
+      name: project.name,
+      status: project.status || "NEW",
+      duration,
+      startDate: project.startdate
+        ? new Date(project.startdate).toISOString().split("T")[0]
+        : "",
+      endDate: project.enddate
+        ? new Date(project.enddate).toISOString().split("T")[0]
+        : "",
+      requiredEngineers,
+      assignedEngineers,
+      techStack:
+        project.requirements
+          ?.map((req) =>
+            req.requirementSkills?.map((skill) => skill.skill.skill_name)
+          )
+          .flat()
+          .filter(Boolean) || [],
+      isOverStaffed: assignedEngineers > requiredEngineers,
+      isUnderStaffed: assignedEngineers < requiredEngineers,
+      nearingCompletion,
+      pm: project.pm,
+      lead: project.lead,
+    };
+  });
+
+  const filteredProjects = transformedProjects.filter((project) => {
     const matchesSearch = project.name
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -63,13 +77,57 @@ export default function Projects() {
     return matchesSearch && matchesFilter;
   });
 
-  const total = projects.length;
-  const newCount = projects.filter((p) => p.status === "NEW").length;
-  const activeCount = projects.filter((p) => p.status === "IN_PROGRESS").length;
-  const closedCount = projects.filter((p) => p.status === "CLOSED").length;
-  const avgEngineers = (
-    projects.reduce((sum, p) => sum + p.assignedEngineers, 0) / projects.length
-  ).toFixed(1);
+  const total = transformedProjects.length;
+  const newCount = transformedProjects.filter((p) => p.status === "NEW").length;
+  const activeCount = transformedProjects.filter(
+    (p) => p.status === "IN_PROGRESS"
+  ).length;
+  const closedCount = transformedProjects.filter(
+    (p) => p.status === "CLOSED"
+  ).length;
+  const avgEngineers =
+    transformedProjects.length > 0
+      ? (
+          transformedProjects.reduce((sum, p) => sum + p.assignedEngineers, 0) /
+          transformedProjects.length
+        ).toFixed(1)
+      : "0.0";
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Projects"
+          description="Manage project status, assignment, and resources"
+          buttonText="Add Project"
+          onButtonClick={() => console.log("Add project")}
+        />
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Projects"
+          description="Manage project status, assignment, and resources"
+          buttonText="Add Project"
+          onButtonClick={() => console.log("Add project")}
+        />
+        <div className="text-center py-12">
+          <p className="text-red-600">
+            Error loading projects. Please try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
