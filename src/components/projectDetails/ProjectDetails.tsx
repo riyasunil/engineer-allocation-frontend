@@ -11,6 +11,7 @@ import {
   useCreateNoteMutation,
   useDeleteNoteMutation
 } from '@/api-service/notes/notes.api';
+import { useGetProjectByIdQuery } from '@/api-service/projects/projects.api';
 
 interface ProjectDetailsProps {
   source: 'HR' | 'ENGINEER';
@@ -28,7 +29,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   const { id: projectId } = useParams();
   const navigate = useNavigate();
 
-  const { data: notes = [], isLoading } = useGetNotesByProjectIdQuery(projectId!, {
+  // Fetch project data using API
+  const { data: project, isLoading: projectLoading, error: projectError } = useGetProjectByIdQuery(projectId!, {
+    skip: !projectId
+  });
+
+  const { data: notes = [], isLoading: notesLoading } = useGetNotesByProjectIdQuery(projectId!, {
     skip: !projectId
   });
 
@@ -90,14 +96,16 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     }
   };
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string | Date | undefined) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
+  };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'NEW':
         return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -110,51 +118,71 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     }
   };
 
-  // Dummy project (replace with real fetched project later)
-  const project = {
-    id: '1',
-    name: 'E-Commerce Platform',
-    status: 'IN_PROGRESS' as const,
-    duration: '3 months',
-    startDate: '2024-01-15',
-    endDate: '2024-04-15',
-    requiredEngineers: 5,
-    assignedEngineers: 4,
-    techStack: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
-    description:
-      'Building a comprehensive e-commerce platform with modern tech stack including user authentication, payment processing, inventory management, and admin dashboard.',
-    assignments: [
-      {
-        id: '1',
-        engineer: { id: '1', name: 'John Doe', role: 'Lead Developer' },
-        role: 'Project Lead',
-        startDate: '2024-01-15',
-        isShadow: false
-      },
-      {
-        id: '2',
-        engineer: { id: '2', name: 'Jane Smith', role: 'Frontend Developer' },
-        role: 'Frontend Developer',
-        startDate: '2024-01-16',
-        isShadow: false
-      },
-      {
-        id: '3',
-        engineer: { id: '3', name: 'Mike Johnson', role: 'Backend Developer' },
-        role: 'Backend Developer',
-        startDate: '2024-01-16',
-        isShadow: false
-      },
-      {
-        id: '4',
-        engineer: { id: '4', name: 'Sarah Wilson', role: 'Junior Developer' },
-        role: 'Frontend Developer',
-        startDate: '2024-02-01',
-        isShadow: true
-      }
-    ],
-    notes: notes
+  const calculateDaysRemaining = (endDate: string | Date | undefined | null) => {
+    if (!endDate) return 'N/A';
+    const today = new Date();
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
   };
+
+  const calculateDuration = (startDate: string | Date | undefined, endDate: string | Date | undefined | null) => {
+    if (!startDate) return 'N/A';
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date();
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const months = Math.floor(diffDays / 30);
+    const days = diffDays % 30;
+    
+    if (months > 0) {
+      return `${months} month${months > 1 ? 's' : ''}${days > 0 ? ` ${days} day${days > 1 ? 's' : ''}` : ''}`;
+    }
+    return `${days} day${days > 1 ? 's' : ''}`;
+  };
+
+  // Loading states
+  if (projectLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-64 bg-gray-200 rounded"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (projectError || !project) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(backUrl)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Projects
+          </Button>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-lg text-muted-foreground">Project not found or failed to load.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Get assigned engineers count (if available in project data)
+  const assignedEngineers = project.projectUsers?.length || 0;
+//   const requiredEngineers = project.requiredEngineers || assignedEngineers;
 
   return (
     <div className="p-6 space-y-6">
@@ -185,44 +213,51 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Project ID</span>
+              <span className="text-sm font-medium">{project.project_id}</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
               <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
-                {project.status.replace('_', ' ')}
+                {project.status ? project.status.replace('_', ' ') : 'In Progress'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Duration</span>
-              <span className="text-sm font-medium">{project.duration}</span>
+              <span className="text-sm font-medium">
+                {calculateDuration(project.startdate, project.enddate)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Timeline</span>
               <span className="text-sm font-medium">
-                {formatDate(project.startDate)} - {formatDate(project.endDate)}
+                {formatDate(project.startdate)} - {project.enddate ? formatDate(project.enddate) : 'Ongoing'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Team Size</span>
               <span className="text-sm font-medium">
-                {project.assignedEngineers} / {project.requiredEngineers} Engineers
+                {assignedEngineers} Engineers
               </span>
             </div>
-            <div>
-              <h4 className="text-sm font-medium mt-4 mb-2">Description</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Project Manager</span>
+              <span className="text-sm font-medium">
+                {project.pm?.name || 'Not assigned'}
+              </span>
             </div>
-            <div>
-              <h4 className="text-sm font-medium mt-4 mb-2">Tech Stack</h4>
-              <div className="flex flex-wrap gap-2">
-                {project.techStack.map((tech) => (
-                  <span
-                    key={tech}
-                    className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
-                  >
-                    {tech}
-                  </span>
-                ))}
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Project Lead</span>
+              <span className="text-sm font-medium">
+                {project.lead?.name || 'Not assigned'}
+              </span>
+            </div>
+            {/* {project.description && (
+              <div>
+                <h4 className="text-sm font-medium mt-4 mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
               </div>
-            </div>
+            )} */}
           </CardContent>
         </Card>
 
@@ -233,7 +268,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
               <Calendar className="h-8 w-8 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Days Remaining</p>
-                <p className="text-xl font-bold">45</p>
+                <p className="text-xl font-bold">
+                  {project.enddate ? calculateDaysRemaining(project.enddate) : '∞'}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -242,48 +279,56 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
               <Users className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Team Members</p>
-                <p className="text-xl font-bold">{project.assignedEngineers}</p>
+                <p className="text-xl font-bold">{assignedEngineers}</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Assignments */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Team Assignments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {project.assignments.map((assignment) => (
-              <div key={assignment.id} className="flex justify-between items-center p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">
-                    {assignment.engineer.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')}
+      {/* Team Assignments */}
+      {project.projectUsers && project.projectUsers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Team Assignments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {project.projectUsers.map((projectUser) => (
+                <div key={projectUser.id} className="flex justify-between items-center p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">
+                      {projectUser.user?.name
+                        ? projectUser.user.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                        : 'N/A'}
+                    </div>
+                    <div>
+                      <h4 className="font-medium">{projectUser.user?.name || 'Unknown'}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {projectUser.designation?.name || 'Engineer'}
+                      </p>
+                    </div>
+                    {projectUser.is_shadow && (
+                      <span className="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                        Shadow
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <h4 className="font-medium">{assignment.engineer.name}</h4>
-                    <p className="text-sm text-muted-foreground">{assignment.role}</p>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Start Date</p>
+                    <p className="text-sm font-medium">
+                      {formatDate(projectUser.assigned_on)}
+                    </p>
                   </div>
-                  {assignment.isShadow && (
-                    <span className="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                      Shadow
-                    </span>
-                  )}
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Start Date</p>
-                  <p className="text-sm font-medium">{formatDate(assignment.startDate)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Notes Section */}
       <Card>
@@ -314,10 +359,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
           )}
 
           <div className="space-y-4">
-            {isLoading ? (
+            {notesLoading ? (
               <p className="text-sm text-muted-foreground">Loading notes...</p>
+            ) : notes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No notes available for this project.</p>
             ) : (
-              project.notes.map((note) => (
+              notes.map((note) => (
                 <div key={note.id} className="p-4 border rounded-lg space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-sm">{note.author?.name || 'Unknown'}</span>
