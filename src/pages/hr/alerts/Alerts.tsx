@@ -149,7 +149,7 @@ export default function Alerts() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Badge variant="success">{entry.status}</Badge>
+                <Badge variant="default">{entry.status}</Badge>
                 <span className="text-xs text-muted-foreground">
                   {entry.date}
                 </span>
