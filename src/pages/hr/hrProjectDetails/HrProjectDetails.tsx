@@ -1,6 +1,6 @@
 import ProjectDetails from "@/components/projectDetails/ProjectDetails";
 
-const HrProjectDetailsPage = () => {
+const HrProjectDetails= () => {
   return (
     <ProjectDetails
       source="HR"
@@ -11,4 +11,4 @@ const HrProjectDetailsPage = () => {
   );
 };
 
-export default HrProjectDetailsPage;
+export default HrProjectDetails;
