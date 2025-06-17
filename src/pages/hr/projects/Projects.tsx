@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import ProjectCard from "@/components/ui/projectCard";
+import { useNavigate, useNavigation } from "react-router-dom";
 
 const projects = [
   {
@@ -54,6 +55,7 @@ export default function Projects() {
   const [filter, setFilter] = useState<
     "ALL" | "NEW" | "IN_PROGRESS" | "CLOSED"
   >("ALL");
+  const navigate = useNavigate();
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch = project.name
@@ -77,7 +79,7 @@ export default function Projects() {
         title="Projects"
         description="Manage project status, assignment, and resources"
         buttonText="Add Project"
-        onButtonClick={() => console.log("Add project")}
+        onButtonClick={() => {navigate(`/hr/projects/create`);}}
       />
 
       <SearchFilterBar
