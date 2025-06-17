@@ -51,6 +51,7 @@ const logs: AuditLog[] = [
 const History = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<
+  
     "ALL" | "Project Created" | "Employee Assigned" | "Project Updated" | "Employee Unassigned"
   >("ALL");
 
