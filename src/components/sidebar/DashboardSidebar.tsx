@@ -5,8 +5,8 @@ import {
   Users2,
   Bell,
   History,
+  MoreVertical
 } from "lucide-react";
-
 import {
   Sidebar,
   SidebarContent,
@@ -15,50 +15,59 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuItem
 } from "@/components/ui/sidebar";
 import { NavLink, useLocation } from "react-router-dom";
 import { Badge } from "../ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardSidebar() {
   const location = useLocation();
   const newAlertsCount = 2;
 
+  const handleLogout = () => {
+    alert("Logged out (dummy)");
+    // Replace with real logout logic
+  };
+
   const items = [
     {
       title: "Dashboard",
       url: "/hr/dashboard",
-      icon: LayoutDashboard,
+      icon: LayoutDashboard
     },
     {
       title: "Analytics",
       url: "/hr/analytics",
-      icon: BarChart,
+      icon: BarChart
     },
     {
       title: "Projects",
       url: "/hr/projects",
-      icon: FolderKanban,
+      icon: FolderKanban
     },
     {
       title: "Engineers",
       url: "/hr/engineers",
-      icon: Users2,
+      icon: Users2
     },
     {
       title: "Alerts",
       url: "/hr/alerts",
       icon: Bell,
-      label: "Alerts",
-      roles: ["hr"],
       hasNotification: newAlertsCount > 0,
-      notificationCount: newAlertsCount,
+      notificationCount: newAlertsCount
     },
     {
       title: "History",
       url: "/hr/history",
-      icon: History,
-    },
+      icon: History
+    }
   ];
 
   return (
@@ -108,17 +117,34 @@ export default function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <NavLink to="/hr/profile">
-        <div className="p-4 border-t flex items-center gap-3">
+      <div className="p-4 border-t flex items-center justify-between gap-3">
+        <NavLink to="/hr/profile" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
             HR
           </div>
-          <div>
+          <div className="text-left">
             <p className="text-sm font-medium text-black">Hr</p>
             <p className="text-xs text-muted-foreground">User Role</p>
           </div>
-        </div>
-      </NavLink>
+        </NavLink>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button size="icon" variant="ghost" className="ml-auto">
+              <MoreVertical className="h-5 w-5 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-32 p-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-sm"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </PopoverContent>
+        </Popover>
+      </div>
     </Sidebar>
   );
 }

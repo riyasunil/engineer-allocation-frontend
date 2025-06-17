@@ -81,7 +81,7 @@ export default function EngineerDashboardSidebar() {
             E
           </div>
           <div>
-            <p className="text-sm font-medium text-black">Employee</p>
+            <p className="text-sm font-medium text-black">Engineer</p>
             <p className="text-xs text-muted-foreground">User Role</p>
           </div>
         </div>
