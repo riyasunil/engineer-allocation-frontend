@@ -5,7 +5,7 @@ import {
   Users2,
   Bell,
   History,
-  MoreVertical
+  User,
 } from "lucide-react";
 import {
   Sidebar,
@@ -19,15 +19,14 @@ import {
 } from "@/components/ui/sidebar";
 import { NavLink, useLocation } from "react-router-dom";
 import { Badge } from "../ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
-export default function DashboardSidebar() {
+type UserRole = "hr" | "pm" | "lead" | "engineer";
+
+interface DashboardSidebarProps {
+  userRole: UserRole;
+}
+
+export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const location = useLocation();
   const newAlertsCount = 2;
   const navigate=useNavigate()
@@ -40,37 +39,51 @@ export default function DashboardSidebar() {
   const items = [
     {
       title: "Dashboard",
-      url: "/hr/dashboard",
-      icon: LayoutDashboard
+      url: `/${userRole}/dashboard`,
+      icon: LayoutDashboard,
+      roles: ["hr", "pm", "lead"],
     },
     {
       title: "Analytics",
-      url: "/hr/analytics",
-      icon: BarChart
+      url: `/${userRole}/analytics`,
+      icon: BarChart,
+      roles: ["hr", "pm"],
     },
     {
       title: "Projects",
-      url: "/hr/projects",
-      icon: FolderKanban
+      url: `/${userRole}/projects`,
+      icon: FolderKanban,
+      roles: ["hr", "pm", "lead", "engineer"],
     },
     {
       title: "Engineers",
-      url: "/hr/engineers",
-      icon: Users2
+      url: `/${userRole}/engineers`,
+      icon: Users2,
+      roles: ["hr", "pm", "lead"],
     },
     {
       title: "Alerts",
-      url: "/hr/alerts",
+      url: `/${userRole}/alerts`,
       icon: Bell,
+      roles: ["hr", "pm", "lead"],
       hasNotification: newAlertsCount > 0,
       notificationCount: newAlertsCount
     },
     {
       title: "History",
-      url: "/hr/history",
-      icon: History
-    }
+      url: `/${userRole}/history`,
+      icon: History,
+      roles: ["hr", "pm", "lead"],
+    },
+    {
+      title: "Profile",
+      url: `/${userRole}/profile`,
+      icon: User,
+      roles: ["engineer"],
+    },
   ];
+
+  const filteredItems = items.filter((item) => item.roles.includes(userRole));
 
   return (
     <Sidebar className="h-screen w-64 border-r bg-white flex flex-col justify-between">
@@ -85,7 +98,7 @@ export default function DashboardSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {items.map((item) => {
+              {filteredItems.map((item) => {
                 const isActive = location.pathname.startsWith(item.url);
 
                 return (
@@ -119,13 +132,15 @@ export default function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <div className="p-4 border-t flex items-center justify-between gap-3">
-        <NavLink to="/hr/profile" className="flex items-center gap-3">
+      <NavLink to={`/${userRole}/profile`}>
+        <div className="p-4 border-t flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-            HR
+            {userRole.toUpperCase().slice(0, 2)}
           </div>
-          <div className="text-left">
-            <p className="text-sm font-medium text-black">Hr</p>
+          <div>
+            <p className="text-sm font-medium text-black">
+              {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+            </p>
             <p className="text-xs text-muted-foreground">User Role</p>
           </div>
         </NavLink>
