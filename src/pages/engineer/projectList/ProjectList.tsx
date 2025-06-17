@@ -2,6 +2,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { Button } from "@/components/ui/button";
 import { Clock4, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useGetUserByIdQuery } from "../../../api-service/user/user.api";
 import { Project, ProjectUser } from "@/utils/types";
 import SkeletonCard from "./SkeletonLoader";
@@ -30,10 +31,13 @@ const StatusBadge = ({ label }: { label: string }) => {
   }
 };
 
-
-
 const ProjectList = () => {
+  const navigate = useNavigate();
   const { data, isLoading } = useGetUserByIdQuery("KV10");
+
+  const handleViewDetails = (projectId: string | number) => {
+    navigate(`/engineer/projects/${projectId}`);
+  };
 
   const filterProjects = (projects: Project[] = []) => {
     const currentProjects = projects.filter(
@@ -156,7 +160,11 @@ const ProjectList = () => {
                     ))} */}
                   </div>
                 </div>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleViewDetails(project.id)}
+                >
                   View Details
                 </Button>
               </div>
@@ -219,7 +227,11 @@ const ProjectList = () => {
                     ))} */}
                   </div>
                 </div>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleViewDetails(project.project.id)}
+                >
                   View Details
                 </Button>
               </div>
@@ -273,7 +285,11 @@ const ProjectList = () => {
                     <StatusBadge label="COMPLETED" />
                   </div>
                 </div>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleViewDetails(project.id)}
+                >
                   View Details
                 </Button>
               </div>
@@ -305,7 +321,11 @@ const ProjectList = () => {
                     <StatusBadge label="COMPLETED" />
                   </div>
                 </div>
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleViewDetails(p.project.id)}
+                >
                   View Details
                 </Button>
               </div>
