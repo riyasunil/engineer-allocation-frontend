@@ -5,59 +5,99 @@ import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const engineers = [
-  {
-    id: "1",
-    name: "Javad",
-    experience: "3 years",
-    designation: "Backend Developer",
-    skills: ["Node.js", "PostgreSQL", "TypeScript"],
-    availability: "AVAILABLE",
-    allocations: 1,
-    email: "javed.shaikh@example.com",
-    currentProjects: 1,
-    maxProjects: 2,
-    isAvailable: true,
-    strengths: ["API Design", "Database Optimization"],
-  },
-  {
-    id: "2",
-    name: "Sara Khan",
-    experience: "2 years",
-    designation: "Frontend Developer",
-    skills: ["React", "Tailwind", "JavaScript"],
-    availability: "FULLY_ALLOCATED",
-    allocations: 2,
-    email: "sara.khan@example.com",
-    currentProjects: 2,
-    maxProjects: 2,
-    isAvailable: false,
-    strengths: ["UI/UX", "Responsive Design"],
-  },
-];
+import { User } from "@/utils/types";
+import { useGetEngineersQuery } from "@/api-service/user/user.api";
 
 export default function Engineers() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("ALL");
-
-  const filteredEngineers = engineers.filter((e) => {
-    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === "ALL" || e.availability === filter;
-    return matchesSearch && matchesFilter;
-  });
-
-  const total = engineers.length;
   const navigate = useNavigate();
 
-  const available = engineers.filter(
-    (e) => e.availability === "AVAILABLE"
+  // Fetch engineers data from API
+  const { data: engineers = [], isLoading, error } = useGetEngineersQuery();
+
+  // Transform API data to match the expected format for the UI
+  const transformedEngineers = engineers.map((user: User) => ({
+    id: user.user_id,
+    name: user.name,
+    experience: user.experience ? `${user.experience} years` : "N/A",
+    designation: user.designations?.[0]?.designation?.name || "Engineer", // Assuming first designation
+    skills: user.userSkills?.map((skill) => skill.skill.skill_name) || [],
+    // Calculate availability based on current vs max projects
+    availability: user.projectUsers?.length
+      ? user.projectUsers?.length >= 2
+        ? "FULLY_ALLOCATED"
+        : "AVAILABLE"
+      : "AVAILABLE",
+    allocations: user.projectUsers?.length || 0,
+    email: user.email,
+    currentProjects: user.projectUsers?.length || 0,
+    maxProjects: 2, // Default max projects
+    isAvailable: (user.projectUsers?.length || 0) < 2,
+    strengths:
+      user.userSkills?.slice(0, 2).map((skill) => skill.skill.skill_name) || [], // Take first 2 skills as strengths
+  }));
+
+  const filteredEngineers = transformedEngineers.filter(
+    (e: { name: string; availability: string }) => {
+      const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase());
+      const matchesFilter = filter === "ALL" || e.availability === filter;
+      return matchesSearch && matchesFilter;
+    }
+  );
+
+  const total = transformedEngineers.length;
+  const available = transformedEngineers.filter(
+    (e: { availability: string }) => e.availability === "AVAILABLE"
   ).length;
-  const fullyAllocated = engineers.filter(
-    (e) => e.availability === "FULLY_ALLOCATED"
+  const fullyAllocated = transformedEngineers.filter(
+    (e: { availability: string }) => e.availability === "FULLY_ALLOCATED"
   ).length;
-  const avgProjects = (
-    engineers.reduce((sum, e) => sum + e.currentProjects, 0) / engineers.length
-  ).toFixed(1);
+  const avgProjects =
+    transformedEngineers.length > 0
+      ? (
+          transformedEngineers.reduce(
+            (sum: any, e: { currentProjects: any }) => sum + e.currentProjects,
+            0
+          ) / transformedEngineers.length
+        ).toFixed(1)
+      : "0.0";
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Engineers"
+          description="Manage engineer profiles and availability"
+          buttonText="Add Engineer"
+          onButtonClick={() => navigate("/hr/addengineer")}
+        />
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading engineers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Engineers"
+          description="Manage engineer profiles and availability"
+          buttonText="Add Engineer"
+          onButtonClick={() => navigate("/hr/addengineer")}
+        />
+        <div className="text-center py-12">
+          <p className="text-red-600">
+            Error loading engineers. Please try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
