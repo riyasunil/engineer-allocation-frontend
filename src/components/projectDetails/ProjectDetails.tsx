@@ -26,14 +26,18 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   backUrl,
   canAddNote = true
 }) => {
-  const { id: projectId } = useParams();
+  const { id } = useParams(); // This is the numeric database ID
   const navigate = useNavigate();
 
-  // Fetch project data using API
-  const { data: project, isLoading: projectLoading, error: projectError } = useGetProjectByIdQuery(projectId!, {
-    skip: !projectId
+  // Fetch project data using the numeric ID
+  const { data: project, isLoading: projectLoading, error: projectError } = useGetProjectByIdQuery(id!, {
+    skip: !id
   });
 
+  // Extract the project_id (string) from the fetched project data
+  const projectId = project?.project_id;
+
+  // Fetch notes using the project_id (string)
   const { data: notes = [], isLoading: notesLoading } = useGetNotesByProjectIdQuery(projectId!, {
     skip: !projectId
   });
@@ -58,8 +62,10 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   };
 
   const handleSave = async (noteId: number) => {
+    if (!projectId) return;
+    
     await updateNote({
-      projectId: projectId!,
+      projectId: projectId,
       noteId,
       data: { content: editedContent }
     });
@@ -67,21 +73,23 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   };
 
   const handleDelete = async (noteId: number) => {
+    if (!projectId) return;
+    
     if (confirm('Are you sure you want to delete this note?')) {
-      await deleteNote({ projectId: projectId!, noteId });
+      await deleteNote({ projectId: projectId, noteId });
     }
   };
 
   const handleAddNote = async () => {
-    if (!newNote.trim()) return;
+    if (!newNote.trim() || !projectId) return;
 
     setAddNoteLoading(true);
 
     try {
       await createNote({
-        projectId: projectId!,
+        projectId: projectId,
         data: {
-          projectId: projectId!,
+          projectId: projectId,
           authorId,
           content: newNote.trim(),
         },
@@ -182,7 +190,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
   // Get assigned engineers count (if available in project data)
   const assignedEngineers = project.projectUsers?.length || 0;
-//   const requiredEngineers = project.requiredEngineers || assignedEngineers;
 
   return (
     <div className="p-6 space-y-6">
@@ -252,12 +259,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                 {project.lead?.name || 'Not assigned'}
               </span>
             </div>
-            {/* {project.description && (
-              <div>
-                <h4 className="text-sm font-medium mt-4 mb-2">Description</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
-              </div>
-            )} */}
           </CardContent>
         </Card>
 
@@ -336,7 +337,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
           <CardTitle>Project Notes & Updates</CardTitle>
         </CardHeader>
         <CardContent>
-          {canAddNote && (
+          {canAddNote && projectId && (
             <div className="mb-6 space-y-2">
               <textarea
                 className="w-full border rounded p-2 text-sm"
