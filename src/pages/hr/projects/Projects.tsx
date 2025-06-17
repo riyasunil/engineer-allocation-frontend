@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/pageHeader";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import ProjectCard from "@/components/ui/projectCard";
 import { Project } from "@/utils/types";
-import { useGetAllProjectQuery } from "@/api-service/projects/projects.api";
+import { useGetAllProjectsQuery } from "@/api-service/projects/projects.api";
 
 export default function Projects() {
   const [search, setSearch] = useState("");
@@ -13,7 +13,7 @@ export default function Projects() {
   >("ALL");
 
   // Fetch projects data from API
-  const { data: projects = [], isLoading, error } = useGetAllProjectQuery();
+  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery();
   console.log("Projects data:", projects);
 
   // Transform API data to match the expected format for the UI

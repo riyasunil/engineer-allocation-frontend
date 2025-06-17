@@ -75,7 +75,7 @@ export default function EngineerDashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <NavLink to="/hr/profile">
+      <NavLink to="/engineer/profile">
         <div className="p-4 border-t flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
             E
