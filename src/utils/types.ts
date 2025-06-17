@@ -92,6 +92,7 @@ export interface ProjectEngineerRequirementSkill extends AbstractEntity {
   skill: Skill;
 }
 
+
 // Note interface (for responses)
 export interface Note {
   id?: number; // Optional in case it's not included in all responses

@@ -10,12 +10,12 @@ import Engineers from "./pages/hr/engineers/Engineers";
 import Alerts from "./pages/hr/alerts/Alerts";
 import History from "./pages/hr/history/History";
 import Profile from "./pages/hr/profile/Profile";
-import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import AddEngineer from "./pages/hr/engineers/AddEngineer";
 import ProjectList from "./pages/engineer/projectList/ProjectList";
 import EngineerProjectDetails from "./pages/engineer/engineerProjectDetails/EngineerProjectDetails";
 import { Provider } from "react-redux";
 import store from "./store/store";
+import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 
 const router = createBrowserRouter([
   {
