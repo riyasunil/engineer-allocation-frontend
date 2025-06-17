@@ -11,7 +11,7 @@ export const projectApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getProjectById: builder.query<Project, string>({
+    getProjectById: builder.query<Project, number>({
       query: (id) => ({
         url: `/project/${id}`,
         method: "GET",
