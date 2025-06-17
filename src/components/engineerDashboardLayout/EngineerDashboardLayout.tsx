@@ -1,12 +1,10 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import DashboardSidebar from "../sidebar/DashboardSidebar";
+import EngineerDashboardSidebar from "../sidebar/EngineerDashboardSidebar";
 import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Navigate } from "react-router-dom";
 
-const DashboardLayout = () => {
-
-  
+const EngineerDashboardLayout = () => {
 
   const isLoggedIn= () =>{
     const token= localStorage.getItem("token")
@@ -20,16 +18,17 @@ const DashboardLayout = () => {
   if(!isLoggedIn()){
      return <Navigate to='/login'/>
   }
+
   return (
     <div className="flex">
       <SidebarProvider>
-        <DashboardSidebar userRole="engineer" />
-        <main className="flex-1 p-6 overflow-auto bg-background">
-          <Outlet />
+        <EngineerDashboardSidebar />
+        <main className="p-5 w-full">
+          <Outlet/>
         </main>
       </SidebarProvider>
     </div>
   );
 };
 
-export default DashboardLayout;
+export default EngineerDashboardLayout;

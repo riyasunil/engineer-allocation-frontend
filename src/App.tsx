@@ -13,9 +13,12 @@ import Profile from "./pages/hr/profile/Profile";
 import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import AddEngineer from "./pages/hr/engineers/AddEngineer";
 import ProjectList from "./pages/engineer/projectList/ProjectList";
+import EngineerDashboardLayout from "./components/engineerDashboardLayout/EngineerDashboardLayout";
+import EngineerDashboard from "./pages/engineer/engineerDashboard/EngineerDashboard";
+import EngineerProfile from "./pages/engineer/engineerProfile/EngineerProfile";
+import EngineerProjectDetails from "./pages/engineer/engineerProjectDetails/EngineerProjectDetails";
 import { Provider } from "react-redux";
 import store from "./store/store";
-// import LoginPage from "./pages/auth/login/Login";
 
 const router = createBrowserRouter([
   {
@@ -44,9 +47,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/engineer",
-    element: <DashboardLayout />,
+    element: <EngineerDashboardLayout />,
     children: [
-      { path: "projects", element: <ProjectList /> },
+      { path: "dashboard", element: <EngineerDashboard /> },
+     { path: "projects", element: <ProjectList /> },
+      { path: "projects/:id", element: <EngineerProjectDetails /> },
       { path: "profile", element: <EngineerProfile /> },
     ],
   },

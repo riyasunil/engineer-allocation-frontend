@@ -92,11 +92,31 @@ export interface ProjectEngineerRequirementSkill extends AbstractEntity {
   skill: Skill;
 }
 
-// Note interface
-export interface Note extends AbstractEntity {
-  project: Project;
-  author: User;
+
+// Note interface (for responses)
+export interface Note {
+  id?: number; // Optional in case it's not included in all responses
+  projectId: string;
+  authorId: string;
   content: string;
+  createdAt?: string;
+  updatedAt?: string;
+  author?: User; // Optional populated user
+  project?: Project; // Optional populated project
+}
+
+// DTO for creating a note (matches CreateNoteDto in backend)
+export interface CreateNoteDto {
+  projectId: string;
+  authorId: string;
+  content: string;
+}
+
+// DTO for updating a note (matches UpdateNoteDto in backend)
+export interface UpdateNoteDto {
+  projectId?: string;
+  authorId?: string;
+  content?: string;
 }
 
 // Utility interfaces for API responses (without sensitive data)

@@ -1,6 +1,54 @@
-import React from 'react';
-import logo from '../../../assets/logo.png'; // Adjust path if needed
+import React, { useEffect, useRef, useState } from 'react'
+import logo from '../../../assets/logo.png';
+import { useLoginMutation } from '@/api-service/auth/login.api';
+import { useNavigate , Navigate} from 'react-router-dom';
+
+
 const Login = () => {
+
+  const [login, {isLoading}]=useLoginMutation();
+  const navigate=useNavigate()
+  const [username,setUsername] =useState("")
+  const [password,setPassword] =useState("")
+  const [error,setError]=useState("")
+  const [usernameError,setUsernameError] =useState("")
+  const [passwordError,setPasswordError] =useState("")
+  const usernameRef = useRef<HTMLInputElement>(null)
+
+  if(localStorage.getItem("token")){
+    return <Navigate to='/hr/dashboard'/>
+  }
+
+  function handleClick(event: React.ChangeEvent<HTMLInputElement>) {
+    setUsername(event.target.value)
+  }
+
+  function handleClickPassword(event: React.ChangeEvent<HTMLInputElement>) {
+    setPassword(event.target.value)
+  };
+
+  useEffect(()=>{
+    if (password.length<5 && password.length>0){
+      setPasswordError("Password cannot be less than 5 characters");
+    }
+    else {
+      setPasswordError("");
+    }
+  },[password]);
+
+  async function handleSubmit(e:any) {
+    e.preventDefault()
+    console.log("in handlesubmit")
+    login({email:username, password:password}).unwrap()
+    .then((response)=> {
+         localStorage.setItem("token",response.accessToken)
+         navigate('/hr/dashboard')
+    }).catch((error) => {
+      setError(error.data.message)
+      console.log("error",error)
+    })
+  };
+
   return (
     <div className="w-full h-screen grid grid-cols-1 md:grid-cols-[3fr_2fr] bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-900 text-white">
       {/* Left side content */}
@@ -32,6 +80,8 @@ const Login = () => {
                 id="email"
                 type="email"
                 placeholder="you@example.com"
+                onChange={(e) => handleClick (e)}  
+                ref={usernameRef}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -41,12 +91,18 @@ const Login = () => {
                 id="password"
                 type="password"
                 placeholder="Enter your password"
+                onChange={(e) => handleClickPassword (e)}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {passwordError? <p className="text-red-600">{passwordError}</p>:null}
+              {error?<p className="text-red-600">{error}</p>:null}
+
             </div>
             <button
               type="submit"
               className="w-full py-3 rounded-lg bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition-colors"
+              disabled={isLoading ||usernameError!="" || passwordError!="" ||username==""||password==""}
+              onClick={handleSubmit}
             >
               Sign In
             </button>
