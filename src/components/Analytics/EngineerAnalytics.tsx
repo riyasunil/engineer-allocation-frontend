@@ -42,7 +42,7 @@ const EngineerAnalytics = () => {
     .map((user) => ({
       id: user.user_id,
       name: user.name,
-      role: user.designations?.[0]?.designation?.name || "Engineer",
+      role: user.designations?.[0]?.designation?.name || "ENGINEER",
       projectsCompleted: user.projectUsers?.length || 0,
       currentProjects: user.projectUsers?.length || 0,
       efficiency: 90, // hardcoded
