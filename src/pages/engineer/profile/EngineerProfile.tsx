@@ -4,6 +4,7 @@ import { PenLine, User, CalendarDays, Star, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetUserByIdQuery } from "@/api-service/user/user.api";
 import ProfileLoader from "./ProfileLoader";
+import { useAppSelector } from "@/store/store";
 
 const userProfile = {
   initials: "JD",
@@ -38,6 +39,7 @@ const userProfile = {
     "Experienced senior developer with 5 years in full-stack development. Passionate about building scalable applications and leading development teams. Currently working on 2 active projects and continuously expanding expertise in emerging technologies.",
 };
 
+
 const EngineerProfile = () => {
   const {
     initials,
@@ -53,9 +55,9 @@ const EngineerProfile = () => {
     summary,
   } = userProfile;
 
-  const { data, isLoading } = useGetUserByIdQuery("KV10");
-  console.log(data)
-  if (isLoading) return <ProfileLoader />
+  const data = useAppSelector((state) => state.user.currentUser);
+
+  if (!data) return <ProfileLoader />
   return (
     <div className="space-y-6">
       <PageHeader
