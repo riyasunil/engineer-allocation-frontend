@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Save,
   UserPlus,
@@ -82,6 +82,10 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
 
   const navigate = useNavigate();
 
+  // Refs for dropdown containers
+  const skillsDropdownRef = useRef<HTMLDivElement>(null);
+  const designationsDropdownRef = useRef<HTMLDivElement>(null);
+
   // API queries
   const {
     data: skillsData,
@@ -153,6 +157,32 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   const [designationsDropdownOpen, setDesignationsDropdownOpen] =
     useState(false);
+
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Close skills dropdown if clicked outside
+      if (
+        skillsDropdownRef.current &&
+        !skillsDropdownRef.current.contains(event.target as Node)
+      ) {
+        setSkillsDropdownOpen(false);
+      }
+
+      // Close designations dropdown if clicked outside
+      if (
+        designationsDropdownRef.current &&
+        !designationsDropdownRef.current.contains(event.target as Node)
+      ) {
+        setDesignationsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -321,9 +351,12 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
     isLoading,
     error,
   }) => (
-    <div className="relative">
+    <div
+      className="relative"
+      ref={field === "skill_id" ? skillsDropdownRef : designationsDropdownRef}
+    >
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label} *
+        {label}
       </label>
       <div className="relative">
         <button
@@ -486,26 +519,6 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  User ID *
-                </label>
-                <input
-                  type="text"
-                  name="user_id"
-                  value={formData.user_id}
-                  onChange={handleInputChange}
-                  disabled={mode === "edit"}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    mode === "edit" ? "bg-gray-100 cursor-not-allowed" : ""
-                  } ${errors.user_id ? "border-red-500" : "border-gray-300"}`}
-                  placeholder="Enter user ID"
-                />
-                {errors.user_id && (
-                  <p className="text-red-500 text-sm mt-1">{errors.user_id}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email Address *
                 </label>
                 <input
@@ -556,6 +569,25 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
               </h3>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  User ID *
+                </label>
+                <input
+                  type="text"
+                  name="user_id"
+                  value={formData.user_id}
+                  onChange={handleInputChange}
+                  disabled={mode === "edit"}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    mode === "edit" ? "bg-gray-100 cursor-not-allowed" : ""
+                  } ${errors.user_id ? "border-red-500" : "border-gray-300"}`}
+                  placeholder="Enter user ID"
+                />
+                {errors.user_id && (
+                  <p className="text-red-500 text-sm mt-1">{errors.user_id}</p>
+                )}
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Joined Date
