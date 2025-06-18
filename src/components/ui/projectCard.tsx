@@ -10,7 +10,7 @@ interface Project {
   endDate?: string;
   requiredEngineers: number;
   assignedEngineers: number;
-  techStack: string[];
+  // techStack: string[];
   isOverStaffed: boolean;
   isUnderStaffed: boolean;
   nearingCompletion: boolean;
@@ -79,7 +79,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      {/* <div className="flex flex-wrap gap-2 mb-4">
         {project.techStack.slice(0, 3).map((tech) => (
           <span
             key={tech}
@@ -93,7 +93,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
             +{project.techStack.length - 3} more
           </span>
         )}
-      </div>
+      </div> */}
 
       <div className="flex flex-wrap gap-2">
         {project.nearingCompletion && (
