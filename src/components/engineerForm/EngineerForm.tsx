@@ -19,6 +19,7 @@ import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useAddEngineerMutation } from "@/api-service/user/user.api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface SelectedOption {
   id: string | number;
@@ -284,8 +285,12 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
           console.log(userData);
           const result = await addEngineer(userData);
           if (result.data) {
-            alert("Engineer created successfully");
-            navigate(-1);
+            toast.success("Engineer created successfully");
+
+            // Navigate after short delay
+            setTimeout(() => {
+              navigate(-1);
+            }, 1500); 
           }
         } else if (mode === "edit") {
           // Handle edit logic here
@@ -319,7 +324,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
 
           const result = await addEngineer(userData);
           if (result.data) {
-            alert("Engineer created successfully");
+            toast.success("Engineer created successfully");
             // Reset form for next entry
             setFormData({
               name: "",
@@ -571,7 +576,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  User ID *
+                  Employee ID *
                 </label>
                 <input
                   type="text"
