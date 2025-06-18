@@ -1,14 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
-// import employeeReducer from "./employee/employeeReducer";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import baseApi from "../api-service/api";
+import userReducer from "./slices/userSlice";
 
 // const store = createStore(employeeReducer, undefined, applyMiddleware(logger));
 
 const store = configureStore({
   reducer: {
-    // employee: employeeReducer,
+    user: userReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
