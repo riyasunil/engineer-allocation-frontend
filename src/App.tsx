@@ -17,7 +17,7 @@ import { Provider } from "react-redux";
 import store from "./store/store";
 import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import HrProjectDetails from "./pages/hr/hrProjectDetails/HrProjectDetails";
-import ToastProvider from "@/components/Toasts/ToastProvider";
+import { Toaster } from "@/components/ui/sonner"
 
 const router = createBrowserRouter([
   {
@@ -64,7 +64,7 @@ function App() {
   return (
     <>
       <Provider store={store}>
-        <ToastProvider />
+        <Toaster position="top-right"/>
         <RouterProvider router={router}></RouterProvider>
       </Provider>
     </>
