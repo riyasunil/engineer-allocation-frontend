@@ -15,7 +15,7 @@ export default function Projects() {
   >("ALL");
 
   // Fetch projects data from API
-  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery();
+  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery(undefined, {refetchOnMountOrArgChange: false});
   console.log("Projects data:", projects);
 
   // Transform API data to match the expected format for the UI
@@ -56,13 +56,13 @@ export default function Projects() {
         : "",
       requiredEngineers,
       assignedEngineers,
-      techStack:
-        project.requirements
-          ?.map((req) =>
-            req.requirementSkills?.map((skill) => skill.skill.skill_name)
-          )
-          .flat()
-          .filter(Boolean) || [],
+      // techStack:
+      //   project.requirements
+      //     ?.map((req) =>
+      //       req.requirementSkills?.map((skill) => skill.skill.skill_name)
+      //     )
+      //     .flat()
+      //     .filter(Boolean) || [],
       isOverStaffed: assignedEngineers > requiredEngineers,
       isUnderStaffed: assignedEngineers < requiredEngineers,
       nearingCompletion,

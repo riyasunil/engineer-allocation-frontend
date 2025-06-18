@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import DashboardSidebar from "../sidebar/DashboardSidebar";
 import { SidebarProvider } from "../ui/sidebar";
@@ -6,12 +6,16 @@ import { useAppDispatch, useAppSelector } from "@/store/store";
 import { useLazyGetUserByIdQuery } from "@/api-service/user/user.api";
 import { setCurrentUser } from "@/store/slices/userSlice";
 import { BotMessageSquare } from "lucide-react";
-import ChatbotModal from "../chatbotModal/ChatbotModal";
+const ChatbotModal = lazy(() => import("../chatbotModal/ChatbotModal"));
+
 
 const DashboardLayout = () => {
   const [triggerGetUserById, { isLoading }] = useLazyGetUserByIdQuery();
   const dispatch = useAppDispatch();
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  // const currentUser = useAppSelector((state) => state.user.currentUser);
+  const currentUser = useAppSelector((state) => state.user.currentUser);
+  console.log("Current User in DashboardLayout:", currentUser);
 
   const isLoggedIn = () => {
     const token = localStorage.getItem("token");
@@ -20,33 +24,49 @@ const DashboardLayout = () => {
 
   useEffect(() => {
     const user_id = localStorage.getItem("user_id");
-    if (user_id) {
+    if (user_id && !currentUser) {
       triggerGetUserById(user_id)
         .unwrap()
         .then((user) => dispatch(setCurrentUser(user)));
     }
   }, []);
 
-  const currentUser = useAppSelector((state) => state.user.currentUser);
 
   if (!isLoggedIn()) {
     return <Navigate to="/login" />;
   }
 
-  if (isLoading || !currentUser || !currentUser.role?.role_name) {
-    return <div className="p-6">Loading...</div>;
+  if (isLoading || !currentUser) {
+    return (
+      <div className="flex relative">
+        <SidebarProvider>
+          <DashboardSidebar userRole="hr" userName="Loading..." />
+          <main className="flex-1 p-6 overflow-auto bg-background">
+            <div className="animate-pulse">Loading User...</div>
+          </main>
+        </SidebarProvider>
+      </div>
+    );
   }
 
   return (
     <div className="flex relative">
       <SidebarProvider>
-        <DashboardSidebar userRole={currentUser?.role.role_name.toLowerCase()} />
+        <DashboardSidebar
+          userRole={(currentUser?.role.role_name).toLowerCase()}
+          userName={currentUser?.name}
+        />
         <main className="flex-1 p-6 overflow-auto bg-background">
           <Outlet />
         </main>
 
         {/* Chatbot Modal */}
-        <ChatbotModal isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
+        <Suspense fallback={null}>
+          <ChatbotModal
+            isOpen={isChatbotOpen}
+            onClose={() => setIsChatbotOpen(false)}
+          />
+        </Suspense>
 
         {/* Floating Button (only when modal is closed) */}
         {!isChatbotOpen && (
