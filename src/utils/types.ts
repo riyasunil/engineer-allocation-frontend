@@ -141,3 +141,17 @@ export interface ProjectBasic {
   pm: UserBasic;
   lead: UserBasic;
 }
+
+export interface AlertRequest {
+  id: number;
+  project: string;
+  requester: string;
+  roleNeeded: string;
+  quantity: number;
+  skills: string[];
+  dueDate: string;
+  requestedDate: string;
+  priority: Priority;
+  justification: string;
+  unread: boolean;
+}
