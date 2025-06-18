@@ -46,16 +46,25 @@ export default function ProjectAnalytics() {
           )
         : 0;
 
+    // Calculate staffing percentage
+    const staffingPercentage =
+      requiredEngineers > 0
+        ? Math.round((assignedEngineers / requiredEngineers) * 100)
+        : assignedEngineers > 0
+        ? 100
+        : 0;
+
     return {
       id: project.project_id,
       name: project.name,
       status: project.status || "NEW",
-      completion: 0,
-      timeline: "N/A",
+      staffingPercentage,
       teamSize: assignedEngineers,
       duration: duration.toString(),
       requiredEngineers,
       assignedEngineers,
+      startDate: project.startdate,
+      endDate: project.enddate,
     };
   });
 
@@ -63,18 +72,42 @@ export default function ProjectAnalytics() {
     (p) => p.id === selectedProject
   );
 
+  // Calculate actual metrics from data
   const totalProjects = transformedProjects.length;
-  const successRate = "92%";
+
+  // Calculate success rate based on completed projects that are fully staffed
+  const fullyStaffedProjects = transformedProjects.filter(
+    (p) => p.staffingPercentage >= 100
+  );
+  const successRate =
+    totalProjects > 0
+      ? Math.round((fullyStaffedProjects.length / totalProjects) * 100) + "%"
+      : "0%";
+
+  // Calculate average duration from projects with dates
+  const projectsWithDuration = transformedProjects.filter(
+    (p) => parseInt(p.duration) > 0
+  );
   const avgDuration =
-    transformedProjects.length > 0
+    projectsWithDuration.length > 0
       ? (
-          transformedProjects.reduce(
-            (sum, p) => sum + parseInt(p.duration || "0"),
+          projectsWithDuration.reduce(
+            (sum, p) => sum + parseInt(p.duration),
             0
-          ) / transformedProjects.length
+          ) / projectsWithDuration.length
         ).toFixed(1)
       : "0.0";
 
+  // Calculate average team size
+  const avgTeamSize =
+    totalProjects > 0
+      ? (
+          transformedProjects.reduce((sum, p) => sum + p.teamSize, 0) /
+          totalProjects
+        ).toFixed(1)
+      : "0.0";
+
+  // Status distribution for pie chart
   const statusCounts: Record<string, number> = {};
   transformedProjects.forEach((p) => {
     statusCounts[p.status] = (statusCounts[p.status] || 0) + 1;
@@ -93,14 +126,41 @@ export default function ProjectAnalytics() {
         : "#ef4444",
   }));
 
-  const barData = [
-    { month: "Jan", completed: 4, started: 6 },
-    { month: "Feb", completed: 6, started: 8 },
-    { month: "Mar", completed: 5, started: 7 },
-    { month: "Apr", completed: 8, started: 9 },
-    { month: "May", completed: 7, started: 5 },
-    { month: "Jun", completed: 9, started: 8 },
-  ];
+  // Create monthly project data based on start dates
+  const monthlyData = transformedProjects.reduce((acc, project) => {
+    if (project.startDate) {
+      const month = new Date(project.startDate).toLocaleDateString("en-US", {
+        month: "short",
+      });
+      const existing = acc.find((item) => item.month === month);
+      if (existing) {
+        existing.started += 1;
+        if (project.status === "CLOSED") {
+          existing.completed += 1;
+        }
+      } else {
+        acc.push({
+          month,
+          started: 1,
+          completed: project.status === "CLOSED" ? 1 : 0,
+        });
+      }
+    }
+    return acc;
+  }, [] as Array<{ month: string; started: number; completed: number }>);
+
+  // If no date-based data, create summary data
+  const barData =
+    monthlyData.length > 0
+      ? monthlyData
+      : [
+          {
+            month: "Overall",
+            started: transformedProjects.length,
+            completed: transformedProjects.filter((p) => p.status === "CLOSED")
+              .length,
+          },
+        ];
 
   if (isLoading) {
     return (
@@ -145,44 +205,6 @@ export default function ProjectAnalytics() {
 
       {selectedProject === "all" ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Total Projects</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalProjects}</div>
-                <p className="text-sm text-muted-foreground">All time</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Success Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {successRate}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Completed on time
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Average Duration</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{avgDuration}</div>
-                <p className="text-sm text-muted-foreground">
-                  Months per project
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -213,7 +235,7 @@ export default function ProjectAnalytics() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Project Performance Trends</CardTitle>
+                <CardTitle>Project Activity Overview</CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={{}} className="h-64">
@@ -223,11 +245,67 @@ export default function ProjectAnalytics() {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="completed" fill="#22c55e" />
-                      <Bar dataKey="started" fill="#3b82f6" />
+                      <Bar
+                        dataKey="completed"
+                        fill="#22c55e"
+                        name="Completed"
+                      />
+                      <Bar dataKey="started" fill="#3b82f6" name="Started" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Total Projects</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalProjects}</div>
+                <p className="text-sm text-muted-foreground">All time</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Staffing Success Rate</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {successRate}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Fully staffed projects
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Average Duration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{avgDuration}</div>
+                <p className="text-sm text-muted-foreground">
+                  Months per project
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Average Team Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {avgTeamSize}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Engineers per project
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -243,9 +321,7 @@ export default function ProjectAnalytics() {
                 <div className="text-2xl font-bold text-primary">
                   {selectedProjectData.status}
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {selectedProjectData.completion}% Complete
-                </p>
+                <p className="text-sm text-muted-foreground">Current status</p>
               </CardContent>
             </Card>
 
@@ -279,13 +355,23 @@ export default function ProjectAnalytics() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Timeline</CardTitle>
+                <CardTitle className="text-sm">Staffing Level</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {selectedProjectData.timeline}
+                <div
+                  className={`text-2xl font-bold ${
+                    selectedProjectData.staffingPercentage >= 100
+                      ? "text-green-600"
+                      : selectedProjectData.staffingPercentage >= 75
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {selectedProjectData.staffingPercentage}%
                 </div>
-                <p className="text-sm text-muted-foreground">Schedule health</p>
+                <p className="text-sm text-muted-foreground">
+                  Staffing percentage
+                </p>
               </CardContent>
             </Card>
           </div>

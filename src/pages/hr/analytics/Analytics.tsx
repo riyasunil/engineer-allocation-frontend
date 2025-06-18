@@ -1,27 +1,38 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
-import ProjectAnalytics from "@/components/Analytics/ProjectAnaytics";
+
 import EngineerAnalytics from "@/components/Analytics/EngineerAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { exportEngineersData, useAnalyticsData } from "./AnalyticsDataService";
+import ProjectAnalytics from "@/components/Analytics/ProjectAnaytics";
 
 
-const Analytics = () => {
-  const [activeTab, setActiveTab] = useState("projects");
+const Analytics: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>("projects");
 
-  const handleExport = () => {
-    toast(`Exporting ${activeTab} analytics data...`,
-    );
+  const { engineers, projects, skillDistribution, engineerSummary, isLoading } =
+    useAnalyticsData();
 
-    // Mock export functionality
-    setTimeout(() => {
-      toast(
-        `${activeTab} analytics data has been exported successfully.`,
+  const handleExport = (): void => {
+    if (isLoading) {
+      toast.error("Data is still loading, please wait...");
+      return;
+    }
+
+    //toast("Exporting engineers analytics data...");
+
+    try {
+      exportEngineersData(engineers, skillDistribution);
+      toast.success(
+        "Engineers data exported successfully! Check your downloads folder for 2 CSV files."
       );
-    }, 2000);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export data. Please try again.");
+    }
   };
 
   return (
@@ -35,9 +46,13 @@ const Analytics = () => {
             Comprehensive insights into projects and engineer performance
           </p>
         </div>
-        <Button onClick={handleExport} className="flex items-center gap-2">
+        <Button
+          onClick={handleExport}
+          className="flex items-center gap-2"
+          disabled={isLoading}
+        >
           <Download className="h-4 w-4" />
-          Export Data
+          {isLoading ? "Loading..." : "Export Engineers Data"}
         </Button>
       </div>
 
@@ -55,6 +70,16 @@ const Analytics = () => {
           <EngineerAnalytics />
         </TabsContent>
       </Tabs>
+
+      {/* Export info card */}
+      <Card className="border-dashed">
+        <CardContent className="pt-6">
+          <div className="text-sm text-muted-foreground">
+            <strong>Export Data:</strong> All engineers summary + skills
+            distribution (2 CSV files)
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
