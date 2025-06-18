@@ -44,10 +44,11 @@ export default function DashboardSidebar({ userRole, userName }: DashboardSideba
   const newAlertsCount = 2;
 
 
+
   const items = [
     {
       title: "Dashboard",
-      url: `/${userRole}/dashboard`,
+      url: `/dashboard`,
       icon: LayoutDashboard,
       roles: ["hr", "pm", "lead"],
     },
