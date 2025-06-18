@@ -38,15 +38,26 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
 
       const availableEngineers = response.results;
       const readableList =
-        availableEngineers.length > 0
-          ? availableEngineers
-              .map((eng) => `${eng.name} (${eng.email})`)
-              .join(", ")
-          : "No matching engineers found.";
+  availableEngineers.length > 0
+    ? availableEngineers
+        .map(
+          (eng) =>
+            `👤 ${eng.name}\n📧 ${eng.email}\n🧠 Skills: ${
+              eng.skills?.join(", ") || "N/A"
+            }`
+        )
+        .join("\n\n")
+    : "No matching engineers found.";
 
-      const reply = `🔍 Based on your query:\n• Skill: ${response.parsedIntent.skill || "N/A"}\n• Designation: ${
-        response.parsedIntent.designation || "N/A"
-      }\n\n👥 Available Engineers:\n${readableList}`;
+const reply = `🔍 Based on your query:
+• Skill: ${response.parsedIntent.skill || "N/A"}
+• Designation: ${response.parsedIntent.designation || "N/A"}
+
+👥 Available Engineers:
+
+${readableList}`;
+
+
 
       const botMessage = {
         id: Date.now() + 1,
@@ -77,7 +88,7 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 h-96 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 flex flex-col">
+    <div className="fixed bottom-6 right-6 w-120 h-150 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-primary text-white rounded-t-lg">
         <div className="flex items-center gap-2">
