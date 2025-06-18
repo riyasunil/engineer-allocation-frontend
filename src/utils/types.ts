@@ -30,8 +30,8 @@ export interface UserData {
   joined_at: Date,
   experience: number,
   role_id: number,
-  skills: number[],
-  designations: number[],
+  skill_id: number[],
+  designation_id: number[],
 }
 
 

@@ -18,6 +18,7 @@ import { Designation, Skill, UserData } from "@/utils/types";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useAddEngineerMutation } from "@/api-service/user/user.api";
+import { useNavigate } from "react-router-dom";
 
 interface SelectedOption {
   id: string | number;
@@ -26,7 +27,7 @@ interface SelectedOption {
 }
 
 interface MultiSelectDropdownProps {
-  field: "skills" | "designations";
+  field: "skill_id" | "designation_id";
   options: SelectedOption[];
   label: string;
   placeholder: string;
@@ -43,8 +44,8 @@ interface FormData {
   password: string;
   joined_at: string;
   experience: number;
-  skills: SelectedOption[];
-  designations: SelectedOption[];
+  skill_id: SelectedOption[];
+  designation_id: SelectedOption[];
   notes: string;
 }
 
@@ -74,10 +75,12 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
     password: "",
     joined_at: new Date().toISOString().split("T")[0],
     experience: 0,
-    skills: [],
-    designations: [],
+    skill_id: [],
+    designation_id: [],
     notes: "",
   });
+
+  const navigate = useNavigate();
 
   // API queries
   const {
@@ -92,7 +95,10 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
     error: designationsError,
   } = useGetDesignationQuery();
 
-  const [addEngineer, { isLoading: isAddingEngineer, error: addEngineerError }] = useAddEngineerMutation();
+  const [
+    addEngineer,
+    { isLoading: isAddingEngineer, error: addEngineerError },
+  ] = useAddEngineerMutation();
 
   // Icon mapping for skills
   const getSkillIcon = (skillName: string): React.ElementType => {
@@ -166,7 +172,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
   };
 
   const handleMultiSelectChange = (
-    field: "skills" | "designations",
+    field: "skill_id" | "designation_id",
     optionName: string
   ) => {
     setFormData((prev) => {
@@ -182,7 +188,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
       } else {
         // Add the item
         const newItem =
-          field === "skills"
+          field === "skill_id"
             ? skillOptions.find((opt) => opt.name === optionName)
             : designationOptions.find((opt) => opt.name === optionName);
 
@@ -198,7 +204,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
   };
 
   const removeSelectedItem = (
-    field: "skills" | "designations",
+    field: "skill_id" | "designation_id",
     itemName: string
   ) => {
     setFormData((prev) => ({
@@ -236,18 +242,20 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
           joined_at: new Date(formData.joined_at),
           experience: formData.experience,
           role_id: 2,
-          skills: formData.skills
+          skill_id: formData.skill_id
             .map((skill) => skill.id)
             .filter((id): id is number => typeof id === "number"),
-          designations: formData.designations
+          designation_id: formData.designation_id
             .map((designation) => designation.id)
             .filter((id): id is number => typeof id === "number"),
         };
 
         if (mode === "add") {
+          console.log(userData);
           const result = await addEngineer(userData);
           if (result.data) {
             alert("Engineer created successfully");
+            navigate(-1);
           }
         } else if (mode === "edit") {
           // Handle edit logic here
@@ -271,10 +279,10 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
             joined_at: new Date(formData.joined_at),
             experience: formData.experience,
             role_id: 2,
-            skills: formData.skills
+            skill_id: formData.skill_id
               .map((skill) => skill.id)
               .filter((id): id is number => typeof id === "number"),
-            designations: formData.designations
+            designation_id: formData.designation_id
               .map((designation) => designation.id)
               .filter((id): id is number => typeof id === "number"),
           };
@@ -290,8 +298,8 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
               password: "",
               joined_at: new Date().toISOString().split("T")[0],
               experience: 0,
-              skills: [],
-              designations: [],
+              skill_id: [],
+              designation_id: [],
               notes: "",
             });
             setErrors({});
@@ -577,7 +585,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
               </div>
 
               <MultiSelectDropdown
-                field="designations"
+                field="designation_id"
                 options={designationOptions}
                 label="Designations"
                 placeholder="Select designations"
@@ -598,7 +606,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
             </div>
             <div className="p-6 space-y-4">
               <MultiSelectDropdown
-                field="skills"
+                field="skill_id"
                 options={skillOptions}
                 label="Technical Skills"
                 placeholder="Select technical skills"
@@ -608,6 +616,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
                 error={skillsError}
               />
 
+              {/*
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Additional Notes
@@ -621,6 +630,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
                   placeholder="Any additional notes or comments"
                 />
               </div>
+              */}
             </div>
           </div>
         </div>
