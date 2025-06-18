@@ -1,36 +1,10 @@
 import { useState } from "react";
-import RequestCard from "./components/RequestCard";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BadgeAlert } from "lucide-react";
+import { AlertRequest } from "@/utils/types"; // If you prefer, you can move interfaces to a separate file
 
-export interface ProcessedRequest {
-  id: number;
-  project: string;
-  description: string;
-  status: "Approved" | "Rejected";
-  date: string;
-}
-
-export type Priority = "high" | "medium" | "low";
-
-export interface AlertRequest {
-  id: number;
-  project: string;
-  requester: string;
-  roleNeeded: string;
-  quantity: number;
-  skills: string[];
-  dueDate: string;
-  requestedDate: string;
-  priority: Priority;
-  justification: string;
-  unread: boolean;
-}
-
-export default function Alerts() {
-  const [requests, setRequests] = useState<AlertRequest[]>([
+export default function Notifications() {
+  const [unread, setUnread] = useState<AlertRequest[]>([
     {
       id: 1,
       project: "E‑Commerce Platform",
@@ -61,101 +35,82 @@ export default function Alerts() {
     },
   ]);
 
-  const [processed, setProcessed] = useState<ProcessedRequest[]>([]);
+  const [read, setRead] = useState<AlertRequest[]>([]);
 
-  const handleApprove = (id: number) => {
-    const req = requests.find((r) => r.id === id);
-    if (req) {
-      setProcessed((prev) => [
-        ...prev,
-        {
-          id: req.id,
-          project: req.project,
-          description: `${req.quantity}x ${req.roleNeeded} - ${req.requester}`,
-          status: "Approved",
-          date: new Date().toDateString(),
-        },
-      ]);
-    }
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+  const markAsRead = (id: number) => {
+    const notification = unread.find((r) => r.id === id);
+    if (!notification) return;
+    setUnread((prev) => prev.filter((r) => r.id !== id));
+    setRead((prev) => [...prev, { ...notification, unread: false }]);
   };
-
-  const handleReject = (id: number) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  const handleMarkAsRead = (id: number) => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, unread: false } : r))
-    );
-  };
-
-  const unreadTotal = requests.filter((r) => r.unread).length;
 
   return (
-    <section className="space-y-8">
-      <header className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Project Alerts</h1>
-          <p className="text-muted-foreground">
-            Manage engineer requests from project leads
-          </p>
-        </div>
-        <Button
-          size="sm"
-          variant="destructive"
-          className="flex items-center gap-2"
-        >
-          <BadgeAlert className="h-4 w-4" />
-          {unreadTotal} New
-        </Button>
+    <section className="space-y-10">
+      <header>
+        <h1 className="text-2xl font-bold">Notifications</h1>
+        <p className="text-muted-foreground">Engineer requests & system alerts</p>
       </header>
 
-      <Separator />
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          Pending Requests
-          <Badge variant="secondary">{unreadTotal}</Badge>
-        </h2>
-        <div className="space-y-6">
-          {requests.map((req) => (
-            <RequestCard
-              key={req.id}
-              request={req}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onMarkAsRead={handleMarkAsRead}
-            />
-          ))}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold mb-2">Unread Notifications</h2>
+          <Separator />
+          {unread.length === 0 ? (
+            <p className="text-muted-foreground mt-3">No unread notifications</p>
+          ) : (
+            <ul className="space-y-4 mt-4">
+              {unread.map((n) => (
+                <li
+                  key={n.id}
+                  className="p-4 border rounded-lg bg-muted flex flex-col gap-2"
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="font-semibold">{n.project}</div>
+                    <Button size="sm" onClick={() => markAsRead(n.id)}>
+                      Mark as Read
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <p>
+                      <strong>{n.requester}</strong> requested{" "}
+                      <strong>{n.quantity}x {n.roleNeeded}</strong> by{" "}
+                      <span>{n.dueDate}</span>.
+                    </p>
+                    <p>Justification: {n.justification}</p>
+                    <p className="text-xs mt-1">Requested on {n.requestedDate}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      </div>
 
-      <Separator className="my-8" />
-      <div className="rounded-xl border p-5">
-        <h2 className="text-lg font-semibold mb-4">
-          Recent Processed Requests
-        </h2>
-        <div className="space-y-3">
-          {processed.map((entry) => (
-            <div
-              key={entry.id}
-              className="flex justify-between items-center rounded-md border px-4 py-3 bg-muted"
-            >
-              <div>
-                <div className="font-semibold">{entry.project}</div>
-                <p className="text-sm text-muted-foreground">
-                  {entry.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="default">{entry.status}</Badge>
-                <span className="text-xs text-muted-foreground">
-                  {entry.date}
-                </span>
-              </div>
-            </div>
-          ))}
+        <div>
+          <h2 className="text-lg font-semibold mb-2">Read Notifications</h2>
+          <Separator />
+          {read.length === 0 ? (
+            <p className="text-muted-foreground mt-3">No read notifications</p>
+          ) : (
+            <ul className="space-y-4 mt-4">
+              {read.map((n) => (
+                <li
+                  key={n.id}
+                  className="p-4 border rounded-lg bg-muted/50"
+                >
+                  <div className="font-semibold">{n.project}</div>
+                  <div className="text-sm text-muted-foreground">
+                    <p>
+                      <strong>{n.requester}</strong> requested{" "}
+                      <strong>{n.quantity}x {n.roleNeeded}</strong> by{" "}
+                      <span>{n.dueDate}</span>.
+                    </p>
+                    <p>Justification: {n.justification}</p>
+                    <p className="text-xs mt-1">Requested on {n.requestedDate}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </section>
