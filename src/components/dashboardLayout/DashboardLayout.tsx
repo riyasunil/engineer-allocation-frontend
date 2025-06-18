@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import DashboardSidebar from "../sidebar/DashboardSidebar";
-import { SidebarProvider } from "../ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Navigate } from "react-router-dom";
-import { BotMessageSquare } from "lucide-react";
-import ChatbotModal from "../chatbotModal/ChatbotModal";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { useLazyGetUserByIdQuery } from "@/api-service/user/user.api";
+import { setCurrentUser } from "@/store/slices/userSlice";
 
 const DashboardLayout = () => {
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [triggerGetUserById, {isLoading}] = useLazyGetUserByIdQuery();
+  const dispatch = useAppDispatch();
 
   const isLoggedIn = () => {
     const token = localStorage.getItem("token");
@@ -15,47 +17,34 @@ const DashboardLayout = () => {
     else return false;
   };
 
-  // Get user role from localStorage or token (adjust based on your auth implementation)
-  const getUserRole = (): "hr" | "pm" | "lead" | "engineer" => {
-    // This is a placeholder - replace with your actual role detection logic
-    return "hr"; // or extract from token/localStorage
-  };
+  useEffect(() => {
+    const user_id = localStorage.getItem("user_id");
+    if (user_id) {
+      triggerGetUserById(user_id)
+        .unwrap()
+        .then((user) => dispatch(setCurrentUser(user)));
+    }
+  }, []);
 
-  const userRole = getUserRole();
-  const showChatbot = userRole === "hr" || userRole === "pm" || userRole === "lead";
-
+  const currentUser = useAppSelector((state) => state.user.currentUser);
+  
   if (!isLoggedIn()) {
     return <Navigate to="/login" />;
   }
 
+  if (isLoading || !currentUser || !currentUser.role?.role_name) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+
   return (
-    <div className="flex relative">
+    <div className="flex">
       <SidebarProvider>
-        <DashboardSidebar userRole={userRole} />
+        <DashboardSidebar userRole={(currentUser?.role.role_name).toLowerCase()} />
         <main className="flex-1 p-6 overflow-auto bg-background">
           <Outlet />
         </main>
       </SidebarProvider>
-
-      {/* Floating Chatbot Button */}
-      {showChatbot && (
-        <>
-          {!isChatbotOpen && (
-            <button
-              onClick={() => setIsChatbotOpen(true)}
-              className="fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50 group"
-              aria-label="Open Chatbot"
-            >
-              <BotMessageSquare className="h-6 w-6 group-hover:scale-110 transition-transform" />
-            </button>
-          )}
-
-          <ChatbotModal 
-            isOpen={isChatbotOpen} 
-            onClose={() => setIsChatbotOpen(false)} 
-          />
-        </>
-      )}
     </div>
   );
 };
