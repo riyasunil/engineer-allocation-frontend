@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -7,56 +7,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import {
+  PieChart,
+  Pie,
+  Cell,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 
-// Types
-interface Project {
-  id: string;
-  name: string;
-  status: string;
-  completion: number;
-  budget: number;
-  spent: number;
-  timeline: string;
-  teamSize: number;
-}
+// Mock project data
+const projectsOverview = [
+  { name: "Completed", value: 25, color: "#22c55e" },
+  { name: "In Progress", value: 15, color: "#3b82f6" },
+  { name: "Planning", value: 8, color: "#f59e0b" },
+  { name: "On Hold", value: 3, color: "#ef4444" },
+];
 
-interface ProjectStatusData {
-  name: string;
-  value: number;
-  color: string;
-}
-
-interface ProjectTrendsData {
-  month: string;
-  completed: number;
-  started: number;
-}
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle: string;
-  color?: string;
-}
-
-interface ProjectAnalyticsProps {
-  selectedProject: string;
-  setSelectedProject: (value: string) => void;
-}
-
-// Project data
-const projects: Project[] = [
+const projects = [
   {
     id: "1",
     name: "E-commerce Platform",
@@ -89,45 +62,26 @@ const projects: Project[] = [
   },
 ];
 
-const projectStatusData: ProjectStatusData[] = [
-  { name: "Completed", value: 25, color: "#22c55e" },
-  { name: "In Progress", value: 15, color: "#3b82f6" },
-  { name: "Planning", value: 8, color: "#f59e0b" },
-  { name: "On Hold", value: 3, color: "#ef4444" },
-];
+const chartConfig = {
+  completed: { label: "Completed", color: "#22c55e" },
+  inProgress: { label: "In Progress", color: "#3b82f6" },
+  planning: { label: "Planning", color: "#f59e0b" },
+  onHold: { label: "On Hold", color: "#ef4444" },
+};
 
-const projectTrendsData: ProjectTrendsData[] = [
-  { month: "Jan", completed: 4, started: 6 },
-  { month: "Feb", completed: 6, started: 8 },
-  { month: "Mar", completed: 5, started: 7 },
-  { month: "Apr", completed: 8, started: 9 },
-  { month: "May", completed: 7, started: 5 },
-  { month: "Jun", completed: 9, started: 8 },
-];
+const ProjectAnalytics = () => {
+  const [selectedProject, setSelectedProject] = useState("all");
 
-// Reusable StatCard component
-const StatCard: React.FC<StatCardProps> = ({
-  title,
-  value,
-  subtitle,
-  color = "text-foreground",
-}) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-sm">{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
-    </CardContent>
-  </Card>
-);
+  const selectedProjectData = projects.find((p) => p.id === selectedProject);
 
-const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
-  selectedProject,
-  setSelectedProject,
-}) => {
-  const selectedData = projects.find((p) => p.id === selectedProject);
+  const projectPerformanceData = [
+    { month: "Jan", completed: 4, started: 6 },
+    { month: "Feb", completed: 6, started: 8 },
+    { month: "Mar", completed: 5, started: 7 },
+    { month: "Apr", completed: 8, started: 9 },
+    { month: "May", completed: 7, started: 5 },
+    { month: "Jun", completed: 9, started: 8 },
+  ];
 
   return (
     <div className="space-y-6">
@@ -162,24 +116,25 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
               <CardTitle>Project Status Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-64">
+              <ChartContainer config={chartConfig} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={projectStatusData}
+                      data={projectsOverview}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
                       outerRadius={80}
                       dataKey="value"
                     >
-                      {projectStatusData.map((entry, index) => (
+                      {projectsOverview.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
+                    <ChartTooltip content={<ChartTooltipContent />} />
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartContainer>
             </CardContent>
           </Card>
 
@@ -189,51 +144,130 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
               <CardTitle>Project Performance Trends</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-64">
+              <ChartContainer
+                config={{
+                  completed: { label: "Completed", color: "#22c55e" },
+                  started: { label: "Started", color: "#3b82f6" },
+                }}
+                className="h-64"
+              >
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectTrendsData}>
+                  <BarChart data={projectPerformanceData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="completed" fill="#22c55e" />
                     <Bar dataKey="started" fill="#3b82f6" />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartContainer>
             </CardContent>
           </Card>
         </div>
       ) : (
         // Specific Project Analytics
-        selectedData && (
+        selectedProjectData && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Project Status"
-              value={selectedData.status}
-              subtitle={`${selectedData.completion}% Complete`}
-              color="text-primary"
-            />
-            <StatCard
-              title="Budget Status"
-              value={`$${selectedData.spent.toLocaleString()}`}
-              subtitle={`of $${selectedData.budget.toLocaleString()} budget`}
-              color="text-green-600"
-            />
-            <StatCard
-              title="Timeline"
-              value={selectedData.timeline}
-              subtitle="Current status"
-              color="text-blue-600"
-            />
-            <StatCard
-              title="Team Size"
-              value={selectedData.teamSize}
-              subtitle="Engineers assigned"
-              color="text-purple-600"
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Project Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">
+                  {selectedProjectData.status}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {selectedProjectData.completion}% Complete
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Budget Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  ${selectedProjectData.spent.toLocaleString()}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  of ${selectedProjectData.budget.toLocaleString()} budget
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Timeline</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {selectedProjectData.timeline}
+                </div>
+                <p className="text-sm text-muted-foreground">Current status</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Team Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {selectedProjectData.teamSize}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Engineers assigned
+                </p>
+              </CardContent>
+            </Card>
           </div>
         )
       )}
+
+      {/* Summary Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Total Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">51</div>
+            <p className="text-sm text-muted-foreground">All time</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Success Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">92%</div>
+            <p className="text-sm text-muted-foreground">Completed on time</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Average Duration</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">4.2</div>
+            <p className="text-sm text-muted-foreground">Months per project</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Total Budget</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$2.4M</div>
+            <p className="text-sm text-muted-foreground">Allocated this year</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
