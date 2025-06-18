@@ -34,12 +34,12 @@ const dummyEmployees = [
   { id: 25, name: 'Diana White' }
 ];
 
-// const designationsWithIds = [
-//   { id: 1, name: 'Developer' },
-//   { id: 2, name: 'QA' },
-//   { id: 3, name: 'DevOps' },
-//   { id: 4, name: 'Intern' }
-// ];
+const designationsWithIds = [
+  { id: 1, name: 'Developer' },
+  { id: 2, name: 'QA' },
+  { id: 3, name: 'DevOps' },
+  { id: 4, name: 'Intern' }
+];
 
 const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS','TypeScript', 'Docker', 'MongoDB'];
 const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
@@ -47,8 +47,8 @@ const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
 const CreateProject = () => {
   const navigate = useNavigate();
   const [createProject, { isLoading }] = useCreateProjectMutation();
-  const { data:designationsWithIds} = useGetDesignationQuery({});
-  console.log(designationsWithIds)
+  //const { data:designationsw} = useGetDesignationQuery();
+  //console.log(designationsWithIds)
   
 
   const [formData, setFormData] = useState<CreateProjectDto>({
