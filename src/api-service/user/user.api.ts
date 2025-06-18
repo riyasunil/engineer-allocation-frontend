@@ -1,9 +1,9 @@
-import { Project, User } from "@/utils/types";
+import { Project, User, UserData } from "@/utils/types";
 import baseApi from "../api";
 
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    addEngineer: builder.mutation<void, User>({
+    addEngineer: builder.mutation<void, UserData>({
       query: (payload) => ({
         url: "/users",
         method: "POST",
@@ -25,15 +25,20 @@ export const userApi = baseApi.injectEndpoints({
       }),
     }),
 
-    updateEngineer: builder.mutation<void, User>({
+    updateEngineer: builder.mutation<void, UserData>({
       query: (payload) => ({
-        url: `/users/${payload.id}`,
+        url: `/users/${payload.user_id}`,
         method: "PUT",
         body: payload,
       }),
     }),
-
   }),
 });
 
-export const { useAddEngineerMutation, useGetUserByIdQuery, useGetEngineersQuery, useLazyGetUserByIdQuery, useUpdateEngineerMutation } = userApi;
+export const {
+  useAddEngineerMutation,
+  useGetUserByIdQuery,
+  useGetEngineersQuery,
+  useLazyGetUserByIdQuery,
+  useUpdateEngineerMutation,
+} = userApi;

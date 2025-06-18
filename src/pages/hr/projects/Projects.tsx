@@ -44,7 +44,7 @@ export default function Projects() {
       : false;
 
     return {
-      id: project.project_id,
+      id: project.id,
       name: project.name,
       status: project.status || "NEW",
       duration,

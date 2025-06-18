@@ -66,13 +66,13 @@ export const projectApi = baseApi.injectEndpoints({
     }),
 
     // Get projects by user ID
-    getProjectsByUserId: builder.query<Project[], string | number>({
-      query: (userId) => ({
-        url: `/project/user/${userId}`,
+    getProjectsByUserId: builder.query<Project[], { userId: number | number; filter?: string }>({
+      query: ({userId, filter}) => ({
+        url: `/project/user/${userId}?filter=${filter || ""}`,
         method: "GET",
       }),
-      providesTags: (result, error, userId) => [
-        { type: "PROJECT", id: `user-${userId}` },
+      providesTags: (result, error, arg) => [
+        { type: "PROJECT", id: `user-${arg.userId}` },
       ],
     }),
 
