@@ -10,17 +10,19 @@ interface ProjectRequirement {
   designation_id: number;
   skills: string[];
   count: number;
+  engineers: number[];
 }
 interface ProjectRequirementDto {
   designation_id: number;
   required_count: number;
   is_requested: boolean;
+  engineers?: number[];
 }
 
 interface CreateProjectDto {
   project_id: string;
   name: string;
-  startdate?: Date   ;
+  startdate?: Date;
   enddate?: Date;
   status?: string;
   pmId: number;
@@ -35,17 +37,25 @@ const dummyEmployees = [
   { id: 25, name: 'Diana White' }
 ];
 
+const dummyEngineers = [
+  { id: 101, name: 'John Doe' },
+  { id: 102, name: 'Jane Smith' },
+  { id: 103, name: 'Mike Wilson' },
+  { id: 104, name: 'Sarah Connor' },
+  { id: 105, name: 'Tom Hardy' },
+  { id: 106, name: 'Emma Watson' }
+];
 
-//const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS','TypeScript', 'Docker', 'MongoDB'];
 const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
 
 const CreateProject = () => {
   const navigate = useNavigate();
   const [createProject, { isLoading }] = useCreateProjectMutation();
-  const { data:designationsWithIds} = useGetDesignationQuery();
-  const{data:skillsWithIds}= useGetSkillsQuery();
-  //console.log(skillsWithIds)
-  
+  const { data: designationsWithIds } = useGetDesignationQuery();
+  const { data: skillsWithIds } = useGetSkillsQuery();
+
+  // Get today's date in YYYY-MM-DD format for min attribute
+  const today = new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState<CreateProjectDto>({
     project_id: '',
@@ -58,29 +68,31 @@ const CreateProject = () => {
     requirements: [],
   });
 
-  const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1 });
+  const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1, engineers: [] });
   const [selectedSkill, setSelectedSkill] = useState('');
+  const [requirementEngineers, setRequirementEngineers] = useState<{[key: number]: number[]}>({});
+  const [showEngineerCard, setShowEngineerCard] = useState(false);
+  const [newReqEngineers, setNewReqEngineers] = useState<number[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: ['pmId', 'leadId'].includes(name) ? parseInt(value) : 
-            ['startdate', 'enddate'].includes(name) ? new Date(value) :value
+            ['startdate', 'enddate'].includes(name) ? (value ? new Date(value) : undefined) : value
     }));
   };
 
   const handleDesignationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const selectedDesignation = designationsWithIds?.find(d => d.id === parseInt(e.target.value));
-      setNewReq(prev => ({
-        ...prev,
-        designation: selectedDesignation?.name || '',
-        designation_id: selectedDesignation?.id || 0
-      }));
-};
+    const selectedDesignation = designationsWithIds?.find(d => d.id === parseInt(e.target.value));
+    setNewReq(prev => ({
+      ...prev,
+      designation: selectedDesignation?.name || '',
+      designation_id: selectedDesignation?.id || 0
+    }));
+  };
 
-
-   const handleAddSkillToRequirement = () => {
+  const handleAddSkillToRequirement = () => {
     if (selectedSkill && !newReq.skills.includes(selectedSkill)) {
       setNewReq(prev => ({
         ...prev,
@@ -97,19 +109,32 @@ const CreateProject = () => {
     }));
   };
 
-  const handleAddRequirement = () => {
+  const handleConfirmRequirement = () => {
     if (newReq.designation && newReq.designation_id && newReq.count > 0) {
-      const requirementDto: ProjectRequirementDto = {
+      setShowEngineerCard(true);
+    }
+  };
+
+  const handleClearRequirement = () => {
+    setNewReq({ designation: '', designation_id: 0, skills: [], count: 1, engineers: [] });
+    setSelectedSkill('');
+    setShowEngineerCard(false);
+    setNewReqEngineers([]);
+  };
+
+  const handleAddRequirement = () => {
+    setFormData(prev => ({
+      ...prev,
+      requirements: [...(prev.requirements || []), {
         designation_id: newReq.designation_id,
         required_count: newReq.count,
-        is_requested: false
-    };
-      setFormData(prev => ({
-        ...prev,
-        requirements: [...(prev.requirements || []), requirementDto]
-      }));
-      setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
-    }
+        is_requested: false,
+        engineers: newReqEngineers
+      }]
+    }));
+    setNewReq({ designation: '', designation_id: 0, skills: [], count: 1, engineers: [] });
+    setShowEngineerCard(false);
+    setNewReqEngineers([]);
   };
 
   const handleRemoveRequirement = (index: number) => {
@@ -119,23 +144,30 @@ const CreateProject = () => {
     }));
   };
 
+  const handleAddEngineerToNewReq = (engineerId: number) => {
+    if (!newReqEngineers.includes(engineerId)) {
+      setNewReqEngineers(prev => [...prev, engineerId]);
+    }
+  };
+
+  const handleRemoveEngineerFromNewReq = (engineerId: number) => {
+    setNewReqEngineers(prev => prev.filter(id => id !== engineerId));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.project_id || !formData.name ||  !formData.pmId || !formData.leadId) {
+    if (!formData.project_id || !formData.name || !formData.pmId || !formData.leadId) {
       alert('Please fill in all required fields (Project ID, Name, PM, and Lead)');
       return;
     }
     try {
-      console.log(formData)
-
-    const response = await createProject(formData).unwrap();
-    alert(response.message || 'Project created successfully');
-    navigate('/hr/projects');
-  } catch (error: any) {
-    console.error('Error creating project:', error);
-    alert(error?.data?.message || 'Failed to create project');
-  }
+      const response = await createProject(formData).unwrap();
+      alert(response.message || 'Project created successfully');
+      navigate('/hr/projects');
+    } catch (error: any) {
+      console.error('Error creating project:', error);
+      alert(error?.data?.message || 'Failed to create project');
+    }
   };
 
   return (
@@ -177,8 +209,8 @@ const CreateProject = () => {
                 type="date" 
                 name="startdate" 
                 value={formData.startdate ? formData.startdate.toISOString().split('T')[0] : ''} 
-                onChange={handleChange} 
-                min={new Date().toISOString().split('T')[0]}
+                onChange={handleChange}
+                min={today}
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
@@ -188,8 +220,8 @@ const CreateProject = () => {
                 type="date" 
                 name="enddate" 
                 value={formData.enddate ? formData.enddate.toISOString().split('T')[0] : ''} 
-                onChange={handleChange} 
-                min={formData.startdate ? formData.startdate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                onChange={handleChange}
+                min={formData.startdate ? formData.startdate.toISOString().split('T')[0] : today}
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
@@ -199,7 +231,6 @@ const CreateProject = () => {
                 name="status" 
                 value={formData.status} 
                 onChange={handleChange} 
-                
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               >
                 <option value="">Select Status</option>
@@ -248,10 +279,9 @@ const CreateProject = () => {
           </div>
         </div>
 
-
         {/* Project Requirements Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements<span className="text-gray-400" >(Optional)</span></h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements<span className="text-gray-400">(Optional)</span></h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-2">Role</label>
@@ -269,20 +299,27 @@ const CreateProject = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Required Skill</label>
-              <div className="flex gap-2">
               <select 
                 value={selectedSkill} 
-                onChange={e => setSelectedSkill( e.target.value )} 
+                onChange={e => {
+                  const value = e.target.value;
+                  setSelectedSkill(value);
+                  if (value && !newReq.skills.includes(value)) {
+                    setNewReq(prev => ({
+                      ...prev,
+                      skills: [...prev.skills, value]
+                    }));
+                    setSelectedSkill('');
+                  }
+                }} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Skill</option>
                 {skillsWithIds?.filter(s => !newReq.skills.includes(s.skill_name)).map(s => (
-                    <option key={s.id} value={s.id}>{s.skill_name}</option>
-                  ))}
+                  <option key={s.id} value={s.id}>{s.skill_name}</option>
+                ))}
               </select>
-              <Button type="button" onClick={handleAddSkillToRequirement} size="sm">+</Button>
-            </div>
-            {newReq.skills.length > 0 && (
+              {newReq.skills.length > 0 && (
                 <div className="flex gap-1 flex-wrap mt-2">
                   {newReq.skills.map((skillId, i) => {
                     const skillName = skillsWithIds?.find(s => s.id === parseInt(skillId))?.skill_name || skillId;
@@ -299,32 +336,110 @@ const CreateProject = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Count</label>
-              <input
-                type="number"
-                min={1}
-                value={newReq.count}
-                onChange={e => setNewReq({ ...newReq, count: parseInt(e.target.value) })}
-                placeholder="Count"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  value={newReq.count}
+                  onChange={e => setNewReq({ ...newReq, count: parseInt(e.target.value) })}
+                  placeholder="Count"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button 
+                  type="button" 
+                  onClick={handleConfirmRequirement}
+                  className="p-2 bg-black text-white rounded-lg hover:bg-green-600 transition-colors"
+                  title="Confirm requirement"
+                >
+                  ✓
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleClearRequirement}
+                  className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  title="Clear fields"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           </div>
 
-          <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
-              {formData.requirements?.map((req, i) => {
-          // Find designation name for display
-                const designationName = designationsWithIds?.find(d => d.id === req.designation_id)?.name || 'Unknown';
-                return (
-                  <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                    <span className="text-sm">
-                      {req.required_count} × {designationName} {req.is_requested ? '(Requested)' : '(Not Requested)'}
-                    </span>
-                    <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
-                  </div>
-                );
+          {showEngineerCard && (
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+              <h4 className="text-sm font-medium mb-3 text-blue-800">Assign Engineers (Optional)</h4>
+              <div className="mb-3">
+                <select 
+                  onChange={e => {
+                    const engineerId = parseInt(e.target.value);
+                    if (engineerId) {
+                      handleAddEngineerToNewReq(engineerId);
+                      e.target.value = ''; // Reset selection
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">Select Engineer</option>
+                  {dummyEngineers
+                    .filter(eng => !newReqEngineers.includes(eng.id))
+                    .map(eng => (
+                      <option key={eng.id} value={eng.id}>{eng.name}</option>
+                    ))}
+                </select>
+              </div>
+              
+              {newReqEngineers.length > 0 && (
+                <div className="flex gap-1 flex-wrap mb-3">
+                  {newReqEngineers.map(engineerId => {
+                    const engineer = dummyEngineers.find(eng => eng.id === engineerId);
+                    return (
+                      <span key={engineerId} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        {engineer?.name || 'Unknown Engineer'}
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveEngineerFromNewReq(engineerId)} 
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {showEngineerCard && (
+            <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
+          )}
+          
+          {formData.requirements?.map((req, i) => {
+            // Find designation name for display
+            const designationName = designationsWithIds?.find(d => d.id === req.designation_id)?.name || 'Unknown';
+            const assignedEngineers = req.engineers || [];
+            
+            return (
+              <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center mb-2">
+                <div className="flex-1">
+                  <span className="text-sm font-medium">
+                    {req.required_count} × {designationName}
+                  </span>
+                  {assignedEngineers.length > 0 && (
+                    <div className="mt-1">
+                      <span className="text-xs text-gray-600">Engineers: </span>
+                      {assignedEngineers.map(engineerId => {
+                        const engineer = dummyEngineers.find(eng => eng.id === engineerId);
+                        return engineer?.name;
+                      }).filter(Boolean).join(', ')}
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+              </div>
+            );
           })}
         </div>
-
 
         {/* Form Actions */}
         <div className="flex gap-4 pt-3">
