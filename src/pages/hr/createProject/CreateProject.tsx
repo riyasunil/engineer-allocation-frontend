@@ -10,13 +10,11 @@ interface ProjectRequirement {
   designation_id: number;
   skills: string[];
   count: number;
-  engineers: number[];
 }
 interface ProjectRequirementDto {
   designation_id: number;
   required_count: number;
   is_requested: boolean;
-  engineers?: number[];
 }
 
 interface CreateProjectDto {
@@ -28,6 +26,11 @@ interface CreateProjectDto {
   pmId: number;
   leadId: number;
   requirements?: ProjectRequirementDto[];
+}
+
+interface Engineer {
+  id: number;
+  //name: string;
 }
 
 const dummyEmployees = [
@@ -54,7 +57,7 @@ const CreateProject = () => {
   const { data: designationsWithIds } = useGetDesignationQuery();
   const { data: skillsWithIds } = useGetSkillsQuery();
 
-  // Get today's date in YYYY-MM-DD format for min attribute
+  
   const today = new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState<CreateProjectDto>({
@@ -68,11 +71,14 @@ const CreateProject = () => {
     requirements: [],
   });
 
-  const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1, engineers: [] });
+  const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1});
   const [selectedSkill, setSelectedSkill] = useState('');
-  const [requirementEngineers, setRequirementEngineers] = useState<{[key: number]: number[]}>({});
+
+  const [engineerAssignments, setEngineerAssignments] = useState<{ [index: number]: Engineer[] }>({});
+  const [selectedEngineers, setSelectedEngineers] = useState<Engineer[]>([]);
+  //const [requirementEngineers, setRequirementEngineers] = useState<{[key: number]: number[]}>({});
   const [showEngineerCard, setShowEngineerCard] = useState(false);
-  const [newReqEngineers, setNewReqEngineers] = useState<number[]>([]);
+  //const [selectedEngineers, setNewReqEngineers] = useState<number[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -116,25 +122,29 @@ const CreateProject = () => {
   };
 
   const handleClearRequirement = () => {
-    setNewReq({ designation: '', designation_id: 0, skills: [], count: 1, engineers: [] });
+    setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     setSelectedSkill('');
     setShowEngineerCard(false);
-    setNewReqEngineers([]);
+    setSelectedEngineers([]);
   };
 
   const handleAddRequirement = () => {
+    const index = formData.requirements?.length || 0;
     setFormData(prev => ({
       ...prev,
       requirements: [...(prev.requirements || []), {
         designation_id: newReq.designation_id,
         required_count: newReq.count,
-        is_requested: false,
-        engineers: newReqEngineers
+        is_requested: false
       }]
     }));
-    setNewReq({ designation: '', designation_id: 0, skills: [], count: 1, engineers: [] });
+    setEngineerAssignments((prev) => ({
+      ...prev,
+      [index]: selectedEngineers,
+    }));
+    setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     setShowEngineerCard(false);
-    setNewReqEngineers([]);
+    setSelectedEngineers([]);
   };
 
   const handleRemoveRequirement = (index: number) => {
@@ -142,16 +152,23 @@ const CreateProject = () => {
       ...prev,
       requirements: prev.requirements?.filter((_, i) => i !== index)
     }));
+    setEngineerAssignments((prev) => {
+      const newAssignments = { ...prev };
+      delete newAssignments[index];
+      return newAssignments;
+    });
   };
 
   const handleAddEngineerToNewReq = (engineerId: number) => {
-    if (!newReqEngineers.includes(engineerId)) {
-      setNewReqEngineers(prev => [...prev, engineerId]);
+    if (!selectedEngineers.some(e => e.id === engineerId)) {
+    setSelectedEngineers(prev => [...prev, { id: engineerId }]);
     }
+    console.log("after add engg",selectedEngineers)
   };
 
   const handleRemoveEngineerFromNewReq = (engineerId: number) => {
-    setNewReqEngineers(prev => prev.filter(id => id !== engineerId));
+    setSelectedEngineers(prev => prev.filter(e => e.id !== engineerId));
+    console.log("after remove engg",selectedEngineers)
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,6 +177,8 @@ const CreateProject = () => {
       alert('Please fill in all required fields (Project ID, Name, PM, and Lead)');
       return;
     }
+    console.log("in submit" , formData)
+    console.log("in submit" , engineerAssignments)
     try {
       const response = await createProject(formData).unwrap();
       alert(response.message || 'Project created successfully');
@@ -371,7 +390,7 @@ const CreateProject = () => {
               <div className="mb-3">
                 <select 
                   onChange={e => {
-                    const engineerId = parseInt(e.target.value);
+                    const engineerId = parseInt(e.target.value);  
                     if (engineerId) {
                       handleAddEngineerToNewReq(engineerId);
                       e.target.value = ''; // Reset selection
@@ -381,23 +400,23 @@ const CreateProject = () => {
                 >
                   <option value="">Select Engineer</option>
                   {dummyEngineers
-                    .filter(eng => !newReqEngineers.includes(eng.id))
+                    .filter(eng => !selectedEngineers.some(e => e.id === eng.id))
                     .map(eng => (
                       <option key={eng.id} value={eng.id}>{eng.name}</option>
                     ))}
                 </select>
               </div>
               
-              {newReqEngineers.length > 0 && (
+              {selectedEngineers.length > 0 && (
                 <div className="flex gap-1 flex-wrap mb-3">
-                  {newReqEngineers.map(engineerId => {
-                    const engineer = dummyEngineers.find(eng => eng.id === engineerId);
+                  {selectedEngineers.map(({ id }) => {
+                    const engineer = dummyEngineers.find(eng => eng.id === id);
                     return (
-                      <span key={engineerId} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      <span key={id} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
                         {engineer?.name || 'Unknown Engineer'}
                         <button 
                           type="button" 
-                          onClick={() => handleRemoveEngineerFromNewReq(engineerId)} 
+                          onClick={() => handleRemoveEngineerFromNewReq(id)} 
                           className="text-red-500 hover:text-red-700"
                         >
                           ×
@@ -417,7 +436,7 @@ const CreateProject = () => {
           {formData.requirements?.map((req, i) => {
             // Find designation name for display
             const designationName = designationsWithIds?.find(d => d.id === req.designation_id)?.name || 'Unknown';
-            const assignedEngineers = req.engineers || [];
+            const assignedEngineers = engineerAssignments[i] || [];
             
             return (
               <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center mb-2">
@@ -428,8 +447,8 @@ const CreateProject = () => {
                   {assignedEngineers.length > 0 && (
                     <div className="mt-1">
                       <span className="text-xs text-gray-600">Engineers: </span>
-                      {assignedEngineers.map(engineerId => {
-                        const engineer = dummyEngineers.find(eng => eng.id === engineerId);
+                      {assignedEngineers.map(eng => {
+                        const engineer = dummyEngineers.find(eng => eng.id === eng.id);
                         return engineer?.name;
                       }).filter(Boolean).join(', ')}
                     </div>
