@@ -17,6 +17,7 @@ import { Provider } from "react-redux";
 import store from "./store/store";
 import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import HrProjectDetails from "./pages/hr/hrProjectDetails/HrProjectDetails";
+import ToastProvider from "@/components/Toasts/ToastProvider";
 
 const router = createBrowserRouter([
   {
@@ -31,7 +32,7 @@ const router = createBrowserRouter([
     path: "/hr",
     element: <DashboardLayout />,
     children: [
-      {index : true,  element: <Dashboard /> },
+      { index: true, element: <Dashboard /> },
       { path: "analytics", element: <Analytics /> },
       { path: "projects", element: <Projects /> },
       { path: "projects/:id", element: <HrProjectDetails /> },
@@ -41,14 +42,13 @@ const router = createBrowserRouter([
       { path: "profile", element: <Profile /> },
       { path: "projects/create", element: <CreateProject /> },
       { path: "addengineer", element: <AddEngineer /> },
-
     ],
   },
   {
     path: "/engineer",
     element: <DashboardLayout />,
     children: [
-      { index : true, element: <ProjectList />},
+      { index: true, element: <ProjectList /> },
       { path: "projects", element: <ProjectList /> },
       { path: "projects/:id", element: <EngineerProjectDetails /> },
       { path: "profile", element: <EngineerProfile /> },
@@ -64,6 +64,7 @@ function App() {
   return (
     <>
       <Provider store={store}>
+        <ToastProvider />
         <RouterProvider router={router}></RouterProvider>
       </Provider>
     </>
