@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCreateProjectMutation } from '@/api-service/projects/projects.api';
+import { useGetDesignationQuery } from '@/api-service/designation/designation.api';
 
 interface ProjectRequirement {
   designation: string;
@@ -15,11 +16,6 @@ interface ProjectRequirementDto {
   is_requested: boolean;
 }
 
-// interface AssignedEngineer {
-//   id: number;
-//   designation: string;
-// }
-
 interface CreateProjectDto {
   project_id: string;
   name: string;
@@ -28,9 +24,7 @@ interface CreateProjectDto {
   status?: string;
   pmId: number;
   leadId: number;
-  //techStack: string[];
   requirements?: ProjectRequirementDto[];
-  //engineers: AssignedEngineer[];
 }
 
 const dummyEmployees = [
@@ -47,9 +41,7 @@ const designationsWithIds = [
   { id: 4, name: 'Intern' }
 ];
 
-//const roles = ['Frontend Developer', 'Backend Developer', 'QA Engineer', 'DevOps Engineer'];
 const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS','TypeScript', 'Docker', 'MongoDB'];
-//const designations = ['Developer', 'QA', 'DevOps', 'Intern'];
 const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
 
 const CreateProject = () => {
@@ -63,17 +55,11 @@ const CreateProject = () => {
     status: '',
     pmId: 0,
     leadId: 0,
-    //techStack: [],
     requirements: [],
-    //engineers: []
   });
-
-  //const [techInput, setTechInput] = useState('');
 
   const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1 });
   const [selectedSkill, setSelectedSkill] = useState('');
-  // const [selectedEngineerId, setSelectedEngineerId] = useState<number>(0);
-  // const [selectedEngineerDesignation, setSelectedEngineerDesignation] = useState<string>('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -92,23 +78,6 @@ const CreateProject = () => {
       }));
 };
 
-  // const handleAddTech = () => {
-  //   const tech = techInput.trim();
-  //   if (tech && !formData.techStack.includes(tech)) {
-  //     setFormData(prev => ({
-  //       ...prev,
-  //       techStack: [...prev.techStack, tech]
-  //     }));
-  //     setTechInput('');
-  //   }
-  // };
-
-  // const handleRemoveTech = (tech: string) => {
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     techStack: prev.techStack.filter(t => t !== tech)
-  //   }));
-  // };
 
    const handleAddSkillToRequirement = () => {
     if (selectedSkill && !newReq.skills.includes(selectedSkill)) {
@@ -149,26 +118,6 @@ const CreateProject = () => {
     }));
   };
 
-  // const handleAddEngineer = () => {
-  //   if (selectedEngineerId && selectedEngineerDesignation) {
-  //     setFormData(prev => ({
-  //       ...prev,
-  //       engineers: [...prev.engineers, {
-  //         id: selectedEngineerId,
-  //         designation: selectedEngineerDesignation
-  //       }]
-  //     }));
-  //     setSelectedEngineerId(0);
-  //     setSelectedEngineerDesignation('');
-  //   }
-  // };
-
-  // const handleRemoveEngineer = (id: number) => {
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     engineers: prev.engineers.filter(engineer => engineer.id !== id)
-  //   }));
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,28 +254,6 @@ const CreateProject = () => {
           </div>
         </div>
 
-        {/* Tech Stack Section
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Tech Stack</h2>
-          <div className="flex gap-2 mb-4">
-            <input
-              value={techInput}
-              onChange={e => setTechInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
-              placeholder="e.g., React"
-              className="max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1"
-            />
-            <Button type="button" onClick={handleAddTech}>Add</Button>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {formData.techStack.map((tech, i) => (
-              <span key={i} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full flex items-center gap-2">
-                {tech}
-                <button type="button" onClick={() => handleRemoveTech(tech)} className="text-red-500 hover:text-red-700">×</button>
-              </span>
-            ))}
-          </div>
-        </div> */}
 
         {/* Project Requirements Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -401,52 +328,6 @@ const CreateProject = () => {
           })}
         </div>
 
-        {/* Engineer Allocation Section
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Engineer Allocation</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Engineer</label>
-              <select 
-                value={selectedEngineerId} 
-                onChange={e => setSelectedEngineerId(parseInt(e.target.value))} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select Engineer</option>
-                {dummyEmployees
-                  .filter(emp => !formData.engineers.find(e => e.id === emp.id))
-                  .map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.name}</option>
-                  ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Designation</label>
-              <select 
-                value={selectedEngineerDesignation} 
-                onChange={e => setSelectedEngineerDesignation(e.target.value)} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select Designation</option>
-                {designations.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-          </div>
-          <Button type="button" onClick={handleAddEngineer} className="mb-4">Add Engineer</Button>
-          {formData.engineers.length > 0 && (
-            <div className="space-y-2">
-              {formData.engineers.map(({ id, designation }) => {
-                const emp = dummyEmployees.find(e => e.id === id);
-                return (
-                  <div key={id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                    <span className="text-sm">{emp?.name} — {designation}</span>
-                    <button onClick={() => handleRemoveEngineer(id)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div> */}
 
         {/* Form Actions */}
         <div className="flex gap-4 pt-3">
