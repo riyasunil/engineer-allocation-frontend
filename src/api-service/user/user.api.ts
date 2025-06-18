@@ -27,13 +27,18 @@ export const userApi = baseApi.injectEndpoints({
 
     updateEngineer: builder.mutation<void, UserData>({
       query: (payload) => ({
-        url: `/users/${payload.id}`,
+        url: `/users/${payload.user_id}`,
         method: "PUT",
         body: payload,
       }),
     }),
-
   }),
 });
 
-export const { useAddEngineerMutation, useGetUserByIdQuery, useGetEngineersQuery, useLazyGetUserByIdQuery, useUpdateEngineerMutation } = userApi;
+export const {
+  useAddEngineerMutation,
+  useGetUserByIdQuery,
+  useGetEngineersQuery,
+  useLazyGetUserByIdQuery,
+  useUpdateEngineerMutation,
+} = userApi;
