@@ -1,4 +1,4 @@
-import { Project, ProjectUser } from "@/utils/types";
+import { Project, ProjectEngineerRequirement, ProjectUser } from "@/utils/types";
 import baseApi from "../api";
 
 // Types for API requests and responses
@@ -67,8 +67,11 @@ export const projectApi = baseApi.injectEndpoints({
     }),
 
     // Get projects by user ID
-    getProjectsByUserId: builder.query<Project[], { userId: number | number; filter?: string }>({
-      query: ({userId, filter}) => ({
+    getProjectsByUserId: builder.query<
+      Project[],
+      { userId: number | number; filter?: string }
+    >({
+      query: ({ userId, filter }) => ({
         url: `/project/user/${userId}?filter=${filter || ""}`,
         method: "GET",
       }),
@@ -80,8 +83,8 @@ export const projectApi = baseApi.injectEndpoints({
     // Update project
     updateProject: builder.mutation<
       ApiResponse<Project>,
-      { id: string | number; data: UpdateProjectDto }>
-      ({
+      { id: string | number; data: UpdateProjectDto }
+    >({
       query: ({ id, data }) => ({
         url: `/project/${id}`,
         method: "PUT",
@@ -108,8 +111,8 @@ export const projectApi = baseApi.injectEndpoints({
     // Assign engineer to project
     assignEngineerToProject: builder.mutation<
       { message: string },
-      { id: string | number; engineers: AssignEngineerRequest["engineers"] }>
-      ({
+      { id: string | number; engineers: AssignEngineerRequest["engineers"] }
+    >({
       query: ({ id, engineers }) => ({
         url: `/project/${id}/assign-engineer`,
         method: "POST",
@@ -119,6 +122,13 @@ export const projectApi = baseApi.injectEndpoints({
         { type: "PROJECT", id },
         "PROJECT_USER",
       ],
+    }),
+
+    getAdditionalRequests: builder.query<ApiResponse<ProjectEngineerRequirement[]>, void>({
+      query: () => ({
+        url: "/project/requests",
+        method: "GET",
+      }),
     }),
   }),
 });
@@ -131,4 +141,5 @@ export const {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
   useAssignEngineerToProjectMutation,
-} = projectApi; 
+  useGetAdditionalRequestsQuery,
+} = projectApi;
