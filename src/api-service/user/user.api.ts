@@ -28,4 +28,4 @@ export const userApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useAddEngineerMutation, useGetUserByIdQuery, useGetEngineersQuery } = userApi;
+export const { useAddEngineerMutation, useGetUserByIdQuery, useGetEngineersQuery, useLazyGetUserByIdQuery } = userApi;
