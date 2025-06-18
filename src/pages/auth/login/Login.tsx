@@ -3,16 +3,6 @@ import logo from "../../../assets/logo.png";
 import { useLoginMutation } from "@/api-service/auth/login.api";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { jwtDecode } from "jwt-decode";
-import { useLazyGetUserByIdQuery } from "@/api-service/user/user.api";
-import { setCurrentUser } from "@/store/slices/userSlice";
-
-interface JwtPayload {
-  user_id: string;
-  name: string;
-  email: string;
-  role: string;
-}
 
 const Login = () => {
   const [login, { isLoading }] = useLoginMutation();
@@ -23,20 +13,10 @@ const Login = () => {
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const usernameRef = useRef<HTMLInputElement>(null);
-  const dispatch = useAppDispatch();
   const currentUser = useAppSelector((state) => state.user.currentUser);
-  const [triggerGetUserById] = useLazyGetUserByIdQuery();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decoded: JwtPayload = jwtDecode(token);
-      triggerGetUserById(decoded.user_id)
-        .unwrap()
-        .then((user) => dispatch(setCurrentUser(user)))
-        .catch(() => localStorage.removeItem("token"));
-    }
-  }, [dispatch, triggerGetUserById]);
+
+
 
   useEffect(() => {
     if (currentUser && currentUser.role?.role_name) {
@@ -64,19 +44,14 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await login({ email: username, password }).unwrap();
-      const decoded: JwtPayload = jwtDecode(response.accessToken);
       localStorage.setItem("token", response.accessToken);
-      const user = await triggerGetUserById(decoded.user_id).unwrap();
-      dispatch(setCurrentUser(user));
+      localStorage.setItem("user_id", response.user_id);
+      navigate(`/${response.role.toLowerCase()}`);
     } catch (error: any) {
       console.error("Login error:", error);
       setError(error?.data?.message || "Login failed");
     }
   };
-
-  if (localStorage.getItem("token") && currentUser) {
-    return <Navigate to={`/${currentUser.role.role_name.toLowerCase()}`} />;
-  }
 
   return (
     <div className="w-full h-screen grid grid-cols-1 md:grid-cols-[3fr_2fr] bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-900 text-white">
@@ -91,7 +66,8 @@ const Login = () => {
             </h2>
           </div>
           <p className="text-blue-100 text-lg leading-relaxed">
-            Engineer Allocation Platform – simplify team management and productivity tracking with elegance and clarity.
+            Engineer Allocation Platform – simplify team management and
+            productivity tracking with elegance and clarity.
           </p>
         </div>
       </div>
@@ -106,7 +82,10 @@ const Login = () => {
             </h1>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700"
+              >
                 Email
               </label>
               <input
@@ -121,7 +100,10 @@ const Login = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <input
