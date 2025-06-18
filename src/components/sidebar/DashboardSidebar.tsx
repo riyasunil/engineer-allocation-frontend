@@ -6,6 +6,7 @@ import {
   Bell,
   History,
   User,
+  MoreVertical,
 } from "lucide-react";
 
 import {
@@ -18,11 +19,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Button } from "../ui/button";
-import { MoreVertical } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { clearCurrentUser } from "@/store/slices/userSlice";
+import { useAppDispatch } from "@/store/store";
 
 type UserRole = "hr" | "pm" | "lead" | "engineer";
 
@@ -32,6 +38,8 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const newAlertsCount = 2;
   const navigate=useNavigate()
 
@@ -89,6 +97,12 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
 
   const filteredItems = items.filter((item) => item.roles.includes(userRole));
 
+  const handleLogout = () => {
+    dispatch(clearCurrentUser());
+    localStorage.setItem("token" , "");
+    localStorage.setItem("user_id", "");
+    navigate("/login");
+  }
   return (
     <Sidebar className="h-screen w-64 border-r bg-white flex flex-col justify-between">
       <SidebarContent className="p-6">
@@ -136,37 +150,38 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <NavLink to={`/${userRole}/profile`}>
-        <div className="p-4 border-t flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-            {userRole.toUpperCase().slice(0, 2)}
+      <div className="flex flex-row justify-between items-center  border-t">
+        <NavLink to={`/${userRole}/profile`}>
+          <div className="p-4  flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
+              {userRole.toUpperCase().slice(0, 2)}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-black">
+                {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+              </p>
+              <p className="text-xs text-muted-foreground">User Role</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-black">
-              {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-            </p>
-            <p className="text-xs text-muted-foreground">User Role</p>
-          </div>
-        </div>
         </NavLink>
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button size="icon" variant="ghost" className="ml-auto">
-              <MoreVertical className="h-5 w-5 text-muted-foreground" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-32 p-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sm"
-              onClick={handleLogout}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="ml-auto p-2 rounded-md hover:bg-muted">
+              <MoreVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuItem
+              onClick={() => 
+                handleLogout()
+              }
             >
               Logout
-            </Button>
-          </PopoverContent>
-        </Popover>
-      
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </Sidebar>
   );
 }

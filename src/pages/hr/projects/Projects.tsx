@@ -5,8 +5,10 @@ import { SearchFilterBar } from "@/components/ui/searchFilterBar";
 import ProjectCard from "@/components/ui/projectCard";
 import { Project } from "@/utils/types";
 import { useGetAllProjectsQuery } from "@/api-service/projects/projects.api";
+import { useNavigate } from "react-router-dom";
 
 export default function Projects() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<
     "ALL" | "NEW" | "IN PROGRESS" | "CLOSED"
@@ -42,7 +44,7 @@ export default function Projects() {
       : false;
 
     return {
-      id: project.project_id,
+      id: project.id,
       name: project.name,
       status: project.status || "NEW",
       duration,
@@ -97,12 +99,12 @@ export default function Projects() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader
+        {/* <PageHeader
           title="Projects"
           description="Manage project status, assignment, and resources"
           buttonText="Add Project"
-          onButtonClick={() => console.log("Add project")}
-        />
+          onButtonClick={() => navigate}
+        /> */}
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading projects...</p>
         </div>
@@ -114,12 +116,12 @@ export default function Projects() {
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader
+        {/* <PageHeader
           title="Projects"
           description="Manage project status, assignment, and resources"
           buttonText="Add Project"
           onButtonClick={() => console.log("Add project")}
-        />
+        /> */}
         <div className="text-center py-12">
           <p className="text-red-600">
             Error loading projects. Please try again.
@@ -135,7 +137,7 @@ export default function Projects() {
         title="Projects"
         description="Manage project status, assignment, and resources"
         buttonText="Add Project"
-        onButtonClick={() => console.log("Add project")}
+        onButtonClick={() => navigate('create')}
       />
 
       <SearchFilterBar

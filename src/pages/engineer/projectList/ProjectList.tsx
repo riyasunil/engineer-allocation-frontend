@@ -3,9 +3,9 @@ import { PageHeader } from "@/components/ui/pageHeader";
 import { Button } from "@/components/ui/button";
 import { Clock4, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useGetUserByIdQuery } from "../../../api-service/user/user.api";
-import { Project, ProjectUser } from "@/utils/types";
 import SkeletonCard from "./SkeletonLoader";
+import { useGetProjectsByUserIdQuery } from "@/api-service/projects/projects.api";
+import { useAppSelector } from "@/store/store";
 
 const StatusBadge = ({ label }: { label: string }) => {
   const base = "text-xs px-2 py-0.5 rounded-full";
@@ -33,35 +33,20 @@ const StatusBadge = ({ label }: { label: string }) => {
 
 const ProjectList = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useGetUserByIdQuery("KV10");
+  const currentUser = useAppSelector((state) => state.user.currentUser);
+  const { data: currentProjects, isLoading: isLoadingCurrent } =
+    useGetProjectsByUserIdQuery({
+      userId: currentUser?.id,
+      filter: "inprogress",
+    });
+  const { data: completedProjects, isLoading: isLoadingCompleted } =
+    useGetProjectsByUserIdQuery({
+      userId: currentUser?.id,
+      filter: "completed",
+    });
 
-  const handleViewDetails = (projectId: string | number) => {
+  const handleViewDetails = (projectId: number | undefined) => {
     navigate(`/engineer/projects/${projectId}`);
-  };
-
-  const filterProjects = (projects: Project[] = []) => {
-    const currentProjects = projects.filter(
-      (project) => project.enddate === null
-    );
-    const completedProjects = projects.filter(
-      (project) => project.enddate !== null
-    );
-    return { currentProjects, completedProjects };
-  };
-
-  const filterEngineeringProjects = (userProjects: ProjectUser[] = []) => {
-    console.log("passed", userProjects);
-    const currentProjects = userProjects.filter(
-      (entry) => entry.project?.enddate === null
-    );
-
-    console.log("currentprojects", currentProjects);
-
-    const completedProjects = userProjects.filter(
-      (entry) => entry.project?.enddate !== null
-    );
-
-    return { currentProjects, completedProjects };
   };
 
   const calculateProjectDuration = ({
@@ -93,20 +78,7 @@ const ProjectList = () => {
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  const {
-    currentProjects: currentManaging,
-    completedProjects: completedManaged,
-  } = filterProjects(data?.managedProjects);
-  const { currentProjects: currentLeading, completedProjects: completedLead } =
-    filterProjects(data?.leadProjects);
-  const {
-    currentProjects: currentEngineering,
-    completedProjects: completedEngineering,
-  } = filterEngineeringProjects(data?.projectUsers);
 
-  const allCurrentProjects = [...currentManaging, ...currentLeading];
-
-  const allCompletedProjects = [...completedManaged, ...completedLead];
 
   return (
     <div className="space-y-6">
@@ -119,11 +91,11 @@ const ProjectList = () => {
       <div className="flex justify-end gap-6 pr-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <Clock4 className="w-4 h-4 text-green-600" />
-          <span>{allCurrentProjects.length} Active</span>
+          <span>{currentProjects?.length} Active</span>
         </div>
         <div className="flex items-center gap-1">
           <CheckCircle className="w-4 h-4 text-gray-500" />
-          <span>{allCompletedProjects.length} Completed</span>
+          <span>{currentProjects?.length} Completed</span>
         </div>
       </div>
 
@@ -131,8 +103,8 @@ const ProjectList = () => {
       <Card>
         <CardContent className="p-6 space-y-4">
           <h2 className="text-lg font-semibold ">Current Projects</h2>
-          {isLoading && <SkeletonCard />}
-          {allCurrentProjects.map((project) => (
+          {isLoadingCurrent && <SkeletonCard />}
+          {currentProjects?.map((project) => (
             <div
               key={project.id}
               className="border rounded-lg p-4 space-y-2 hover:shadow-sm transition"
@@ -160,8 +132,8 @@ const ProjectList = () => {
                     ))} */}
                   </div>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => handleViewDetails(project.id)}
                 >
@@ -179,74 +151,6 @@ const ProjectList = () => {
                     {calculateProjectDuration({
                       startdate: project?.startdate,
                       enddate: project?.enddate,
-                    })}{" "}
-                    days
-                  </span>
-                  {/* <span className="ml-4">
-                    <strong>Team:</strong> {project.teamSize} members
-                  </span> */}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2 text-xs">
-                {/* {project.tags.map((tag) => (
-                  <span key={tag} className="bg-muted px-2 py-1 rounded-md">
-                    {tag}
-                  </span>
-                ))} */}
-              </div>
-            </div>
-          ))}
-
-          {currentEngineering.map((project) => (
-            <div
-              key={project.id}
-              className="border rounded-lg p-4 space-y-2 hover:shadow-sm transition"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex flex-row gap-2">
-                    <h3 className="font-semibold text-base">
-                      {project.project.name}
-                    </h3>
-                    <CardTitle
-                      className={`text-xs ${getStatusTypeColor(
-                        project?.project.enddate
-                      )} py-0 px-3 rounded-xl border font-light flex justify-center items-center`}
-                    >
-                      {getStatus(project?.project.enddate)}
-                    </CardTitle>
-                  </div>
-
-                  <p className="font-normal text-sm text-muted-foreground">
-                    {project.project.project_id}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {/* <Badge variant="secondary">{project.role}</Badge>
-                    {project.labels?.map((label) => (
-                      <StatusBadge key={label} label={label} />
-                    ))} */}
-                  </div>
-                </div>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handleViewDetails(project.project.id)}
-                >
-                  View Details
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {/* {project.description} */}
-              </p>
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  <strong>Started:</strong>{" "}
-                  {project?.project.startdate?.toString()}
-                  <span className="ml-4">
-                    <strong>Duration:</strong>{" "}
-                    {calculateProjectDuration({
-                      startdate: project.project?.startdate,
-                      enddate: project.project?.enddate,
                     })}{" "}
                     days
                   </span>
@@ -271,9 +175,9 @@ const ProjectList = () => {
       <Card>
         <CardContent className="p-6 space-y-4">
           <h2 className="text-lg font-semibold">Past Projects</h2>
-          {isLoading && <SkeletonCard />}
+          {isLoadingCompleted && <SkeletonCard />}
 
-          {allCompletedProjects.map((project) => (
+          {completedProjects?.map((project) => (
             <div
               key={project.id}
               className="border rounded-lg p-4 space-y-2 hover:shadow-sm transition"
@@ -285,8 +189,8 @@ const ProjectList = () => {
                     <StatusBadge label="COMPLETED" />
                   </div>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => handleViewDetails(project.id)}
                 >
@@ -309,7 +213,7 @@ const ProjectList = () => {
               </div>
             </div>
           ))}
-          {completedEngineering.map((p) => (
+          {/* {completedEngineering.map((p) => (
             <div
               key={p.project?.id}
               className="border rounded-lg p-4 space-y-2 hover:shadow-sm transition"
@@ -344,7 +248,7 @@ const ProjectList = () => {
                 </p>
               </div>
             </div>
-          ))}
+          ))} */}
         </CardContent>
       </Card>
     </div>
