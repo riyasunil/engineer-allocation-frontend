@@ -1,140 +1,141 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useCreateProjectMutation } from '@/api-service/projects/projects.api';
+import { useGetDesignationQuery } from '@/api-service/designation/designation.api';
+import { useGetSkillsQuery } from '@/api-service/skill/skill.api';
 
 interface ProjectRequirement {
-  role: string;
-  skills: string;
+  designation: string;
+  designation_id: number;
+  skills: string[];
   count: number;
 }
-
-interface AssignedEngineer {
-  id: number;
-  designation: string;
+interface ProjectRequirementDto {
+  designation_id: number;
+  required_count: number;
+  is_requested: boolean;
 }
 
-interface CreateProjectFormData {
+interface CreateProjectDto {
   project_id: string;
   name: string;
-  startdate?: string;
-  enddate?: string;
+  startdate?: Date   ;
+  enddate?: Date;
   status?: string;
   pmId: number;
   leadId: number;
-  techStack: string[];
-  requirements: ProjectRequirement[];
-  engineers: AssignedEngineer[];
+  requirements?: ProjectRequirementDto[];
 }
 
 const dummyEmployees = [
-  { id: 1, name: 'Alice Johnson' },
-  { id: 2, name: 'Bob Smith' },
-  { id: 3, name: 'Charlie Davis' },
-  { id: 4, name: 'Diana White' }
+  { id: 20, name: 'Alice Johnson' },
+  { id: 8, name: 'Bob Smith' },
+  { id: 23, name: 'Charlie Davis' },
+  { id: 25, name: 'Diana White' }
 ];
 
-const roles = ['Frontend Developer', 'Backend Developer', 'QA Engineer', 'DevOps Engineer'];
-const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS'];
-const designations = ['Developer', 'QA', 'DevOps', 'Intern'];
+
+//const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS','TypeScript', 'Docker', 'MongoDB'];
+const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
 
 const CreateProject = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<CreateProjectFormData>({
+  const [createProject, { isLoading }] = useCreateProjectMutation();
+  const { data:designationsWithIds} = useGetDesignationQuery();
+  const{data:skillsWithIds}= useGetSkillsQuery();
+  //console.log(skillsWithIds)
+  
+
+  const [formData, setFormData] = useState<CreateProjectDto>({
     project_id: '',
     name: '',
-    startdate: '',
-    enddate: '',
+    startdate: undefined,
+    enddate: undefined,
     status: '',
     pmId: 0,
     leadId: 0,
-    techStack: [],
     requirements: [],
-    engineers: []
   });
 
-  const [techInput, setTechInput] = useState('');
-  const [newReq, setNewReq] = useState<ProjectRequirement>({ role: '', skills: '', count: 1 });
-  const [selectedEngineerId, setSelectedEngineerId] = useState<number>(0);
-  const [selectedEngineerDesignation, setSelectedEngineerDesignation] = useState<string>('');
+  const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1 });
+  const [selectedSkill, setSelectedSkill] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['pmId', 'leadId'].includes(name) ? parseInt(value) : value
+      [name]: ['pmId', 'leadId'].includes(name) ? parseInt(value) : 
+            ['startdate', 'enddate'].includes(name) ? new Date(value) :value
     }));
   };
 
-  const handleAddTech = () => {
-    const tech = techInput.trim();
-    if (tech && !formData.techStack.includes(tech)) {
-      setFormData(prev => ({
+  const handleDesignationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedDesignation = designationsWithIds?.find(d => d.id === parseInt(e.target.value));
+      setNewReq(prev => ({
         ...prev,
-        techStack: [...prev.techStack, tech]
+        designation: selectedDesignation?.name || '',
+        designation_id: selectedDesignation?.id || 0
       }));
-      setTechInput('');
+};
+
+
+   const handleAddSkillToRequirement = () => {
+    if (selectedSkill && !newReq.skills.includes(selectedSkill)) {
+      setNewReq(prev => ({
+        ...prev,
+        skills: [...prev.skills, selectedSkill]
+      }));
+      setSelectedSkill('');
     }
   };
 
-  const handleRemoveTech = (tech: string) => {
-    setFormData(prev => ({
+  const handleRemoveSkillFromRequirement = (skill: string) => {
+    setNewReq(prev => ({
       ...prev,
-      techStack: prev.techStack.filter(t => t !== tech)
+      skills: prev.skills.filter(s => s !== skill)
     }));
   };
 
   const handleAddRequirement = () => {
-    if (newReq.role && newReq.count > 0) {
+    if (newReq.designation && newReq.designation_id && newReq.count > 0) {
+      const requirementDto: ProjectRequirementDto = {
+        designation_id: newReq.designation_id,
+        required_count: newReq.count,
+        is_requested: false
+    };
       setFormData(prev => ({
         ...prev,
-        requirements: [...prev.requirements, newReq]
+        requirements: [...(prev.requirements || []), requirementDto]
       }));
-      setNewReq({ role: '', skills: '', count: 1 });
+      setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     }
   };
 
   const handleRemoveRequirement = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      requirements: prev.requirements.filter((_, i) => i !== index)
+      requirements: prev.requirements?.filter((_, i) => i !== index)
     }));
   };
 
-  const handleAddEngineer = () => {
-    if (selectedEngineerId && selectedEngineerDesignation) {
-      setFormData(prev => ({
-        ...prev,
-        engineers: [...prev.engineers, {
-          id: selectedEngineerId,
-          designation: selectedEngineerDesignation
-        }]
-      }));
-      setSelectedEngineerId(0);
-      setSelectedEngineerDesignation('');
-    }
-  };
-
-  const handleRemoveEngineer = (id: number) => {
-    setFormData(prev => ({
-      ...prev,
-      engineers: prev.engineers.filter(engineer => engineer.id !== id)
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      if (!res.ok) throw new Error('Failed to create project');
-      alert('Project created successfully');
-      navigate('/projects');
-    } catch (error) {
-      alert((error as Error).message);
+    if (!formData.project_id || !formData.name ||  !formData.pmId || !formData.leadId) {
+      alert('Please fill in all required fields (Project ID, Name, PM, and Lead)');
+      return;
     }
+    try {
+      console.log(formData)
+
+    const response = await createProject(formData).unwrap();
+    alert(response.message || 'Project created successfully');
+    navigate('/hr/projects');
+  } catch (error: any) {
+    console.error('Error creating project:', error);
+    alert(error?.data?.message || 'Failed to create project');
+  }
   };
 
   return (
@@ -149,21 +150,22 @@ const CreateProject = () => {
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
             <div>
-              <label className="block text-base font-medium mb-2">Project ID</label>
+              <label className="block text-base font-medium mb-2">Project Name<span className="text-red-500">*</span></label>
               <input 
-                name="project_id" 
-                value={formData.project_id} 
+                name="name" 
+                value={formData.name} 
                 onChange={handleChange} 
                 required 
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
             <div>
-              <label className="block text-base font-medium mb-2">Project Name</label>
+              <label className="block text-base font-medium mb-2">Project ID<span className="text-red-500">*</span></label>
               <input 
-                name="name" 
-                value={formData.name} 
+                name="project_id" 
+                value={formData.project_id} 
                 onChange={handleChange} 
                 required 
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
@@ -174,8 +176,9 @@ const CreateProject = () => {
               <input 
                 type="date" 
                 name="startdate" 
-                value={formData.startdate} 
+                value={formData.startdate ? formData.startdate.toISOString().split('T')[0] : ''} 
                 onChange={handleChange} 
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
@@ -184,19 +187,26 @@ const CreateProject = () => {
               <input 
                 type="date" 
                 name="enddate" 
-                value={formData.enddate} 
+                value={formData.enddate ? formData.enddate.toISOString().split('T')[0] : ''} 
                 onChange={handleChange} 
+                min={formData.startdate ? formData.startdate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
             <div>
               <label className="block text-base font-medium mb-2">Status</label>
-              <input 
+              <select 
                 name="status" 
                 value={formData.status} 
                 onChange={handleChange} 
+                
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-              />
+              >
+                <option value="">Select Status</option>
+                {projectStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -206,7 +216,7 @@ const CreateProject = () => {
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Management</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-base font-medium mb-2">Project Manager</label>
+              <label className="block text-base font-medium mb-2">Project Manager<span className="text-red-500">*</span></label>
               <select 
                 name="pmId" 
                 value={formData.pmId} 
@@ -221,7 +231,7 @@ const CreateProject = () => {
               </select>
             </div>
             <div>
-              <label className="block text-base font-medium mb-2">Team Lead</label>
+              <label className="block text-base font-medium mb-2">Team Lead<span className="text-red-500">*</span></label>
               <select 
                 name="leadId" 
                 value={formData.leadId} 
@@ -238,55 +248,55 @@ const CreateProject = () => {
           </div>
         </div>
 
-        {/* Tech Stack Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Tech Stack</h2>
-          <div className="flex gap-2 mb-4">
-            <input
-              value={techInput}
-              onChange={e => setTechInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
-              placeholder="e.g., React"
-              className="max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1"
-            />
-            <Button type="button" onClick={handleAddTech}>Add</Button>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {formData.techStack.map((tech, i) => (
-              <span key={i} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full flex items-center gap-2">
-                {tech}
-                <button type="button" onClick={() => handleRemoveTech(tech)} className="text-red-500 hover:text-red-700">×</button>
-              </span>
-            ))}
-          </div>
-        </div>
 
         {/* Project Requirements Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements<span className="text-gray-400" >(Optional)</span></h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-2">Role</label>
               <select 
-                value={newReq.role} 
-                onChange={e => setNewReq({ ...newReq, role: e.target.value })} 
+                value={newReq.designation_id} 
+                onChange={handleDesignationChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Role</option>
-                {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                {designationsWithIds?.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Required Skill</label>
+              <div className="flex gap-2">
               <select 
-                value={newReq.skills} 
-                onChange={e => setNewReq({ ...newReq, skills: e.target.value })} 
+                value={selectedSkill} 
+                onChange={e => setSelectedSkill( e.target.value )} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Skill</option>
-                {skills.map(s => <option key={s} value={s}>{s}</option>)}
+                {skillsWithIds?.filter(s => !newReq.skills.includes(s.skill_name)).map(s => (
+                    <option key={s.id} value={s.id}>{s.skill_name}</option>
+                  ))}
               </select>
+              <Button type="button" onClick={handleAddSkillToRequirement} size="sm">+</Button>
             </div>
+            {newReq.skills.length > 0 && (
+                <div className="flex gap-1 flex-wrap mt-2">
+                  {newReq.skills.map((skillId, i) => {
+                    const skillName = skillsWithIds?.find(s => s.id === parseInt(skillId))?.skill_name || skillId;
+                    return (
+                      <span key={i} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        {skillName}
+                        <button type="button" onClick={() => handleRemoveSkillFromRequirement(skillId)} className="text-red-500 hover:text-red-700">×</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Count</label>
               <input
@@ -299,69 +309,26 @@ const CreateProject = () => {
               />
             </div>
           </div>
-          <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
-          {formData.requirements.length > 0 && (
-            <div className="space-y-2">
-              {formData.requirements.map((req, i) => (
-                <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                  <span className="text-sm">{req.count} × {req.role} ({req.skills})</span>
-                  <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Engineer Allocation Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Engineer Allocation</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Engineer</label>
-              <select 
-                value={selectedEngineerId} 
-                onChange={e => setSelectedEngineerId(parseInt(e.target.value))} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select Engineer</option>
-                {dummyEmployees
-                  .filter(emp => !formData.engineers.find(e => e.id === emp.id))
-                  .map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.name}</option>
-                  ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Designation</label>
-              <select 
-                value={selectedEngineerDesignation} 
-                onChange={e => setSelectedEngineerDesignation(e.target.value)} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select Designation</option>
-                {designations.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-          </div>
-          <Button type="button" onClick={handleAddEngineer} className="mb-4">Add Engineer</Button>
-          {formData.engineers.length > 0 && (
-            <div className="space-y-2">
-              {formData.engineers.map(({ id, designation }) => {
-                const emp = dummyEmployees.find(e => e.id === id);
+          <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
+              {formData.requirements?.map((req, i) => {
+          // Find designation name for display
+                const designationName = designationsWithIds?.find(d => d.id === req.designation_id)?.name || 'Unknown';
                 return (
-                  <div key={id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                    <span className="text-sm">{emp?.name} — {designation}</span>
-                    <button onClick={() => handleRemoveEngineer(id)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                  <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                    <span className="text-sm">
+                      {req.required_count} × {designationName} {req.is_requested ? '(Requested)' : '(Not Requested)'}
+                    </span>
+                    <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
                   </div>
                 );
-              })}
-            </div>
-          )}
+          })}
         </div>
+
 
         {/* Form Actions */}
         <div className="flex gap-4 pt-3">
-          <Button type="submit" className="w-48">Create Project</Button>
+          <Button type="submit" className="w-48">{isLoading ? 'Creating...' : 'Create Project'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/hr/projects')} className="w-48">Cancel</Button>
         </div>
       </form>
