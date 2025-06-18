@@ -14,19 +14,21 @@ import {
   Monitor,
   Server,
 } from "lucide-react";
+import { Designation, Skill, UserData } from "@/utils/types";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
-import { Designation, Skill } from "@/utils/types";
-
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useAddEngineerMutation } from "@/api-service/user/user.api";
+import { useNavigate } from "react-router-dom";
+
+interface SelectedOption {
+  id: string | number;
+  name: string;
+  icon: React.ElementType;
+}
 
 interface MultiSelectDropdownProps {
-  field: "skills" | "designations";
-  options: Array<{
-    id: string | number;
-    name: string;
-    icon: React.ElementType;
-  }>;
+  field: "skill_id" | "designation_id";
+  options: SelectedOption[];
   label: string;
   placeholder: string;
   isOpen: boolean;
@@ -35,23 +37,50 @@ interface MultiSelectDropdownProps {
   error: any;
 }
 
-const EngineerForm = ({
-  mode = "add", // "add" or "edit"
+interface FormData {
+  name: string;
+  user_id: string;
+  email: string;
+  password: string;
+  joined_at: string;
+  experience: number;
+  skill_id: SelectedOption[];
+  designation_id: SelectedOption[];
+  notes: string;
+}
+
+type FormErrors = {
+  name?: string;
+  user_id?: string;
+  email?: string;
+  password?: string;
+  skills?: string;
+  designations?: string;
+  [key: string]: string | undefined;
+};
+
+interface EngineerFormProps {
+  mode?: "add" | "edit";
+  initialData?: any;
+}
+
+const EngineerForm: React.FC<EngineerFormProps> = ({
+  mode = "add",
   initialData = null,
-  onSubmit = (submitData: { skills: string; designations: string; name: string; user_id: string; email: string; password: string; joined_at: string; experience: number; notes: string; }, p0: string) => {},
-  onCancel = () => {},
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     user_id: "",
     email: "",
     password: "",
     joined_at: new Date().toISOString().split("T")[0],
     experience: 0,
-    skills: [],
-    designations: [],
+    skill_id: [],
+    designation_id: [],
     notes: "",
   });
+
+  const navigate = useNavigate();
 
   // API queries
   const {
@@ -70,10 +99,10 @@ const EngineerForm = ({
     addEngineer,
     { isLoading: isAddingEngineer, error: addEngineerError },
   ] = useAddEngineerMutation();
-  
+
   // Icon mapping for skills
-  const getSkillIcon = (skillName: string) => {
-    const iconMap = {
+  const getSkillIcon = (skillName: string): React.ElementType => {
+    const iconMap: Record<string, React.ElementType> = {
       VUEJS: Code,
       NEXTJS: Code,
       JAVASCRIPT: Code,
@@ -90,54 +119,48 @@ const EngineerForm = ({
       DOCKER: Settings,
       KUBERNETES: Settings,
     };
-    return iconMap[skillName as keyof typeof iconMap] || Code;
+    return iconMap[skillName] || Code;
   };
 
   // Icon mapping for designations
-  const getDesignationIcon = (designationName: string) => {
-    const iconMap = {
+  const getDesignationIcon = (designationName: string): React.ElementType => {
+    const iconMap: Record<string, React.ElementType> = {
       QA: User,
       DEVELOPER: Code,
       DESIGNER: Monitor,
     };
-    return iconMap[designationName as keyof typeof iconMap] || User;
+    return iconMap[designationName] || User;
   };
 
   // Transform API data to options format
-  const skillOptions =
+  const skillOptions: SelectedOption[] =
     skillsData?.map((skill: Skill) => ({
       id: skill.skill_id,
       name: skill.skill_name,
       icon: getSkillIcon(skill.skill_name),
     })) || [];
 
-  const designationOptions =
-    designationsData?.map((designation: Designation) => ({
-      id: designation.id,
-      name: designation.name,
-      icon: getDesignationIcon(designation.name),
-    })) || [];
-
-  type FormErrors = {
-    name?: string;
-    user_id?: string;
-    email?: string;
-    password?: string;
-    role_id?: string;
-    [key: string]: string | undefined;
-  };
+  const designationOptions: SelectedOption[] =
+    designationsData
+      ?.filter((designation: Designation) => designation.id !== undefined)
+      .map((designation: Designation) => ({
+        id: designation.id as number,
+        name: designation.name,
+        icon: getDesignationIcon(designation.name),
+      })) || [];
 
   const [errors, setErrors] = useState<FormErrors>({});
-
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   const [designationsDropdownOpen, setDesignationsDropdownOpen] =
     useState(false);
 
-  const handleInputChange = (e: { target: { name: any; value: any } }) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "experience" ? parseInt(value) || 0 : value,
     }));
     // Clear error when user starts typing
     if (errors[name]) {
@@ -148,23 +171,49 @@ const EngineerForm = ({
     }
   };
 
-  const handleMultiSelectChange = (field: "skills" | "designations", optionName: string) => {
+  const handleMultiSelectChange = (
+    field: "skill_id" | "designation_id",
+    optionName: string
+  ) => {
+    setFormData((prev) => {
+      const currentItems = prev[field];
+      const isSelected = currentItems.some((item) => item.name === optionName);
+
+      if (isSelected) {
+        // Remove the item
+        return {
+          ...prev,
+          [field]: currentItems.filter((item) => item.name !== optionName),
+        };
+      } else {
+        // Add the item
+        const newItem =
+          field === "skill_id"
+            ? skillOptions.find((opt) => opt.name === optionName)
+            : designationOptions.find((opt) => opt.name === optionName);
+
+        if (newItem) {
+          return {
+            ...prev,
+            [field]: [...currentItems, newItem],
+          };
+        }
+        return prev;
+      }
+    });
+  };
+
+  const removeSelectedItem = (
+    field: "skill_id" | "designation_id",
+    itemName: string
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].includes(optionName)
-        ? prev[field].filter((item: string) => item !== optionName)
-        : [...prev[field], optionName],
+      [field]: prev[field].filter((selected) => selected.name !== itemName),
     }));
   };
 
-  const removeSelectedItem = (field: "skills" | "designations", item: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].filter((selected: string) => selected !== item),
-    }));
-  };
-
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) newErrors.name = "Name is required";
@@ -172,51 +221,95 @@ const EngineerForm = ({
     if (!formData.user_id.trim()) newErrors.user_id = "User ID is required";
     if (mode === "add" && !formData.password.trim())
       newErrors.password = "Password is required";
-    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    if (validateForm()) {
-      const submitData = {
-        ...formData,
-        skills: formData.skills.join(", "),
-        designations: formData.designations.join(", "),
-      };
-      onSubmit(submitData, "save");
-    }
+  const onCancel = () => {
+    // Handle cancel logic here
+    console.log("Cancel clicked");
   };
 
-  const handleSaveAndAddAnother = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (validateForm()) {
-      const submitData = {
-        ...formData,
-        skills: formData.skills.join(", "),
-        designations: formData.designations.join(", "),
-      };
-      onSubmit(submitData, "saveAndAdd");
-      // Reset form for add mode
-      if (mode === "add") {
-        setFormData({
-          name: "",
-          user_id: "",
-          email: "",
-          password: "",
-          joined_at: new Date().toISOString().split("T")[0],
-          experience: 0,
-          skills: [],
-          designations: [],
-          notes: "",
-        });
-        setErrors({});
+      try {
+        const userData: UserData = {
+          user_id: formData.user_id,
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          joined_at: new Date(formData.joined_at),
+          experience: formData.experience,
+          role_id: 2,
+          skill_id: formData.skill_id
+            .map((skill) => skill.id)
+            .filter((id): id is number => typeof id === "number"),
+          designation_id: formData.designation_id
+            .map((designation) => designation.id)
+            .filter((id): id is number => typeof id === "number"),
+        };
+
+        if (mode === "add") {
+          console.log(userData);
+          const result = await addEngineer(userData);
+          if (result.data) {
+            alert("Engineer created successfully");
+            navigate(-1);
+          }
+        } else if (mode === "edit") {
+          // Handle edit logic here
+          console.log("Edit mode - update logic needed");
+        }
+      } catch (error) {
+        console.error("Error adding engineer:", error);
       }
     }
   };
 
+  const handleSaveAndAddAnother = async () => {
+    if (validateForm()) {
+      if (mode === "add") {
+        try {
+          const userData: UserData = {
+            user_id: formData.user_id,
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            joined_at: new Date(formData.joined_at),
+            experience: formData.experience,
+            role_id: 2,
+            skill_id: formData.skill_id
+              .map((skill) => skill.id)
+              .filter((id): id is number => typeof id === "number"),
+            designation_id: formData.designation_id
+              .map((designation) => designation.id)
+              .filter((id): id is number => typeof id === "number"),
+          };
+
+          const result = await addEngineer(userData);
+          if (result.data) {
+            alert("Engineer created successfully");
+            // Reset form for next entry
+            setFormData({
+              name: "",
+              user_id: "",
+              email: "",
+              password: "",
+              joined_at: new Date().toISOString().split("T")[0],
+              experience: 0,
+              skill_id: [],
+              designation_id: [],
+              notes: "",
+            });
+            setErrors({});
+          }
+        } catch (error) {
+          console.error("Error adding engineer:", error);
+        }
+      }
+    }
+  };
 
   const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     field,
@@ -260,7 +353,9 @@ const EngineerForm = ({
             <div className="max-h-64 overflow-y-auto">
               {options.map((option) => {
                 const IconComponent = option.icon;
-                const isSelected = formData[field].includes(option.name);
+                const isSelected = formData[field].some(
+                  (item) => item.name === option.name
+                );
                 return (
                   <div
                     key={option.id}
@@ -312,13 +407,13 @@ const EngineerForm = ({
         <div className="mt-2 flex flex-wrap gap-2">
           {formData[field].map((item) => (
             <span
-              key={item}
+              key={`${field}-${item.id}`}
               className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-md"
             >
-              {item}
+              {item.name}
               <button
                 type="button"
-                onClick={() => removeSelectedItem(field, item)}
+                onClick={() => removeSelectedItem(field, item.name)}
                 className="ml-1 text-blue-600 hover:text-blue-800"
               >
                 <X className="h-3 w-3" />
@@ -490,7 +585,7 @@ const EngineerForm = ({
               </div>
 
               <MultiSelectDropdown
-                field="designations"
+                field="designation_id"
                 options={designationOptions}
                 label="Designations"
                 placeholder="Select designations"
@@ -511,7 +606,7 @@ const EngineerForm = ({
             </div>
             <div className="p-6 space-y-4">
               <MultiSelectDropdown
-                field="skills"
+                field="skill_id"
                 options={skillOptions}
                 label="Technical Skills"
                 placeholder="Select technical skills"
@@ -521,6 +616,7 @@ const EngineerForm = ({
                 error={skillsError}
               />
 
+              {/*
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Additional Notes
@@ -534,6 +630,7 @@ const EngineerForm = ({
                   placeholder="Any additional notes or comments"
                 />
               </div>
+              */}
             </div>
           </div>
         </div>
@@ -551,18 +648,25 @@ const EngineerForm = ({
             <button
               type="button"
               onClick={handleSaveAndAddAnother}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isAddingEngineer}
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="h-4 w-4 mr-2" />
-              Save & Add Another
+              {isAddingEngineer ? "Saving..." : "Save & Add Another"}
             </button>
           )}
           <button
-            type="submit"
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="button"
+            onClick={handleSubmit}
+            disabled={isAddingEngineer}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="h-4 w-4 mr-2" />
-            {mode === "edit" ? "Update Engineer" : "Save & Close"}
+            {isAddingEngineer
+              ? "Saving..."
+              : mode === "edit"
+              ? "Update Engineer"
+              : "Save & Close"}
           </button>
         </div>
       </div>
