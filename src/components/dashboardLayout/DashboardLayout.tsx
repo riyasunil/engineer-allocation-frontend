@@ -40,7 +40,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex">
       <SidebarProvider>
-        <DashboardSidebar userRole={(currentUser?.role.role_name).toLowerCase()} />
+        <DashboardSidebar userRole={(currentUser?.role.role_name).toLowerCase()} userName={currentUser?.name} />
         <main className="flex-1 p-6 overflow-auto bg-background">
           <Outlet />
         </main>
