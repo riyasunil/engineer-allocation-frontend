@@ -20,8 +20,8 @@ interface ProjectRequirementDto {
 interface CreateProjectDto {
   project_id: string;
   name: string;
-  startdate?: Date | null ;
-  enddate?: Date | null;
+  startdate?: Date   ;
+  enddate?: Date;
   status?: string;
   pmId: number;
   leadId: number;
@@ -106,7 +106,7 @@ const CreateProject = () => {
     };
       setFormData(prev => ({
         ...prev,
-        requirements: [...prev.requirements, requirementDto]
+        requirements: [...(prev.requirements || []), requirementDto]
       }));
       setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     }
@@ -127,19 +127,9 @@ const CreateProject = () => {
       return;
     }
     try {
+      console.log(formData)
 
-    const createProjectDto: CreateProjectDto = {
-      project_id: formData.project_id,
-      name: formData.name,
-      startdate: formData.startdate,
-      enddate: formData.enddate,
-      status: formData.status,
-      pmId: formData.pmId,
-      leadId: formData.leadId,
-      requirements: formData.requirements?.length > 0 ? formData.requirements : undefined
-    };
-
-    const response = await createProject(createProjectDto).unwrap();
+    const response = await createProject(formData).unwrap();
     alert(response.message || 'Project created successfully');
     navigate('/hr/projects');
   } catch (error: any) {
@@ -209,7 +199,7 @@ const CreateProject = () => {
                 name="status" 
                 value={formData.status} 
                 onChange={handleChange} 
-                required
+                
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               >
                 <option value="">Select Status</option>

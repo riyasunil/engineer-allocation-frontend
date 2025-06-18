@@ -41,12 +41,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const newAlertsCount = 2;
-  const navigate=useNavigate()
 
-  const handleLogout = () => {
-    localStorage.removeItem("token")
-    navigate('/')
-  };
 
   const items = [
     {
