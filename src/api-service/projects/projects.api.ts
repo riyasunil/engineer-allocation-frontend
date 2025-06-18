@@ -53,6 +53,7 @@ export const projectApi = baseApi.injectEndpoints({
         url: "/project",
         method: "GET",
       }),
+      keepUnusedDataFor: 300,
       providesTags: ["PROJECT"],
     }),
 
