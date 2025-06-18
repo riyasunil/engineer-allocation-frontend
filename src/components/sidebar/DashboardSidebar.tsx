@@ -34,9 +34,10 @@ type UserRole = "hr" | "pm" | "lead" | "engineer";
 
 interface DashboardSidebarProps {
   userRole: UserRole;
+  userName : string;
 }
 
-export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
+export default function DashboardSidebar({ userRole, userName }: DashboardSidebarProps) {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -149,7 +150,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
         <NavLink to={`/${userRole}/profile`}>
           <div className="p-4  flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-              {userRole.toUpperCase().slice(0, 2)}
+              {userName? userName.toUpperCase().slice(0, 2) : "KV" }
             </div>
             <div>
               <p className="text-sm font-medium text-black">

@@ -56,13 +56,13 @@ export default function Projects() {
         : "",
       requiredEngineers,
       assignedEngineers,
-      techStack:
-        project.requirements
-          ?.map((req) =>
-            req.requirementSkills?.map((skill) => skill.skill.skill_name)
-          )
-          .flat()
-          .filter(Boolean) || [],
+      // techStack:
+      //   project.requirements
+      //     ?.map((req) =>
+      //       req.requirementSkills?.map((skill) => skill.skill.skill_name)
+      //     )
+      //     .flat()
+      //     .filter(Boolean) || [],
       isOverStaffed: assignedEngineers > requiredEngineers,
       isUnderStaffed: assignedEngineers < requiredEngineers,
       nearingCompletion,
