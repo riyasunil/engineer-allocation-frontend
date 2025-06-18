@@ -6,7 +6,7 @@ const HrProjectDetails= () => {
       source="HR"
       authorId="HR45" // replace with actual logged-in HR ID
       backUrl="/hr/projects"
-      canAddNote={false} // HR cannot add notes here, for example
+      canAddNote={true} // HR cannot add notes here, for example
     />
   );
 };
