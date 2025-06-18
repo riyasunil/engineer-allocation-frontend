@@ -15,9 +15,11 @@ interface ChatbotQueryResponse {
     name: string;
     email: string;
     experience: number;
-    // optionally include skills / designation if returned
+    skills?: string[]; // Include this if used in UI
   }[];
+  message?: string; // Optional response from chatbot
 }
+
 
 export const chatbotApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
