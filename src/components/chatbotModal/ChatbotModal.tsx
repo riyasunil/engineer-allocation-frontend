@@ -47,6 +47,14 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
       const reply = `🔍 Based on your query:\n• Skill: ${response.parsedIntent.skill || "N/A"}\n• Designation: ${
         response.parsedIntent.designation || "N/A"
       }\n\n👥 Available Engineers:\n${readableList}`;
+//       const reply = `
+// 🔍 Search Summary
+// - Skill: ${response.parsedIntent.skill || "N/A"}
+// - Designation: ${response.parsedIntent.designation || "N/A"}
+
+// 👥 Available Engineers:
+// ${readableList}
+// `;
 
       const botMessage = {
         id: Date.now() + 1,
