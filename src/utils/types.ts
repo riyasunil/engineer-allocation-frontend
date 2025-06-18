@@ -22,6 +22,19 @@ export interface User extends AbstractEntity {
   designations?: UserDesignation[];
 }
 
+export interface UserData {
+  user_id: string,
+  name: string,
+  email: string,
+  password: string,
+  joined_at: Date,
+  experience: number,
+  role_id: number,
+  skill_id: number[],
+  designation_id: number[],
+}
+
+
 export interface UserDesignation extends AbstractEntity {
   user: User;
   designation: Designation;
@@ -140,4 +153,18 @@ export interface ProjectBasic {
   status?: string;
   pm: UserBasic;
   lead: UserBasic;
+}
+
+export interface AlertRequest {
+  id: number;
+  project: string;
+  requester: string;
+  roleNeeded: string;
+  quantity: number;
+  skills: string[];
+  dueDate: string;
+  requestedDate: string;
+  priority: Priority;
+  justification: string;
+  unread: boolean;
 }

@@ -24,7 +24,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/projects/${project.id}`);
+    navigate(`/hr/projects/${project.id}`);
   };
 
   const getStatusColor = (status: string) => {

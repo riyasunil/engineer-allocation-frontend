@@ -17,26 +17,29 @@ export default function Engineers() {
   const { data: engineers = [], isLoading, error } = useGetEngineersQuery();
 
   // Transform API data to match the expected format for the UI
-  const transformedEngineers = engineers.map((user: User) => ({
-    id: user.user_id,
-    name: user.name,
-    experience: user.experience ? `${user.experience} years` : "N/A",
-    designation: user.designations?.[0]?.designation?.name || "Engineer", // Assuming first designation
-    skills: user.userSkills?.map((skill) => skill.skill.skill_name) || [],
-    // Calculate availability based on current vs max projects
-    availability: user.projectUsers?.length
-      ? user.projectUsers?.length >= 2
-        ? "FULLY_ALLOCATED"
-        : "AVAILABLE"
-      : "AVAILABLE",
-    allocations: user.projectUsers?.length || 0,
-    email: user.email,
-    currentProjects: user.projectUsers?.length || 0,
-    maxProjects: 2, // Default max projects
-    isAvailable: (user.projectUsers?.length || 0) < 2,
-    strengths:
-      user.userSkills?.slice(0, 2).map((skill) => skill.skill.skill_name) || [], // Take first 2 skills as strengths
-  }));
+  const transformedEngineers = engineers
+    .filter((user: User) => user.role.role_name === "ENGINEER")
+    .map((user: User) => ({
+      id: user.user_id,
+      name: user.name,
+      experience: user.experience ? `${user.experience} years` : "N/A",
+      designation: user.designations?.[0]?.designation?.name || "Engineer", // Assuming first designation
+      skills: user.userSkills?.map((skill) => skill.skill.skill_name) || [],
+      // Calculate availability based on current vs max projects
+      availability: user.projectUsers?.length
+        ? user.projectUsers?.length >= 2
+          ? "FULLY_ALLOCATED"
+          : "AVAILABLE"
+        : "AVAILABLE",
+      allocations: user.projectUsers?.length || 0,
+      email: user.email,
+      currentProjects: user.projectUsers?.length || 0,
+      maxProjects: 2, // Default max projects
+      isAvailable: (user.projectUsers?.length || 0) < 2,
+      strengths:
+        user.userSkills?.slice(0, 2).map((skill) => skill.skill.skill_name) ||
+        [], // Take first 2 skills as strengths
+    }));
 
   const filteredEngineers = transformedEngineers.filter(
     (e: { name: string; availability: string }) => {
