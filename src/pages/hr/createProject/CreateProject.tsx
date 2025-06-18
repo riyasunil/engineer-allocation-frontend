@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useCreateProjectMutation } from '@/api-service/projects/projects.api';
 
 interface ProjectRequirement {
-  role: string;
-  skills: string;
+  designation: string;
+  designation_id: number;
+  skills: string[];
   count: number;
 }
-
-interface AssignedEngineer {
-  id: number;
-  designation: string;
+interface ProjectRequirementDto {
+  designation_id: number;
+  required_count: number;
+  is_requested: boolean;
 }
 
-interface CreateProjectFormData {
+// interface AssignedEngineer {
+//   id: number;
+//   designation: string;
+// }
+
+interface CreateProjectDto {
   project_id: string;
   name: string;
   startdate?: string;
@@ -21,25 +28,34 @@ interface CreateProjectFormData {
   status?: string;
   pmId: number;
   leadId: number;
-  techStack: string[];
-  requirements: ProjectRequirement[];
-  engineers: AssignedEngineer[];
+  //techStack: string[];
+  requirements?: ProjectRequirementDto[];
+  //engineers: AssignedEngineer[];
 }
 
 const dummyEmployees = [
-  { id: 1, name: 'Alice Johnson' },
-  { id: 2, name: 'Bob Smith' },
-  { id: 3, name: 'Charlie Davis' },
-  { id: 4, name: 'Diana White' }
+  { id: 20, name: 'Alice Johnson' },
+  { id: 8, name: 'Bob Smith' },
+  { id: 23, name: 'Charlie Davis' },
+  { id: 25, name: 'Diana White' }
 ];
 
-const roles = ['Frontend Developer', 'Backend Developer', 'QA Engineer', 'DevOps Engineer'];
-const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS'];
-const designations = ['Developer', 'QA', 'DevOps', 'Intern'];
+const designationsWithIds = [
+  { id: 1, name: 'Developer' },
+  { id: 2, name: 'QA' },
+  { id: 3, name: 'DevOps' },
+  { id: 4, name: 'Intern' }
+];
+
+//const roles = ['Frontend Developer', 'Backend Developer', 'QA Engineer', 'DevOps Engineer'];
+const skills = ['React', 'Node.js', 'PostgreSQL', 'Cypress', 'AWS','TypeScript', 'Docker', 'MongoDB'];
+//const designations = ['Developer', 'QA', 'DevOps', 'Intern'];
+const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
 
 const CreateProject = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<CreateProjectFormData>({
+  const [createProject, { isLoading }] = useCreateProjectMutation();
+  const [formData, setFormData] = useState<CreateProjectDto>({
     project_id: '',
     name: '',
     startdate: '',
@@ -47,15 +63,17 @@ const CreateProject = () => {
     status: '',
     pmId: 0,
     leadId: 0,
-    techStack: [],
+    //techStack: [],
     requirements: [],
-    engineers: []
+    //engineers: []
   });
 
-  const [techInput, setTechInput] = useState('');
-  const [newReq, setNewReq] = useState<ProjectRequirement>({ role: '', skills: '', count: 1 });
-  const [selectedEngineerId, setSelectedEngineerId] = useState<number>(0);
-  const [selectedEngineerDesignation, setSelectedEngineerDesignation] = useState<string>('');
+  //const [techInput, setTechInput] = useState('');
+
+  const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1 });
+  const [selectedSkill, setSelectedSkill] = useState('');
+  // const [selectedEngineerId, setSelectedEngineerId] = useState<number>(0);
+  // const [selectedEngineerDesignation, setSelectedEngineerDesignation] = useState<string>('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -65,31 +83,62 @@ const CreateProject = () => {
     }));
   };
 
-  const handleAddTech = () => {
-    const tech = techInput.trim();
-    if (tech && !formData.techStack.includes(tech)) {
-      setFormData(prev => ({
+  const handleDesignationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedDesignation = designationsWithIds.find(d => d.id === parseInt(e.target.value));
+      setNewReq(prev => ({
         ...prev,
-        techStack: [...prev.techStack, tech]
+        designation: selectedDesignation?.name || '',
+        designation_id: selectedDesignation?.id || 0
       }));
-      setTechInput('');
+};
+
+  // const handleAddTech = () => {
+  //   const tech = techInput.trim();
+  //   if (tech && !formData.techStack.includes(tech)) {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       techStack: [...prev.techStack, tech]
+  //     }));
+  //     setTechInput('');
+  //   }
+  // };
+
+  // const handleRemoveTech = (tech: string) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     techStack: prev.techStack.filter(t => t !== tech)
+  //   }));
+  // };
+
+   const handleAddSkillToRequirement = () => {
+    if (selectedSkill && !newReq.skills.includes(selectedSkill)) {
+      setNewReq(prev => ({
+        ...prev,
+        skills: [...prev.skills, selectedSkill]
+      }));
+      setSelectedSkill('');
     }
   };
 
-  const handleRemoveTech = (tech: string) => {
-    setFormData(prev => ({
+  const handleRemoveSkillFromRequirement = (skill: string) => {
+    setNewReq(prev => ({
       ...prev,
-      techStack: prev.techStack.filter(t => t !== tech)
+      skills: prev.skills.filter(s => s !== skill)
     }));
   };
 
   const handleAddRequirement = () => {
-    if (newReq.role && newReq.count > 0) {
+    if (newReq.designation && newReq.designation_id && newReq.count > 0) {
+      const requirementDto: ProjectRequirementDto = {
+        designation_id: newReq.designation_id,
+        required_count: newReq.count,
+        is_requested: false
+    };
       setFormData(prev => ({
         ...prev,
-        requirements: [...prev.requirements, newReq]
+        requirements: [...prev.requirements, requirementDto]
       }));
-      setNewReq({ role: '', skills: '', count: 1 });
+      setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     }
   };
 
@@ -100,41 +149,53 @@ const CreateProject = () => {
     }));
   };
 
-  const handleAddEngineer = () => {
-    if (selectedEngineerId && selectedEngineerDesignation) {
-      setFormData(prev => ({
-        ...prev,
-        engineers: [...prev.engineers, {
-          id: selectedEngineerId,
-          designation: selectedEngineerDesignation
-        }]
-      }));
-      setSelectedEngineerId(0);
-      setSelectedEngineerDesignation('');
-    }
-  };
+  // const handleAddEngineer = () => {
+  //   if (selectedEngineerId && selectedEngineerDesignation) {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       engineers: [...prev.engineers, {
+  //         id: selectedEngineerId,
+  //         designation: selectedEngineerDesignation
+  //       }]
+  //     }));
+  //     setSelectedEngineerId(0);
+  //     setSelectedEngineerDesignation('');
+  //   }
+  // };
 
-  const handleRemoveEngineer = (id: number) => {
-    setFormData(prev => ({
-      ...prev,
-      engineers: prev.engineers.filter(engineer => engineer.id !== id)
-    }));
-  };
+  // const handleRemoveEngineer = (id: number) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     engineers: prev.engineers.filter(engineer => engineer.id !== id)
+  //   }));
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      if (!res.ok) throw new Error('Failed to create project');
-      alert('Project created successfully');
-      navigate('/projects');
-    } catch (error) {
-      alert((error as Error).message);
+    if (!formData.project_id || !formData.name ||  !formData.pmId || !formData.leadId) {
+      alert('Please fill in all required fields (Project ID, Name, PM, and Lead)');
+      return;
     }
+    try {
+
+    const createProjectDto: CreateProjectDto = {
+      project_id: formData.project_id,
+      name: formData.name,
+      startdate: formData.startdate,
+      enddate: formData.enddate,
+      status: formData.status,
+      pmId: formData.pmId,
+      leadId: formData.leadId,
+      requirements: formData.requirements.length > 0 ? formData.requirements : undefined
+    };
+
+    const response = await createProject(createProjectDto).unwrap();
+    alert(response.message || 'Project created successfully');
+    navigate('/hr/projects');
+  } catch (error: any) {
+    console.error('Error creating project:', error);
+    alert(error?.data?.message || 'Failed to create project');
+  }
   };
 
   return (
@@ -150,7 +211,7 @@ const CreateProject = () => {
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-base font-medium mb-2">Project ID</label>
+              <label className="block text-base font-medium mb-2">Project ID<span className="text-red-500">*</span></label>
               <input 
                 name="project_id" 
                 value={formData.project_id} 
@@ -160,7 +221,7 @@ const CreateProject = () => {
               />
             </div>
             <div>
-              <label className="block text-base font-medium mb-2">Project Name</label>
+              <label className="block text-base font-medium mb-2">Project Name<span className="text-red-500">*</span></label>
               <input 
                 name="name" 
                 value={formData.name} 
@@ -191,12 +252,18 @@ const CreateProject = () => {
             </div>
             <div>
               <label className="block text-base font-medium mb-2">Status</label>
-              <input 
+              <select 
                 name="status" 
                 value={formData.status} 
                 onChange={handleChange} 
+                required
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-              />
+              >
+                <option value="">Select Status</option>
+                {projectStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -206,7 +273,7 @@ const CreateProject = () => {
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Management</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-base font-medium mb-2">Project Manager</label>
+              <label className="block text-base font-medium mb-2">Project Manager<span className="text-red-500">*</span></label>
               <select 
                 name="pmId" 
                 value={formData.pmId} 
@@ -221,7 +288,7 @@ const CreateProject = () => {
               </select>
             </div>
             <div>
-              <label className="block text-base font-medium mb-2">Team Lead</label>
+              <label className="block text-base font-medium mb-2">Team Lead<span className="text-red-500">*</span></label>
               <select 
                 name="leadId" 
                 value={formData.leadId} 
@@ -238,7 +305,7 @@ const CreateProject = () => {
           </div>
         </div>
 
-        {/* Tech Stack Section */}
+        {/* Tech Stack Section
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Tech Stack</h2>
           <div className="flex gap-2 mb-4">
@@ -259,34 +326,53 @@ const CreateProject = () => {
               </span>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Project Requirements Section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements<span className="text-gray-400" >(Optional)</span></h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-2">Role</label>
               <select 
-                value={newReq.role} 
-                onChange={e => setNewReq({ ...newReq, role: e.target.value })} 
+                value={newReq.designation_id} 
+                onChange={handleDesignationChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Role</option>
-                {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                {designationsWithIds.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Required Skill</label>
+              <div className="flex gap-2">
               <select 
-                value={newReq.skills} 
-                onChange={e => setNewReq({ ...newReq, skills: e.target.value })} 
+                value={selectedSkill} 
+                onChange={e => setSelectedSkill( e.target.value )} 
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Skill</option>
-                {skills.map(s => <option key={s} value={s}>{s}</option>)}
+                {skills.filter(s => !newReq.skills.includes(s)).map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
               </select>
+              <Button type="button" onClick={handleAddSkillToRequirement} size="sm">+</Button>
             </div>
+            {newReq.skills.length > 0 && (
+                <div className="flex gap-1 flex-wrap mt-2">
+                  {newReq.skills.map((skill, i) => (
+                    <span key={i} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      {skill}
+                      <button type="button" onClick={() => handleRemoveSkillFromRequirement(skill)} className="text-red-500 hover:text-red-700">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Count</label>
               <input
@@ -299,20 +385,23 @@ const CreateProject = () => {
               />
             </div>
           </div>
+
           <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
-          {formData.requirements.length > 0 && (
-            <div className="space-y-2">
-              {formData.requirements.map((req, i) => (
-                <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                  <span className="text-sm">{req.count} × {req.role} ({req.skills})</span>
-                  <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
-                </div>
-              ))}
-            </div>
-          )}
+              {formData.requirements.map((req, i) => {
+          // Find designation name for display
+                const designationName = designationsWithIds.find(d => d.id === req.designation_id)?.name || 'Unknown';
+                return (
+                  <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                    <span className="text-sm">
+                      {req.required_count} × {designationName} {req.is_requested ? '(Requested)' : '(Not Requested)'}
+                    </span>
+                    <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                  </div>
+                );
+          })}
         </div>
 
-        {/* Engineer Allocation Section */}
+        {/* Engineer Allocation Section
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Engineer Allocation</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -357,11 +446,11 @@ const CreateProject = () => {
               })}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Form Actions */}
         <div className="flex gap-4 pt-3">
-          <Button type="submit" className="w-48">Create Project</Button>
+          <Button type="submit" className="w-48">{isLoading ? 'Creating...' : 'Create Project'}</Button>
           <Button type="button" variant="outline" onClick={() => navigate('/hr/projects')} className="w-48">Cancel</Button>
         </div>
       </form>

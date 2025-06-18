@@ -17,7 +17,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from "@/components/ui/sidebar";
-import { NavLink, useLocation } from "react-router-dom";
+import { Button } from "../ui/button";
+import { MoreVertical } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
 
 type UserRole = "hr" | "pm" | "lead" | "engineer";
@@ -143,6 +146,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
             </p>
             <p className="text-xs text-muted-foreground">User Role</p>
           </div>
+        </div>
         </NavLink>
 
         <Popover>
@@ -161,7 +165,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
             </Button>
           </PopoverContent>
         </Popover>
-      </div>
+      
     </Sidebar>
   );
 }
