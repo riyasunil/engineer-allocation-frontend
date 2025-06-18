@@ -8,8 +8,8 @@ interface CreateProjectDto {
   startdate?: Date;
   enddate?: Date;
   status?: string;
-  pm: number; // User ID
-  lead: number; // User ID
+  pmId: number; // User ID
+  leadId: number; // User ID
 }
 
 interface UpdateProjectDto {
@@ -17,8 +17,8 @@ interface UpdateProjectDto {
   startdate?: Date;
   enddate?: Date;
   status?: string;
-  pm?: number; // User ID
-  lead?: number; // User ID
+  pmId?: number; // User ID
+  leadId?: number; // User ID
 }
 
 interface AssignEngineerRequest {
