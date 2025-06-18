@@ -23,59 +23,9 @@ import {
   Line,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { useGetEngineersQuery } from "@/api-service/user/user.api";
 
-// Mock engineer data
-const engineers = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    role: "Senior Frontend Developer",
-    projectsCompleted: 12,
-    currentProjects: 2,
-    efficiency: 95,
-    skills: ["React", "TypeScript", "Node.js"],
-    performance: "Excellent",
-  },
-  {
-    id: "2",
-    name: "Mike Chen",
-    role: "Backend Developer",
-    projectsCompleted: 8,
-    currentProjects: 3,
-    efficiency: 87,
-    skills: ["Python", "PostgreSQL", "Docker"],
-    performance: "Good",
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    role: "Full Stack Developer",
-    projectsCompleted: 15,
-    currentProjects: 1,
-    efficiency: 92,
-    skills: ["Vue.js", "Laravel", "MySQL"],
-    performance: "Excellent",
-  },
-];
-
-const skillDistribution = [
-  { skill: "React", count: 15 },
-  { skill: "Node.js", count: 12 },
-  { skill: "Python", count: 10 },
-  { skill: "TypeScript", count: 14 },
-  { skill: "PostgreSQL", count: 8 },
-  { skill: "Docker", count: 9 },
-];
-
-const performanceData = [
-  { month: "Jan", efficiency: 88, projects: 5 },
-  { month: "Feb", efficiency: 92, projects: 7 },
-  { month: "Mar", efficiency: 89, projects: 6 },
-  { month: "Apr", efficiency: 94, projects: 8 },
-  { month: "May", efficiency: 91, projects: 7 },
-  { month: "Jun", efficiency: 95, projects: 9 },
-];
-
+// Configuration for charts including labels and colors
 const chartConfig = {
   efficiency: { label: "Efficiency %", color: "#3b82f6" },
   projects: { label: "Projects Completed", color: "#22c55e" },
@@ -84,12 +34,62 @@ const chartConfig = {
 
 const EngineerAnalytics = () => {
   const [selectedEngineer, setSelectedEngineer] = useState("all");
+  const { data: engineersData = [] } = useGetEngineersQuery();
 
+  // Transforming API data into local state shape
+  const engineers = engineersData
+    .filter((user) => user.role.role_name === "ENGINEER")
+    .map((user) => ({
+      id: user.user_id,
+      name: user.name,
+      role: user.designations?.[0]?.designation?.name || "Engineer",
+      projectsCompleted: user.projectUsers?.length || 0,
+      currentProjects: user.projectUsers?.length || 0,
+      efficiency: 90, // hardcoded
+      skills: user.userSkills?.map((s) => s.skill.skill_name) || [],
+      performance: "Good", // hardcoded
+    }));
+
+  // Finding the selected engineer for individual view
   const selectedEngineerData = engineers.find((e) => e.id === selectedEngineer);
+
+  // Calculating skill distribution from engineers' skill lists
+  const skillCount: Record<string, number> = {};
+  engineers.forEach((e) => {
+    e.skills.forEach((s) => {
+      skillCount[s] = (skillCount[s] || 0) + 1;
+    });
+  });
+
+  const skillDistribution = Object.entries(skillCount).map(
+    ([skill, count]) => ({
+      skill,
+      count,
+    })
+  );
+
+  // Dummy data for line chart representing team performance trends
+  const performanceData = [
+    { month: "Jan", efficiency: 88, projects: 5 },
+    { month: "Feb", efficiency: 92, projects: 7 },
+    { month: "Mar", efficiency: 89, projects: 6 },
+    { month: "Apr", efficiency: 94, projects: 8 },
+    { month: "May", efficiency: 91, projects: 7 },
+    { month: "Jun", efficiency: 95, projects: 9 },
+  ];
+
+  // Calculated stats for summary section
+  const totalEngineers = engineers.length;
+  const averageEfficiency = "90%"; // hardcoded
+  const avgProjects = (
+    engineers.reduce((acc, e) => acc + e.projectsCompleted, 0) /
+    (engineers.length || 1)
+  ).toFixed(1);
+  const skillCoverage = skillDistribution.length > 0 ? "89%" : "0%";
 
   return (
     <div className="space-y-6">
-      {/* Engineer Selection */}
+      {/* Dropdown to select an individual engineer or all */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -114,11 +114,12 @@ const EngineerAnalytics = () => {
         </CardHeader>
       </Card>
 
+      {/* Conditional UI for all engineers or specific engineer */}
       {selectedEngineer === "all" ? (
-        // Overall Engineer Analytics
         <div className="space-y-6">
+          {/* Charts section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Skill Distribution */}
+            {/* Bar chart for skill distribution */}
             <Card>
               <CardHeader>
                 <CardTitle>Skill Distribution</CardTitle>
@@ -138,7 +139,7 @@ const EngineerAnalytics = () => {
               </CardContent>
             </Card>
 
-            {/* Performance Trends */}
+            {/* Line chart for performance over time */}
             <Card>
               <CardHeader>
                 <CardTitle>Team Performance Trends</CardTitle>
@@ -170,58 +171,45 @@ const EngineerAnalytics = () => {
             </Card>
           </div>
 
-          {/* Summary Statistics */}
+          {/* Summary statistics section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Total Engineers</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">24</div>
-                <p className="text-sm text-muted-foreground">
-                  Active team members
-                </p>
+                <div className="text-2xl font-bold">{totalEngineers}</div>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Average Efficiency</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">91%</div>
-                <p className="text-sm text-muted-foreground">
-                  Team performance
-                </p>
+                <div className="text-2xl font-bold text-green-600">
+                  {averageEfficiency}
+                </div>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Projects per Engineer</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2.1</div>
-                <p className="text-sm text-muted-foreground">
-                  Average workload
-                </p>
+                <div className="text-2xl font-bold">{avgProjects}</div>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Skill Coverage</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">89%</div>
-                <p className="text-sm text-muted-foreground">
-                  Technology requirements
-                </p>
+                <div className="text-2xl font-bold">{skillCoverage}</div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Engineer List */}
+          {/* List of engineers with brief stats */}
           <Card>
             <CardHeader>
               <CardTitle>Engineer Performance Summary</CardTitle>
@@ -259,15 +247,7 @@ const EngineerAnalytics = () => {
                         </span>{" "}
                         efficiency
                       </div>
-                      <Badge
-                        variant={
-                          engineer.performance === "Excellent"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {engineer.performance}
-                      </Badge>
+                      <Badge variant="secondary">{engineer.performance}</Badge>
                     </div>
                   </div>
                 ))}
@@ -276,9 +256,9 @@ const EngineerAnalytics = () => {
           </Card>
         </div>
       ) : (
-        // Specific Engineer Analytics
         selectedEngineerData && (
           <div className="space-y-6">
+            {/* Detailed view for selected engineer */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader>
@@ -288,12 +268,8 @@ const EngineerAnalytics = () => {
                   <div className="text-2xl font-bold text-green-600">
                     {selectedEngineerData.projectsCompleted}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Total completed
-                  </p>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Current Projects</CardTitle>
@@ -302,12 +278,8 @@ const EngineerAnalytics = () => {
                   <div className="text-2xl font-bold text-blue-600">
                     {selectedEngineerData.currentProjects}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Active assignments
-                  </p>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Efficiency Rate</CardTitle>
@@ -316,12 +288,8 @@ const EngineerAnalytics = () => {
                   <div className="text-2xl font-bold text-purple-600">
                     {selectedEngineerData.efficiency}%
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Performance score
-                  </p>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Performance</CardTitle>
@@ -330,14 +298,10 @@ const EngineerAnalytics = () => {
                   <div className="text-2xl font-bold text-orange-600">
                     {selectedEngineerData.performance}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Overall rating
-                  </p>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Skills */}
+            {/* List of skills for the engineer */}
             <Card>
               <CardHeader>
                 <CardTitle>Skills & Expertise</CardTitle>
