@@ -3,6 +3,7 @@ import logo from "../../../assets/logo.png";
 import { useLoginMutation } from "@/api-service/auth/login.api";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/store";
+import { toast } from "sonner";
 
 const Login = () => {
   const [login, { isLoading }] = useLoginMutation();
@@ -44,10 +45,12 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await login({ email: username, password }).unwrap();
+      toast.success("Successfully Logged in")
       localStorage.setItem("token", response.accessToken);
       localStorage.setItem("user_id", response.user_id);
       navigate(`/${response.role.toLowerCase()}`);
     } catch (error: any) {
+      toast.error("Error Logging in")
       console.error("Login error:", error);
       setError(error?.data?.message || "Login failed");
     }
