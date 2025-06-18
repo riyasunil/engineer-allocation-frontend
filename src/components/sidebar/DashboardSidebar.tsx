@@ -7,6 +7,7 @@ import {
   History,
   User,
 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +16,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import { MoreVertical } from "lucide-react";
@@ -70,7 +71,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
       icon: Bell,
       roles: ["hr", "pm", "lead"],
       hasNotification: newAlertsCount > 0,
-      notificationCount: newAlertsCount
+      notificationCount: newAlertsCount,
     },
     {
       title: "History",
