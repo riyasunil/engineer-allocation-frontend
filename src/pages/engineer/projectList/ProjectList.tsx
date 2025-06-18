@@ -35,7 +35,7 @@ const ProjectList = () => {
   const navigate = useNavigate();
   const { data, isLoading } = useGetUserByIdQuery("KV10");
 
-  const handleViewDetails = (projectId: string | number) => {
+  const handleViewDetails = (projectId: number | undefined) => {
     navigate(`/engineer/projects/${projectId}`);
   };
 
