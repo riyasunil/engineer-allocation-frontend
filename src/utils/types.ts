@@ -1,8 +1,8 @@
 // Base interface for entities extending AbstractEntity
 interface AbstractEntity {
-  id: number;
-  createdAt: Date;
-  updatedAt: Date;
+  id?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // User related interfaces
