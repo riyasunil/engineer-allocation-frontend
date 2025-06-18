@@ -6,13 +6,6 @@ const AddEngineer = () => {
   return (
     <EngineerForm
       mode="add"
-      onSubmit={(data, action) => {
-        // Handle submission
-        // action can be "save" or "saveAndAdd"
-      }}
-      onCancel={() => {
-        // Handle cancel
-      }}
     />
 
     // <EngineerForm

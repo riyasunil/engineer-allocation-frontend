@@ -15,7 +15,7 @@ import {
   Server,
 } from "lucide-react";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
-import { Designation, Skill } from "@/utils/types";
+import { Designation, Skill, UserData } from "@/utils/types";
 
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useAddEngineerMutation } from "@/api-service/user/user.api";
@@ -38,8 +38,6 @@ interface MultiSelectDropdownProps {
 const EngineerForm = ({
   mode = "add", // "add" or "edit"
   initialData = null,
-  onSubmit = (submitData: { skills: string; designations: string; name: string; user_id: string; email: string; password: string; joined_at: string; experience: number; notes: string; }, p0: string) => {},
-  onCancel = () => {},
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -48,8 +46,8 @@ const EngineerForm = ({
     password: "",
     joined_at: new Date().toISOString().split("T")[0],
     experience: 0,
-    skills: [],
-    designations: [],
+    skills: [] as Skill[],
+    designations: [] as Designation[],
     notes: "",
   });
 
@@ -151,16 +149,21 @@ const EngineerForm = ({
   const handleMultiSelectChange = (field: "skills" | "designations", optionName: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].includes(optionName)
-        ? prev[field].filter((item: string) => item !== optionName)
-        : [...prev[field], optionName],
+      [field]: prev[field].some((item: any) => item.name === optionName)
+        ? prev[field].filter((item: any) => item.name !== optionName)
+        : [
+            ...prev[field],
+            (field === "skills"
+              ? skillOptions.find((opt) => opt.name === optionName)
+              : designationOptions.find((opt) => opt.name === optionName)),
+          ].filter(Boolean),
     }));
   };
 
   const removeSelectedItem = (field: "skills" | "designations", item: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].filter((selected: string) => selected !== item),
+      [field]: prev[field].filter((selected: any) => selected.name !== item),
     }));
   };
 
@@ -178,28 +181,50 @@ const EngineerForm = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const onCancel = () => {
+  }
+
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     if (validateForm()) {
-      const submitData = {
-        ...formData,
-        skills: formData.skills.join(", "),
-        designations: formData.designations.join(", "),
-      };
-      onSubmit(submitData, "save");
+      try {
+        const userData: UserData = {
+          user_id: formData.user_id,
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          joined_at: new Date(formData.joined_at),
+          experience: formData.experience,
+          role_id: 2, 
+          skills: formData.skills
+            .map((skill) => skill.id)
+            .filter((id): id is number => typeof id === "number"),
+          designations: formData.designations
+            .map((designation) => designation.id)
+            .filter((id): id is number => typeof id === "number"),
+        };
+
+        if (mode === "add") {
+          const result = await addEngineer(userData);
+
+          if (result.data) {
+            alert("created successfully");
+          }
+        }
+        
+        else if (mode === "edit") { 
+        }
+
+      } catch (error) {
+        console.error("Error adding engineer:", error);
+      }
     }
   };
 
   const handleSaveAndAddAnother = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     if (validateForm()) {
-      const submitData = {
-        ...formData,
-        skills: formData.skills.join(", "),
-        designations: formData.designations.join(", "),
-      };
-      onSubmit(submitData, "saveAndAdd");
-      // Reset form for add mode
+      
       if (mode === "add") {
         setFormData({
           name: "",
@@ -260,7 +285,7 @@ const EngineerForm = ({
             <div className="max-h-64 overflow-y-auto">
               {options.map((option) => {
                 const IconComponent = option.icon;
-                const isSelected = formData[field].includes(option.name);
+                const isSelected = formData[field].some((item: any) => item.name === option.name);
                 return (
                   <div
                     key={option.id}
