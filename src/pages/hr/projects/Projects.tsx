@@ -15,7 +15,7 @@ export default function Projects() {
   >("ALL");
 
   // Fetch projects data from API
-  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery();
+  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery(undefined, {refetchOnMountOrArgChange: false});
   console.log("Projects data:", projects);
 
   // Transform API data to match the expected format for the UI

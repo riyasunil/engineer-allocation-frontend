@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import DashboardSidebar from "../sidebar/DashboardSidebar";
 import { SidebarProvider } from "../ui/sidebar";
@@ -6,11 +6,15 @@ import { useAppDispatch, useAppSelector } from "@/store/store";
 import { useGetUserByIdQuery, useLazyGetUserByIdQuery } from "@/api-service/user/user.api";
 import { setCurrentUser } from "@/store/slices/userSlice";
 import { BotMessageSquare } from "lucide-react";
-import ChatbotModal from "../chatbotModal/ChatbotModal";
+const ChatbotModal = lazy(() => import("../chatbotModal/ChatbotModal"));
+
 
 const DashboardLayout = () => {
   const dispatch = useAppDispatch();
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  // const currentUser = useAppSelector((state) => state.user.currentUser);
+  const currentUser = useAppSelector((state) => state.user.currentUser);
+  console.log("Current User in DashboardLayout:", currentUser);
 
   const isLoggedIn = () => {
     const token = localStorage.getItem("token");
@@ -32,14 +36,22 @@ useEffect(() => {
   }
 }, [user, dispatch]);
 
-  const currentUser = useAppSelector((state) => state.user.currentUser);
 
   if (!isLoggedIn()) {
     return <Navigate to="/login" />;
   }
 
-  if (isLoading || !currentUser || !currentUser.role?.role_name) {
-    return <div className="p-6">Loading...</div>;
+  if (isLoading || !currentUser) {
+    return (
+      <div className="flex relative">
+        <SidebarProvider>
+          <DashboardSidebar userRole="hr" userName="Loading..." />
+          <main className="flex-1 p-6 overflow-auto bg-background">
+            <div className="animate-pulse">Loading User...</div>
+          </main>
+        </SidebarProvider>
+      </div>
+    );
   }
 
   return (
@@ -54,10 +66,12 @@ useEffect(() => {
         </main>
 
         {/* Chatbot Modal */}
-        <ChatbotModal
-          isOpen={isChatbotOpen}
-          onClose={() => setIsChatbotOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <ChatbotModal
+            isOpen={isChatbotOpen}
+            onClose={() => setIsChatbotOpen(false)}
+          />
+        </Suspense>
 
         {/* Floating Button (only when modal is closed) */}
         {!isChatbotOpen && (

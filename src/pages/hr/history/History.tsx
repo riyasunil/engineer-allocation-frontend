@@ -3,6 +3,8 @@ import { HistoryIcon, User } from "lucide-react";
 import React, { useState } from "react";
 import RequestCard from "./components/RequestCard";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
+import { useGetAllLogsQuery } from "@/api-service/logs/logs.api";
+import { useGetUserByIdQuery } from "@/api-service/user/user.api";
 
 export interface AuditLog {
   id: number;
@@ -12,55 +14,30 @@ export interface AuditLog {
   change_summary: string;
 }
 
-const users = [
-  { id: 1, name: "Ria Sunil" },
-  { id: 2, name: "Hritik Koshi" },
-];
-
-const logs: AuditLog[] = [
-  {
-    id: 1,
-    actor_user_id: 1,
-    action_type: "Project Created",
-    timestamp: new Date("2025-03-12T10:15:00"),
-    change_summary: "Created project: E‑Commerce Platform",
-  },
-  {
-    id: 2,
-    actor_user_id: 2,
-    action_type: "Employee Assigned",
-    timestamp: new Date("2025-03-13T09:00:00"),
-    change_summary: "Assigned Riya Sunil to E‑Commerce Platform",
-  },
-  {
-    id: 3,
-    actor_user_id: 1,
-    action_type: "Project Updated",
-    timestamp: new Date("2025-03-14T14:45:00"),
-    change_summary: "Updated deadline for Healthcare CRM to 30th March",
-  },
-  {
-    id: 4,
-    actor_user_id: 2,
-    action_type: "Employee Unassigned",
-    timestamp: new Date("2025-03-15T11:30:00"),
-    change_summary: "Removed Hritik Koshi from Inventory Dashboard project",
-  },
-];
-
 const History = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<
-  
-    "ALL" | "Project Created" | "Employee Assigned" | "Project Updated" | "Employee Unassigned"
+    | "ALL"
+    | "Project Created"
+    | "Employee Assigned"
+    | "Project Updated"
+    | "Employee Unassigned"
   >("ALL");
 
-  const filteredlogs = logs.filter((log) => {
-      const actorName = users.find((u) => u.id === log.actor_user_id)?.name || "";
-    const matchesSearch = 
-    log.action_type.toLowerCase().includes(search.toLowerCase()) ||
-    log.change_summary.toLowerCase().includes(search.toLowerCase()) ||
-    actorName.toLowerCase().includes(search.toLowerCase());
+  const { data : logs } = useGetAllLogsQuery();
+
+  console.log(logs?.data)
+
+    // const actorName = "ria";
+
+  const filteredlogs = logs?.data?.filter((log) => {
+
+    // const {data : actorName} = useGetUserByIdQuery(log.actor_user_id)
+
+    const matchesSearch =
+      log.action_type.toLowerCase().includes(search.toLowerCase()) ||
+      log.change_summary.toLowerCase().includes(search.toLowerCase());
+      // actorName.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter = filter === "ALL" || log.action_type === filter;
     return matchesSearch && matchesFilter;
@@ -81,7 +58,7 @@ const History = () => {
           className="flex items-center gap-2 text-black rounded-xl"
         >
           <HistoryIcon className="h-4 w-4" />
-          {logs.length}&nbsp;Records
+          {logs? logs?.data.length : 0}&nbsp;Records
         </Button>
       </header>
 
@@ -106,7 +83,7 @@ const History = () => {
         </h2>
 
         <div className="space-y-6">
-          {filteredlogs.map((req) => (
+          {filteredlogs && filteredlogs.map((req) => (
             <RequestCard key={req.id} request={req} />
           ))}
         </div>
