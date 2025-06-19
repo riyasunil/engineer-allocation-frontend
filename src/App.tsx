@@ -18,45 +18,48 @@ import store from "./store/store";
 import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import HrProjectDetails from "./pages/hr/hrProjectDetails/HrProjectDetails";
 import { Toaster } from "@/components/ui/sonner"
+import EditProject from "./components/editProject/EditProject";
+
 const router = createBrowserRouter([
-{
-path: "/",
-element: <Login />,
-},
- {
-path: "/login",
-element: <Login />,
- },
- {
-path: "/hr",
-element: <DashboardLayout />,
-children: [
- { index: true, element: <Dashboard /> },
- { path: "analytics", element: <Analytics /> },
- { path: "projects", element: <Projects /> },
- { path: "projects/:id", element: <HrProjectDetails /> },
- { path: "engineers", element: <Engineers /> },
- { path: "alerts", element: <Alerts /> },
- { path: "history", element: <History /> },
- { path: "profile", element: <Profile /> },
- { path: "projects/create", element: <CreateProject /> },
- { path: "addengineer", element: <AddEngineer /> },
- ],
- },
- {
-path: "/engineer",
-element: <DashboardLayout />,
-children: [
- { index: true, element: <ProjectList /> },
- { path: "projects", element: <ProjectList /> },
- { path: "projects/:id", element: <EngineerProjectDetails /> },
- { path: "profile", element: <EngineerProfile /> },
- ],
- },
- {
-path: "*",
-element: <NotFound />,
- },
+  {
+    path: "/",
+    element: <Login />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/hr",
+    element: <DashboardLayout />,
+    children: [
+      { index: true, element: <Dashboard /> },
+      { path: "analytics", element: <Analytics /> },
+      { path: "projects", element: <Projects /> },
+      { path: "projects/:id", element: <HrProjectDetails /> },
+      { path: "engineers", element: <Engineers /> },
+      { path: "alerts", element: <Alerts /> },
+      { path: "history", element: <History /> },
+      { path: "profile", element: <Profile /> },
+      { path: "projects/create", element: <CreateProject /> },
+      { path: "projects/:id/edit", element: <EditProject /> },
+      { path: "addengineer", element: <AddEngineer /> },
+    ],
+  },
+  {
+    path: "/engineer",
+    element: <DashboardLayout />,
+    children: [
+      { index: true, element: <ProjectList /> },
+      { path: "projects", element: <ProjectList /> },
+      { path: "projects/:id", element: <EngineerProjectDetails /> },
+      { path: "profile", element: <EngineerProfile /> },
+    ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
 ]);
 function App() {
 return (
