@@ -2,45 +2,39 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import ProjectAnalytics from "@/components/Analytics/ProjectAnaytics";
-import EngineerAnalytics from "@/components/Analytics/EngineerAnalytics";
 import { toast } from "sonner";
 
-
-
-// Types
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle: string;
-  color?: string;
-}
-
-// Reusable StatCard component
-const StatCard: React.FC<StatCardProps> = ({
-  title,
-  value,
-  subtitle,
-  color = "text-foreground",
-}) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-sm">{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
-    </CardContent>
-  </Card>
-);
+import EngineerAnalytics from "@/components/Analytics/EngineerAnalytics";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { exportEngineersData, useAnalyticsData } from "./AnalyticsDataService";
+import ProjectAnalytics from "@/components/Analytics/ProjectAnaytics";
 
 const Analytics: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"projects" | "engineers">(
-    "projects"
-  );
-  const [selectedEngineer, setSelectedEngineer] = useState<string>("all");
-  const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("projects");
+
+  const { engineers, projects, skillDistribution, engineerSummary, isLoading } =
+    useAnalyticsData();
+
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleExport = (): void => {
+    if (isLoading) {
+      toast.error("Data is still loading, please wait...");
+      return;
+    }
+
+    //toast("Exporting engineers analytics data...");
+
+    try {
+      exportEngineersData(engineers, skillDistribution);
+      toast.success(
+        "Engineers data exported successfully! Check your downloads folder for 2 CSV files."
+      );
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export data. Please try again.");
+    }
+  };
 
   const handleDownloadReport = async () => {
     setIsGenerating(true);
@@ -62,6 +56,9 @@ const Analytics: React.FC = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      toast.success(
+        "AI report exported successfully! Check your downloads folder for the report."
+      );
     } catch (err) {
       console.error("Download failed:", err);
       toast.error("Failed to download report");
@@ -70,21 +67,8 @@ const Analytics: React.FC = () => {
     }
   };
 
-
-
-
-  const handleExport = () => {
-    toast(`Exporting ${activeTab} analytics data...`);
-
-    // Mock export functionality
-    setTimeout(() => {
-      toast(`Exported ${activeTab} analytics data successfully.`);
-    }, 2000);
-  };
-
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
@@ -95,6 +79,8 @@ const Analytics: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
+        
+        <div className="flex gap-2">
         <Button
           onClick={handleDownloadReport}
           className="flex items-center gap-2"
@@ -104,103 +90,35 @@ const Analytics: React.FC = () => {
           {isGenerating ? "Generating..." : "Download AI Report"}
         </Button>
 
-
-          <Button onClick={handleExport} className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Export Data
-          </Button>
+        <Button
+          onClick={handleExport}
+          className="flex items-center gap-2"
+          disabled={isLoading}
+        >
+          <Download className="h-4 w-4" />
+          {isLoading ? "Loading..." : "Export Engineers Data"}
+        </Button>
         </div>
-      </div>
-
-      {/* Custom Tabs */}
-      <div className="w-full">
-        <div className="flex space-x-1 bg-muted p-1 rounded-lg">
-          <button
-            onClick={() => setActiveTab("projects")}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              activeTab === "projects"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Project Analytics
-          </button>
-          <button
-            onClick={() => setActiveTab("engineers")}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              activeTab === "engineers"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Engineer Analytics
-          </button>
         </div>
-
-        {/* Tab Content */}
-        <div className="mt-6">
-          {activeTab === "projects" ? (
-            <ProjectAnalytics
-              selectedProject={selectedProject}
-              setSelectedProject={setSelectedProject}
-            />
-          ) : (
-            <EngineerAnalytics
-              selectedEngineer={selectedEngineer}
-              setSelectedEngineer={setSelectedEngineer}
-            />
-          )}
         </div>
-      </div>
+     
 
-      {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {activeTab === "projects" ? (
-          <>
-            <StatCard title="Total Projects" value="51" subtitle="All time" />
-            <StatCard
-              title="Success Rate"
-              value="92%"
-              subtitle="Completed on time"
-              color="text-green-600"
-            />
-            <StatCard
-              title="Average Duration"
-              value="4.2"
-              subtitle="Months per project"
-            />
-            <StatCard
-              title="Total Budget"
-              value="$2.4M"
-              subtitle="Allocated this year"
-            />
-          </>
-        ) : (
-          <>
-            <StatCard
-              title="Total Engineers"
-              value="24"
-              subtitle="Active team members"
-            />
-            <StatCard
-              title="Average Efficiency"
-              value="91%"
-              subtitle="Team performance"
-              color="text-green-600"
-            />
-            <StatCard
-              title="Projects per Engineer"
-              value="2.1"
-              subtitle="Average workload"
-            />
-            <StatCard
-              title="Skill Coverage"
-              value="89%"
-              subtitle="Technology requirements"
-            />
-          </>
-        )}
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="projects">Project Analytics</TabsTrigger>
+          <TabsTrigger value="engineers">Engineer Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="projects" className="space-y-6">
+          <ProjectAnalytics />
+        </TabsContent>
+
+        <TabsContent value="engineers" className="space-y-6">
+          <EngineerAnalytics />
+        </TabsContent>
+      </Tabs>
+ 
+      
     </div>
   );
 };
