@@ -302,7 +302,6 @@ const CreateProject = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Count</label>
-              <div className="flex items-center gap-2">
                 <input
                   type="number"
                   min={1}
@@ -314,22 +313,25 @@ const CreateProject = () => {
                 />
                 <button 
                   type="button" 
-                  onClick={handleAddRequirement}
-                  className="p-2 bg-black text-white rounded-lg hover:bg-green-600 transition-colors"
-                  title="Confirm requirement"
-                >
-                  ✓
-                </button>
-                <button 
-                  type="button" 
                   onClick={handleClearRequirement}
-                  className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  className="p-1 pl-2 pr-2 ml-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
                   title="Clear fields"
                 >
-                  ✕
+                  Clear
                 </button>
+                
               </div>
-            </div>
+              <div className="flex items-center gap-2 mb-5">
+                <button 
+                  type="button" 
+                  onClick={handleAddRequirement}
+                  className="p-1.5 text-sm pl-3 pr-3 bg-black text-white rounded-lg hover:bg-green-600 transition-colors"
+                  title="Confirm requirement"
+                >
+                  Add Requirement
+                </button>
+                
+                </div>
           </div>
 
           
