@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Badge } from "../ui/badge";
+// import { Badge } from "../ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +46,7 @@ export default function DashboardSidebar({
   const location = useLocation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const newAlertsCount = 2;
+  // const newAlertsCount = 2;
   const currentUser = useAppSelector((state) => state.user.currentUser);
 
   const items = [
@@ -79,8 +79,8 @@ export default function DashboardSidebar({
       url: `/${userRole}/alerts`,
       icon: Bell,
       roles: ["hr", "pm", "lead"],
-      hasNotification: newAlertsCount > 0,
-      notificationCount: newAlertsCount,
+      // hasNotification: newAlertsCount > 0,
+      // notificationCount: newAlertsCount,
     },
     {
       title: "History",
@@ -133,14 +133,14 @@ export default function DashboardSidebar({
                       >
                         <item.icon className="h-5 w-5" />
                         <span className="flex-1">{item.title}</span>
-                        {item.hasNotification && (
+                        {/* {item.hasNotification && (
                           <Badge
                             variant="destructive"
                             className="text-xs ml-auto min-w-5 h-5 flex items-center justify-center p-1"
                           >
                             {item.notificationCount}
                           </Badge>
-                        )}
+                        )} */}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
