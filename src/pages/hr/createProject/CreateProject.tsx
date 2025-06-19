@@ -52,7 +52,7 @@ const CreateProject = () => {
     name: '',
     startdate: undefined,
     enddate: undefined,
-    status: 'NEW',
+    status: 'New',
     pmId: 0,
     leadId: 0,
     requirements: [],

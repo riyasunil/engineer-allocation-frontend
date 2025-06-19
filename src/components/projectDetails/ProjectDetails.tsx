@@ -115,11 +115,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
-      case 'NEW':
+      case 'New':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'IN_PROGRESS':
+      case 'Active':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'CLOSED':
+      case 'Completed':
         return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
