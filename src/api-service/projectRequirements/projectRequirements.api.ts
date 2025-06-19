@@ -29,11 +29,18 @@ import baseApi from "../api";interface CreateRequirementDto {
         method: 'DELETE',
       }),
     }),
+    getSkillbyRequirementId: builder.query<string, string | number>({
+          query: (id) => ({
+            url: `/skill-requirements/${id}`,
+            method: "GET",
+          }),
+        }),
   }),
 });export const {
   useCreateRequirementMutation,
   useUpdateRequirementMutation,
   useDeleteRequirementMutation,
+  useLazyGetSkillbyRequirementIdQuery,
 } = projectRequirementApi;
 
 

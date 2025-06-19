@@ -21,12 +21,18 @@ import { Separator } from "@radix-ui/react-separator";
 import {
   useCreateRequirementMutation,
   useDeleteRequirementMutation,
+  useLazyGetSkillbyRequirementIdQuery,
   useUpdateRequirementMutation,
 } from "@/api-service/projectRequirements/projectRequirements.api";
 
 interface AssignableUserPayload {
   designation: string;
   skills: number[];
+}
+
+interface Skill {
+  id: number;
+  name: string;
 }
 
 interface ProjectRequirement {
@@ -64,6 +70,10 @@ const EditProject = () => {
   const { data: designationsWithIds } = useGetDesignationQuery();
   const { data: skillsWithIds } = useGetSkillsQuery();
   const { data: availableEngineers } = useGetAllAvailableUsersQuery();
+  // const [fetchSkillsForRequirement, {isLoading: isLoadingSkills}] = useLazyGetSkillbyRequirementIdQuery();
+
+const [requirementSkills, setRequirementSkills] = useState<Record<number, string[]>>({});  
+  
 
   const unassignEngineer = async (...args: any[]) => {
     console.log("Mock unassignEngineer called with:", args);
@@ -175,19 +185,69 @@ const EditProject = () => {
       designation_id: selectedDesignation?.id || 0,
     }));
   };
+// const fetchSkills = async (requirementId: number) => {
+//   try {
+//     const { data: skillsResponse } = await fetchSkillsForRequirement(requirementId);
+    
+//     // Handle different response formats
+//     let skillsArray: string[] = [];
+    
+//     if (typeof skillsResponse === 'string') {
+//       // If API returns a single skill name as string
+//       skillsArray = [skillsResponse];
+//     } else if (Array.isArray(skillsResponse)) {
+//       // If API returns an array of skill names
+//       skillsArray = skillsResponse;
+//     } else if (skillsResponse && typeof skillsResponse === 'object') {
+//       // If API returns an object with skill data
+//       if ('data' in skillsResponse) {
+//         const skillData = skillsResponse.data;
+//         if (typeof skillData === 'string') {
+//           skillsArray = [skillData];
+//         } else if (Array.isArray(skillData)) {
+//           skillsArray = skillData;
+//         }
+//       }
+//     }
+    
+//     setRequirementSkills(prev => ({
+//       ...prev,
+//       [requirementId]: skillsArray
+//     }));
+//   } catch (error) {
+//     console.error(`Error fetching skills for requirement ${requirementId}:`, error);
+//     // Set empty array on error
+//     setRequirementSkills(prev => ({
+//       ...prev,
+//       [requirementId]: []
+//     }));
+//   }
+// };
+
+// Call fetchSkills when requirements are loaded or changed
+// useEffect(() => {
+//   if (originalRequirements) {
+//     originalRequirements.forEach(req => {
+//       if (req.id && !requirementSkills[req.id]) {
+//         fetchSkills(req.id);
+//       }
+//     });
+//   }
+// }, [originalRequirements]);
+
 
   // Fixed: Add skill as object instead of string
-  const handleAddSkillToRequirement = (skillId: string) => {
-    const skill = skillsWithIds?.find((s) => s.id === parseInt(skillId));
-    const skillExists = newReq.skills.some((s) => s.id === parseInt(skillId));
+  // const handleAddSkillToRequirement = (skillId: string) => {
+  //   const skill = skillsWithIds?.find((s) => s.id === parseInt(skillId));
+  //   const skillExists = newReq.skills.some((s) => s.id === parseInt(skillId));
 
-    if (skill && !skillExists) {
-      setNewReq((prev) => ({
-        ...prev,
-        skills: [...prev.skills, { id: skill.id, name: skill.skill_name }],
-      }));
-    }
-  };
+  //   if (skill && !skillExists) {
+  //     setNewReq((prev) => ({
+  //       ...prev,
+  //       skills: [...prev.skills, { id: skill.id, name: skill.skill_name }],
+  //     }));
+  //   }
+  // };
 
   // Fixed: Remove skill by id
   const handleRemoveSkillFromRequirement = (skillId: number) => {
@@ -828,11 +888,10 @@ const handleAddRequirement = async () => {
           <h3 className="text-md font-semibold mb-3 text-gray-800">
             Current Requirements
           </h3>
-
 {originalRequirements?.map((req, i) => {
-  const designationName =
-    designationsWithIds?.find((d) => d.id === req.designation_id)?.name ||
-    req.designation?.name ||
+  const designationName = 
+    designationsWithIds?.find(d => d.id === req.designation_id)?.name || 
+    req.designation?.name || 
     "Unknown";
 
   return (
@@ -843,28 +902,33 @@ const handleAddRequirement = async () => {
             <span className="text-sm font-medium">
               {req.required_count || req.count} × {designationName}
             </span>
+            {/* {isLoadingSkills && requirementSkills[req.id] === undefined && (
+              <span className="text-xs text-gray-500">Loading skills...</span>
+            )} */}
           </div>
 
-          <div className="mb-2">
+          {/* <div className="mb-2">
             <span className="text-sm font-medium text-gray-600">Skills: </span>
-            {req.requirementSkills?.length > 0 ? (
+            {requirementSkills[req.id]?.length > 0 ? (
               <div className="flex gap-1 flex-wrap mt-1">
-                {req.requirementSkills.map((rs, skillIndex) => (
+                {requirementSkills[req.id].map((skillName, skillIndex) => (
                   <span
                     key={skillIndex}
                     className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
                   >
-                    {rs.skill?.id || rs.skill?.id || "Unknown Skill"}
+                    {skillName}
                   </span>
                 ))}
               </div>
             ) : (
-              <span className="text-sm text-gray-500">None specified</span>
+              <span className="text-sm text-gray-500">
+                {isLoadingSkills ? "Loading..." : "No skills specified"}
+              </span>
             )}
-          </div>
-
-          {req.projectAssignments && req.projectAssignments.length > 0 && (
-            <div>
+          </div> */}
+          {/* Display assigned users from projectAssignments */}
+          {req.projectAssignments?.length > 0 && (
+            <div className="mt-2">
               <span className="text-sm font-medium text-gray-600">
                 Assigned Engineers:{" "}
               </span>
@@ -874,12 +938,10 @@ const handleAddRequirement = async () => {
                     key={assignment.id}
                     className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"
                   >
-                    {assignment.user.name}
+                    {assignment.user.name} ({assignment.user.user_id})
                     <button
                       type="button"
-                      onClick={() =>
-                        handleUnassignEngineerFromProject(assignment.id)
-                      }
+                      onClick={() => handleUnassignEngineerFromProject(assignment.id)}
                       className="text-red-500 hover:text-red-700"
                     >
                       ×
@@ -918,16 +980,13 @@ const handleAddRequirement = async () => {
             disabled={isAssigningEngineer}
           >
             <option value="">Assign Engineer</option>
-            {filteredEngineers
-              .filter(
-                (eng) =>
-                  !req.projectAssignments?.some(
-                    (pa) => pa.user.id === eng.id
-                  )
+            {assignableEngineers
+              ?.filter(eng => 
+                !req.projectAssignments?.some(pa => pa.user.id === eng.id)
               )
               .map((eng) => (
                 <option key={eng.id} value={eng.id}>
-                  {eng.name}
+                  {eng.name} ({eng.user_id})
                 </option>
               ))}
           </select>
