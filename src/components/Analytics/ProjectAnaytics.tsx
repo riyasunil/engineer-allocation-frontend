@@ -57,7 +57,7 @@ export default function ProjectAnalytics() {
     return {
       id: project.project_id,
       name: project.name,
-      status: project.status || "NEW",
+      status: project.status || "New",
       staffingPercentage,
       teamSize: assignedEngineers,
       duration: duration.toString(),
@@ -119,7 +119,7 @@ export default function ProjectAnalytics() {
     color:
       status === "CLOSED"
         ? "#34D399" // Soft Green (CLOSED)
-        : status === "IN_PROGRESS"
+        : status === "IN PROGRESS"
         ? "#60A5FA" // Soft Blue (IN_PROGRESS)
         : status === "NEW"
         ? "#FBBF24" // Golden Yellow (NEW)
@@ -137,14 +137,14 @@ export default function ProjectAnalytics() {
       const existing = acc.find((item) => item.month === month);
       if (existing) {
         existing.started += 1;
-        if (project.status === "CLOSED") {
+        if (project.status === "Completed") {
           existing.completed += 1;
         }
       } else {
         acc.push({
           month,
           started: 1,
-          completed: project.status === "CLOSED" ? 1 : 0,
+          completed: project.status === "Completed" ? 1 : 0,
         });
       }
     }
@@ -178,7 +178,7 @@ export default function ProjectAnalytics() {
           {
             month: "Overall",
             started: transformedProjects.length,
-            completed: transformedProjects.filter((p) => p.status === "CLOSED")
+            completed: transformedProjects.filter((p) => p.status === "Closed")
               .length,
           },
         ];

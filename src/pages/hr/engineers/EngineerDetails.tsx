@@ -86,7 +86,7 @@ const EngineerDetails = () => {
                 project.startdate || 
                 project.startDate || 
                 new Date().toISOString(),
-      status: project.status || 'IN_PROGRESS'
+      status: project.status || 'Active'
     };
   }).filter(Boolean); // Remove any null entries
 
@@ -111,7 +111,7 @@ const EngineerDetails = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'IN_PROGRESS':
+      case 'IN PROGRESS':
         return 'default';
       case 'NEW':
         return 'secondary';

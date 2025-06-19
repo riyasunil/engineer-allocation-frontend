@@ -10,13 +10,13 @@ import { useAppSelector } from "@/store/store";
 const StatusBadge = ({ label }: { label: string }) => {
   const base = "text-xs px-2 py-0.5 rounded-full";
   switch (label) {
-    case "IN_PROGRESS":
+    case "IN PROGRESS":
       return (
         <span className={`${base} bg-green-100 text-green-800`}>
           IN PROGRESS
         </span>
       );
-    case "COMPLETED":
+    case "CLOSED":
       return (
         <span className={`${base} bg-gray-100 text-gray-800`}>✓ Completed</span>
       );
@@ -186,7 +186,7 @@ const ProjectList = () => {
                 <div>
                   <h3 className="font-semibold text-base">{project.name}</h3>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    <StatusBadge label="COMPLETED" />
+                    <StatusBadge label="Completed" />
                   </div>
                 </div>
                 <Button

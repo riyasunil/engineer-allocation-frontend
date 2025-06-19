@@ -82,7 +82,7 @@ export default function Projects() {
   const total = transformedProjects.length;
   const newCount = transformedProjects.filter((p) => p.status === "NEW").length;
   const activeCount = transformedProjects.filter(
-    (p) => p.status === "IN_PROGRESS"
+    (p) => p.status === "IN PROGRESS"
   ).length;
   const closedCount = transformedProjects.filter(
     (p) => p.status === "CLOSED"
@@ -148,7 +148,7 @@ export default function Projects() {
         filterOptions={[
           { value: "ALL", label: "All" },
           { value: "NEW", label: "New" },
-          { value: "IN_PROGRESS", label: "In Progress" },
+          { value: "IN PROGRESS", label: "In Progress" },
           { value: "CLOSED", label: "Closed" },
         ]}
       />

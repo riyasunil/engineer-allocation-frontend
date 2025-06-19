@@ -29,17 +29,23 @@ const History = () => {
 
   // const actorName = "ria";
 
-  const filteredlogs = logs?.data?.filter((log) => {
-    // const {data : actorName} = useGetUserByIdQuery(log.actor_user_id)
+  const filteredlogs = logs?.data
+    ?.slice() // Create a shallow copy so original data isn't mutated
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+    .filter((log) => {
+      // const {data : actorName} = useGetUserByIdQuery(log.actor_user_id)
 
-    const matchesSearch =
-      log.action_type.toLowerCase().includes(search.toLowerCase()) ||
-      log.change_summary.toLowerCase().includes(search.toLowerCase());
-    // actorName.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch =
+        log.action_type.toLowerCase().includes(search.toLowerCase()) ||
+        log.change_summary.toLowerCase().includes(search.toLowerCase());
+      // actorName.toLowerCase().includes(search.toLowerCase());
 
-    const matchesFilter = filter === "ALL" || log.action_type === filter;
-    return matchesSearch && matchesFilter;
-  });
+      const matchesFilter = filter === "ALL" || log.action_type === filter;
+      return matchesSearch && matchesFilter;
+    });
   return (
     <div className="space-y-6">
       <header className="flex items-start justify-between">
