@@ -11,6 +11,8 @@ interface Engineer {
   maxProjects: number;
   isAvailable: boolean;
   strengths: string[];
+  initials: string;
+  avatarColor: string;
 }
 
 interface EngineerCardProps {
@@ -38,12 +40,18 @@ const EngineerCard = ({ engineer, onClick }: EngineerCardProps) => {
       className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
       onClick={onClick}
     >
+      {/* Header with Avatar and Availability Badge */}
       <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">
-            {engineer.name}
-          </h3>
-          <p className="text-sm text-muted-foreground">{engineer.email}</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full text-white font-semibold text-sm" style={{ backgroundColor: engineer.avatarColor }}>
+            {engineer.initials}
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">
+              {engineer.name}
+            </h3>
+            <p className="text-sm text-muted-foreground">{engineer.email}</p>
+          </div>
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium border ${getAvailabilityColor()}`}
@@ -52,6 +60,7 @@ const EngineerCard = ({ engineer, onClick }: EngineerCardProps) => {
         </span>
       </div>
 
+      {/* Experience and Projects Info */}
       <div className="space-y-3 mb-4">
         <div className="flex items-center text-sm text-muted-foreground">
           <MapPin className="h-4 w-4 mr-2" />
@@ -66,6 +75,7 @@ const EngineerCard = ({ engineer, onClick }: EngineerCardProps) => {
         </div>
       </div>
 
+      {/* Skills */}
       <div className="flex flex-wrap gap-2 mb-4">
         {engineer.skills.slice(0, 3).map((skill) => (
           <span
@@ -82,6 +92,7 @@ const EngineerCard = ({ engineer, onClick }: EngineerCardProps) => {
         )}
       </div>
 
+      {/* Strengths */}
       {engineer.strengths.length > 0 && (
         <div className="flex items-center text-xs text-muted-foreground">
           <Star className="h-3 w-3 mr-1" />
