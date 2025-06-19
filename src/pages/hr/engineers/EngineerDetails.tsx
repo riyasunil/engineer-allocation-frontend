@@ -111,11 +111,11 @@ const EngineerDetails = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
+      case 'IN PROGRESS':
         return 'default';
-      case 'New':
+      case 'NEW':
         return 'secondary';
-      case 'Completed':
+      case 'CLOSED':
         return 'outline';
       default:
         return 'secondary';

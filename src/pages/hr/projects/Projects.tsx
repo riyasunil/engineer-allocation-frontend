@@ -46,7 +46,7 @@ export default function Projects() {
     return {
       id: project.id,
       name: project.name,
-      status: project.status || "New",
+      status: project.status || "NEW",
       duration,
       startDate: project.startdate
         ? new Date(project.startdate).toISOString().split("T")[0]
@@ -80,12 +80,12 @@ export default function Projects() {
   });
 
   const total = transformedProjects.length;
-  const newCount = transformedProjects.filter((p) => p.status === "New").length;
+  const newCount = transformedProjects.filter((p) => p.status === "NEW").length;
   const activeCount = transformedProjects.filter(
-    (p) => p.status === "Active"
+    (p) => p.status === "IN PROGRESS"
   ).length;
   const closedCount = transformedProjects.filter(
-    (p) => p.status === "Closed"
+    (p) => p.status === "CLOSED"
   ).length;
   const avgEngineers =
     transformedProjects.length > 0
@@ -148,8 +148,8 @@ export default function Projects() {
         filterOptions={[
           { value: "ALL", label: "All" },
           { value: "NEW", label: "New" },
-          { value: "Active", label: "Active" },
-          { value: "Completed", label: "Completed" },
+          { value: "IN PROGRESS", label: "In Progress" },
+          { value: "CLOSED", label: "Closed" },
         ]}
       />
 

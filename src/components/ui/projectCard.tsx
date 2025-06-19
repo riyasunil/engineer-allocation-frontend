@@ -29,11 +29,11 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "New":
+      case "NEW":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Active":
+      case "IN PROGRESS":
         return "bg-green-100 text-green-800 border-green-200";
-      case "Completed":
+      case "CLOSED":
         return "bg-gray-100 text-gray-800 border-gray-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";

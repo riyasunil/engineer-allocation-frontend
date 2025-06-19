@@ -117,11 +117,11 @@ export default function ProjectAnalytics() {
     name: status,
     value,
     color:
-      status === "Completed"
+      status === "CLOSED"
         ? "#34D399" // Soft Green (CLOSED)
-        : status === "Active"
+        : status === "IN PROGRESS"
         ? "#60A5FA" // Soft Blue (IN_PROGRESS)
-        : status === "New"
+        : status === "NEW"
         ? "#FBBF24" // Golden Yellow (NEW)
         : "#F87171", // Soft Red (Default/Other)
   }));

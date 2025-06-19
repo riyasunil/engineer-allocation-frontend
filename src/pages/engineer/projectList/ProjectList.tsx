@@ -10,13 +10,13 @@ import { useAppSelector } from "@/store/store";
 const StatusBadge = ({ label }: { label: string }) => {
   const base = "text-xs px-2 py-0.5 rounded-full";
   switch (label) {
-    case "Active":
+    case "IN PROGRESS":
       return (
         <span className={`${base} bg-green-100 text-green-800`}>
           IN PROGRESS
         </span>
       );
-    case "Completed":
+    case "CLOSED":
       return (
         <span className={`${base} bg-gray-100 text-gray-800`}>✓ Completed</span>
       );
