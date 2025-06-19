@@ -26,7 +26,7 @@ export interface UserData {
   user_id: string,
   name: string,
   email: string,
-  password: string,
+  password?: string,
   joined_at: Date,
   experience: number,
   role_id: number,

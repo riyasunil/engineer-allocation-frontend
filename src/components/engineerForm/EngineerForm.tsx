@@ -45,7 +45,7 @@ interface FormData {
   name: string;
   user_id: string;
   email: string;
-  password: string;
+  password?: string;
   joined_at: string;
   experience: number;
   skill_id: SelectedOption[];
@@ -203,7 +203,6 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
         name: initialData.name || "",
         user_id: initialData.user_id || "",
         email: initialData.email || "",
-        password: initialData.password,
         joined_at: initialData.joined_at
           ? new Date(initialData.joined_at).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
@@ -307,7 +306,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     if (!formData.user_id.trim()) newErrors.user_id = "User ID is required";
-    if (mode === "add" && !formData.password.trim())
+    if (mode === "add" && !formData.password?.trim())
       newErrors.password = "Password is required";
 
     setErrors(newErrors);
@@ -321,23 +320,24 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
   const handleSubmit = async () => {
     if (validateForm()) {
       try {
-        const userData: UserData = {
-          user_id: formData.user_id,
-          name: formData.name,
-          email: formData.email,
-          password: mode === "add" ? formData.password : initialData.password,
-          joined_at: new Date(formData.joined_at),
-          experience: formData.experience,
-          role_id: 2,
-          skill_id: formData.skill_id
-            .map((skill) => skill.id)
-            .filter((id): id is number => typeof id === "number"),
-          designation_id: formData.designation_id
-            .map((designation) => designation.id)
-            .filter((id): id is number => typeof id === "number"),
-        };
+        
 
         if (mode === "add") {
+          const userData: UserData = {
+            user_id: formData.user_id,
+            name: formData.name,
+            email: formData.email,
+            password: mode === "add" ? formData.password : initialData.password,
+            joined_at: new Date(formData.joined_at),
+            experience: formData.experience,
+            role_id: 2,
+            skill_id: formData.skill_id
+              .map((skill) => skill.id)
+              .filter((id): id is number => typeof id === "number"),
+            designation_id: formData.designation_id
+              .map((designation) => designation.id)
+              .filter((id): id is number => typeof id === "number"),
+          };
           const result = await addEngineer(userData);
           if (result.data) {
             toast.success("Engineer created successfully");
@@ -350,6 +350,20 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
             });
           }
         } else if (mode === "edit") {
+          const userData: UserData = {
+            user_id: formData.user_id,
+            name: formData.name,
+            email: formData.email,
+            joined_at: new Date(formData.joined_at),
+            experience: formData.experience,
+            role_id: 2,
+            skill_id: formData.skill_id
+              .map((skill) => skill.id)
+              .filter((id): id is number => typeof id === "number"),
+            designation_id: formData.designation_id
+              .map((designation) => designation.id)
+              .filter((id): id is number => typeof id === "number"),
+          };
           const result = await updateEngineer(userData);
           if (result.data) {
             toast.success("Engineer updated successfully");
