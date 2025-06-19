@@ -59,6 +59,14 @@ export const userApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    updateExperience: builder.mutation<User, { id: string; experience: number }>({
+      query: (payload) => ({
+        url: `/users/${payload.id}/experience`,
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -72,6 +80,7 @@ export const {
   useLazyGetAssignableUsersQuery,
   useGetAllEngineersQuery,
   useGetAllAvailableUsersQuery,
+  useUpdateExperienceMutation
 } = userApi;
 
 // public async getAssignableUsers(req:Request, res:Response, next: NextFunction){
