@@ -20,65 +20,42 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
 
   const [sendQuery, { isLoading }] = useSendChatbotQueryMutation();
 
-const handleSendMessage = async () => {
-  if (!message.trim()) return;
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
 
-  const userMessage = {
-    id: Date.now(),
-    text: message,
-    isBot: false,
-    timestamp: new Date(),
-  };
+    const userMessage = {
+      id: Date.now(),
+      text: message,
+      isBot: false,
+      timestamp: new Date(),
+    };
 
-  setMessages((prev) => [...prev, userMessage]);
-  setMessage("");
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage("");
 
-  try {
-    const response = await sendQuery({ query: message }).unwrap();
+    try {
+      const response = await sendQuery({ query: message }).unwrap();
 
-    const availableEngineers = response.results;
-    let reply = "";
+      const reply = response.message || "🤖 I wasn't sure how to respond.";
 
-    if (availableEngineers.length > 0) {
-      const readableList = availableEngineers
-        .map(
-          (eng) =>
-            `👤 ${eng.name}\n📧 ${eng.email}\n`
-        //   🧠 Skills: ${
-        //       eng.skills?.join(", ") || "N/A"
-        //     }
-        )
-        .join("\n\n");
+      const botMessage = {
+        id: Date.now() + 1,
+        text: reply,
+        isBot: true,
+        timestamp: new Date(),
+      };
 
-      reply = `🔍 Based on your query:
-
-👥 Available Engineers:
-
-${readableList}`;
-    } else {
-      // If no engineers matched or the query wasn't about engineers
-      reply = "🤖 I'm here to help you find available engineers or provide project info.";
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      const errMsg = {
+        id: Date.now() + 1,
+        text: "⚠️ Something went wrong. Please try again.",
+        isBot: true,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errMsg]);
     }
-
-    const botMessage = {
-      id: Date.now() + 1,
-      text: reply,
-      isBot: true,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, botMessage]);
-  } catch (error) {
-    const errMsg = {
-      id: Date.now() + 1,
-      text: "⚠️ Something went wrong. Please try again.",
-      isBot: true,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, errMsg]);
-  }
-};
-
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
