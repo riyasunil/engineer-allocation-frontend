@@ -23,20 +23,19 @@ const History = () => {
     | "Employee Unassigned"
   >("ALL");
 
-  const { data : logs } = useGetAllLogsQuery();
+  const { data: logs } = useGetAllLogsQuery();
 
-  console.log(logs?.data)
+  console.log(logs?.data);
 
-    // const actorName = "ria";
+  // const actorName = "ria";
 
   const filteredlogs = logs?.data?.filter((log) => {
-
     // const {data : actorName} = useGetUserByIdQuery(log.actor_user_id)
 
     const matchesSearch =
       log.action_type.toLowerCase().includes(search.toLowerCase()) ||
       log.change_summary.toLowerCase().includes(search.toLowerCase());
-      // actorName.toLowerCase().includes(search.toLowerCase());
+    // actorName.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter = filter === "ALL" || log.action_type === filter;
     return matchesSearch && matchesFilter;
@@ -57,7 +56,7 @@ const History = () => {
           className="flex items-center gap-2 text-black rounded-xl"
         >
           <HistoryIcon className="h-4 w-4" />
-          {logs? logs?.data.length : 0}&nbsp;Records
+          {logs ? logs?.data.length : 0}&nbsp;Records
         </Button>
       </header>
 
@@ -82,9 +81,10 @@ const History = () => {
         </h2>
 
         <div className="space-y-6">
-          {filteredlogs && filteredlogs.map((req) => (
-            <RequestCard key={req.id} request={req} />
-          ))}
+          {filteredlogs &&
+            filteredlogs.map((req) => (
+              <RequestCard key={req.id} request={req} />
+            ))}
         </div>
       </div>
     </div>
