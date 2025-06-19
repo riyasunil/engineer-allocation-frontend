@@ -51,7 +51,7 @@ export default function DashboardSidebar({
   const items = [
     {
       title: "Analytics",
-      url: ``,
+      url: `/${userRole}/analytics`,
       icon: BarChart,
       roles: ["hr", "pm"],
     },
@@ -111,7 +111,9 @@ export default function DashboardSidebar({
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {filteredItems.map((item) => {
-                const isActive = location.pathname.startsWith(item.url);
+                const isActive = location.pathname === item.url || 
+                  (item.url !== `/${userRole}` && location.pathname.startsWith(item.url)) ||
+                  (item.title === "Analytics" && location.pathname === `/${userRole}`);
 
                 return (
                   <SidebarMenuItem key={item.title}>
