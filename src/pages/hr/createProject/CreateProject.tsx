@@ -37,29 +37,6 @@ interface CreateProjectDto {
   requirements?: ProjectRequirementDto[];
 }
 
-// interface Engineer {
-//   id: number;
-//   //name: string;
-// }
-
-// const dummyEmployees = [
-//   { id: 20, name: 'Alice Johnson' },
-//   { id: 8, name: 'Bob Smith' },
-//   { id: 23, name: 'Charlie Davis' },
-//   { id: 25, name: 'Diana White' }
-// ];
-
-// const dummyEngineers = [
-//   { id: 101, name: 'John Doe' },
-//   { id: 102, name: 'Jane Smith' },
-//   { id: 103, name: 'Mike Wilson' },
-//   { id: 104, name: 'Sarah Connor' },
-//   { id: 105, name: 'Tom Hardy' },
-//   { id: 106, name: 'Emma Watson' }
-// ];
-
-//const projectStatuses = ['NEW'];
-
 const CreateProject = () => {
   const navigate = useNavigate();
   const [createProject, { isLoading }] = useCreateProjectMutation();
@@ -83,10 +60,6 @@ const CreateProject = () => {
 
   const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1});
   const [selectedSkill, setSelectedSkill] = useState('');
-
-  // const [engineerAssignments, setEngineerAssignments] = useState<{ [index: number]: Engineer[] }>({});
-  // const [selectedEngineers, setSelectedEngineers] = useState<Engineer[]>([]);
-  // const [showEngineerCard, setShowEngineerCard] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -133,17 +106,9 @@ const CreateProject = () => {
     }));
   };
 
-  // const handleConfirmRequirement = () => {
-  //   if (newReq.designation && newReq.designation_id && newReq.count > 0) {
-  //     setShowEngineerCard(true);
-  //   }
-  // };
-
   const handleClearRequirement = () => {
     setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     setSelectedSkill('');
-    // setShowEngineerCard(false); 
-    // setSelectedEngineers([]);
   };
 
   const handleAddRequirement = () => {
