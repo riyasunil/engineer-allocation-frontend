@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Briefcase, Star, Calendar, ArrowLeft, Mail } from 'lucide-react';
+import { User, Briefcase, Star, Calendar, ArrowLeft, Mail, Edit } from 'lucide-react';
 import { useGetUserByIdQuery } from '@/api-service/user/user.api';
 
 // Custom color palette
@@ -33,9 +33,8 @@ const EngineerDetails = () => {
     return (
       <div className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate('/hr/engineers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Engineers
+          <Button variant="ghost" size="icon" onClick={() => navigate('/hr/engineers')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-center py-12">
@@ -49,9 +48,8 @@ const EngineerDetails = () => {
     return (
       <div className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate('/hr/engineers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Engineers
+          <Button variant="ghost" size="icon" onClick={() => navigate('/hr/engineers')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-center py-12">
@@ -141,9 +139,8 @@ const EngineerDetails = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/hr/engineers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Engineers
+          <Button variant="ghost" size="icon" onClick={() => navigate('/hr/engineers')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">{engineer.name}</h1>
@@ -151,9 +148,10 @@ const EngineerDetails = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className={getAvailabilityColor(engineer.availability)}>
-            {engineer.availability.replace('_', ' ')}
-          </Badge>
+          <Button variant="outline" onClick={() => navigate(`/hr/engineers/${engineer.id}/edit`)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
+          </Button>
         </div>
       </div>
 
@@ -193,6 +191,13 @@ const EngineerDetails = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">{engineer.allocations}/{engineer.maxProjects} Projects</span>
               </div>
+            </div>
+
+            <div className="pt-2">
+              <h4 className="font-medium mb-2">Availability Status</h4>
+              <Badge className={getAvailabilityColor(engineer.availability)}>
+                {engineer.availability.replace('_', ' ')}
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -278,26 +283,6 @@ const EngineerDetails = () => {
               <p className="text-muted-foreground">No current projects assigned</p>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <Button 
-              disabled={engineer.availability === 'FULLY_ALLOCATED'}
-              onClick={() => navigate(`/hr/assign-project/${engineer.id}`)}
-            >
-              Assign to Project
-            </Button>
-            <Button variant="outline" onClick={() => navigate(`/hr/engineers/${engineer.id}/edit`)}>
-              Edit Profile
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
