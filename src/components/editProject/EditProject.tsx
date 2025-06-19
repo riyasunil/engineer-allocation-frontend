@@ -185,69 +185,6 @@ const [requirementSkills, setRequirementSkills] = useState<Record<number, string
       designation_id: selectedDesignation?.id || 0,
     }));
   };
-// const fetchSkills = async (requirementId: number) => {
-//   try {
-//     const { data: skillsResponse } = await fetchSkillsForRequirement(requirementId);
-    
-//     // Handle different response formats
-//     let skillsArray: string[] = [];
-    
-//     if (typeof skillsResponse === 'string') {
-//       // If API returns a single skill name as string
-//       skillsArray = [skillsResponse];
-//     } else if (Array.isArray(skillsResponse)) {
-//       // If API returns an array of skill names
-//       skillsArray = skillsResponse;
-//     } else if (skillsResponse && typeof skillsResponse === 'object') {
-//       // If API returns an object with skill data
-//       if ('data' in skillsResponse) {
-//         const skillData = skillsResponse.data;
-//         if (typeof skillData === 'string') {
-//           skillsArray = [skillData];
-//         } else if (Array.isArray(skillData)) {
-//           skillsArray = skillData;
-//         }
-//       }
-//     }
-    
-//     setRequirementSkills(prev => ({
-//       ...prev,
-//       [requirementId]: skillsArray
-//     }));
-//   } catch (error) {
-//     console.error(`Error fetching skills for requirement ${requirementId}:`, error);
-//     // Set empty array on error
-//     setRequirementSkills(prev => ({
-//       ...prev,
-//       [requirementId]: []
-//     }));
-//   }
-// };
-
-// Call fetchSkills when requirements are loaded or changed
-// useEffect(() => {
-//   if (originalRequirements) {
-//     originalRequirements.forEach(req => {
-//       if (req.id && !requirementSkills[req.id]) {
-//         fetchSkills(req.id);
-//       }
-//     });
-//   }
-// }, [originalRequirements]);
-
-
-  // Fixed: Add skill as object instead of string
-  // const handleAddSkillToRequirement = (skillId: string) => {
-  //   const skill = skillsWithIds?.find((s) => s.id === parseInt(skillId));
-  //   const skillExists = newReq.skills.some((s) => s.id === parseInt(skillId));
-
-  //   if (skill && !skillExists) {
-  //     setNewReq((prev) => ({
-  //       ...prev,
-  //       skills: [...prev.skills, { id: skill.id, name: skill.skill_name }],
-  //     }));
-  //   }
-  // };
 
   // Fixed: Remove skill by id
   const handleRemoveSkillFromRequirement = (skillId: number) => {
@@ -278,64 +215,20 @@ const [requirementSkills, setRequirementSkills] = useState<Record<number, string
     setNewReqEngineers([]);
   };
 
-  // Fixed: Pass skills as objects
-  // const handleAddRequirement = async () => {
-  //   try {
-  //     const createReqData = {
-  //       project: { id: parseInt(id!) }, // if your backend needs a full Project object, mock with ID
-  //       designation: { id: newReq.designation_id }, // same for Designation
-  //       required_count: newReq.count,
-  //       is_requested: false,
-  //       requirementSkills: newReq.skills.map((skill) => ({
-  //         skill: { id: skill.id, name: skill.name }, // assuming each skill has an id and name
-  //       })),
-  //       // projectAssignments: [], // optional, only if assigning engineers directly
-  //     };
 
-  //     console.log("creating requirement body", createReqData);
-  //     const res = await createRequirement(createReqData).unwrap();
-  //     console.log("res", res);
+  const handleAddSkillToRequirement = (skillId: string) => {
+  const skill = skillsWithIds?.find((s) => s.id === parseInt(skillId));
+  const skillExists = newReq.skills.some((s) => s.id === parseInt(skillId));
 
-  //     // Refresh project data
-  //     refetchProject();
+  if (skill && !skillExists) {
+    setNewReq((prev) => ({
+      ...prev,
+      skills: [...prev.skills, { id: skill.id, name: skill.skill_name }],
+    }));
+  }
+  setSelectedSkill(""); // Reset the select input
+};
 
-  //     // Clear form
-  //     handleClearRequirement();
-
-  //     alert("Requirement added successfully");
-  //   } catch (error: any) {
-  //     console.error("Error creating requirement:", error);
-  //     alert(error?.data?.message || "Failed to create requirement");
-  //   }
-  // };
-
-//  const handleAddRequirement = async () => {
-//   try {
-//     const createReqData = {
-//       project: { id: parseInt(id!) },
-//       designation: { id: newReq.designation_id },
-//       required_count: newReq.count,
-//       is_requested: false,
-//       requirementSkills: newReq.skills.map(skill => ({
-//         skill: { 
-//           id: skill.id,
-//           name: skill.name 
-//         }
-//       }))
-//     };
-
-//     console.log("Creating requirement with data:", createReqData);
-//     const res = await createRequirement(createReqData).unwrap();
-//     console.log("API Response:", res);
-
-//     refetchProject();
-//     handleClearRequirement();
-//     alert("Requirement added successfully");
-//   } catch (error: any) {
-//     console.error("Error creating requirement:", error);
-//     alert(error?.data?.message || "Failed to create requirement");
-//   }
-// };
 
 const handleAddRequirement = async () => {
   try {
@@ -383,30 +276,6 @@ const handleAddRequirement = async () => {
     alert(error?.data?.message || "Failed to create requirement");
   }
 };
-
-  // Fixed: Update requirement with skills as objects
-//  const handleUpdateRequirement = async (
-//   requirementId: number,
-//   updateData: UpdateRequirementDto
-// ) => {
-//   try {
-//     console.log("Updating requirement with:", {
-//       id: requirementId,
-//       data: updateData
-//     });
-    
-//     await updateRequirement({
-//       id: requirementId,
-//       data: updateData
-//     }).unwrap();
-    
-//     setEditingRequirement(null);
-//     alert("Requirement updated successfully");
-//   } catch (error: any) {
-//     console.error("Error updating requirement:", error);
-//     alert(error?.data?.message || "Failed to update requirement");
-//   }
-// };
 
   const handleRemoveRequirement = async (requirementId: number) => {
     if (window.confirm("Are you sure you want to delete this requirement?")) {
@@ -540,24 +409,8 @@ const handleAddRequirement = async () => {
   }, [assignableEngineers]);
 
   const startEditingRequirement = (index: number, requirement: any) => {
-  // setEditingRequirement({
-  //   index,
-  //   data: {
-  //     required_count: requirement.required_count || requirement.count,
-  //     requirementSkills: requirement.requirementSkills
-  //       ?.filter(rs => rs?.skill)
-  //       .map(rs => ({
-  //         skill: {
-  //           id: rs.skill.id,
-  //           name: rs.skill.skill_name
-  //         }
-  //       })) || []
-  //   }
-  // });
+
 };
-//   const cancelEditingRequirement = () => {
-//     setEditingRequirement(null);
-//   };
 
   console.log("originalRequirements", originalRequirements);
   return (
@@ -966,8 +819,8 @@ const handleAddRequirement = async () => {
       </div>
 
       {/* Add Engineer Section */}
-      <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="flex items-center gap-2">
+      <div className="mt-3 pt-3">
+        {/* <div className="flex items-center gap-2">
           <select
             onChange={(e) => {
               const engineerId = parseInt(e.target.value);
@@ -993,7 +846,7 @@ const handleAddRequirement = async () => {
           {isAssigningEngineer && (
             <span className="text-xs text-gray-500">Assigning...</span>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
