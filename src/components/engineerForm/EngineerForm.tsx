@@ -21,6 +21,7 @@ import { useAddEngineerMutation } from "@/api-service/user/user.api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+
 interface SelectedOption {
   id: string | number;
   name: string;
@@ -258,8 +259,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
   };
 
   const onCancel = () => {
-    // Handle cancel logic here
-    console.log("Cancel clicked");
+    navigate(-1);
   };
 
   const handleSubmit = async () => {
@@ -292,12 +292,24 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
               navigate(-1);
             }, 1500); 
           }
+          else if (result.error) {
+            toast.error("Failed to create engineer", {
+              description:
+                ("Something went wrong. Please try again."),
+            });
+          }
         } else if (mode === "edit") {
           // Handle edit logic here
           console.log("Edit mode - update logic needed");
         }
       } catch (error) {
-        console.error("Error adding engineer:", error);
+        toast.error("Failed to create engineer", {
+          description:
+            (addEngineerError as any)?.data?.message ||
+            (error as Error)?.message ||
+            "Something went wrong. Please try again.",
+        });
+        
       }
     }
   };
@@ -338,6 +350,10 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
               notes: "",
             });
             setErrors({});
+          } else if (result.error) {
+            toast.error("Failed to create engineer", {
+              description: "Something went wrong. Please try again.",
+            });
           }
         } catch (error) {
           console.error("Error adding engineer:", error);

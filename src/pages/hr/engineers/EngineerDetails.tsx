@@ -3,33 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Briefcase, Star, Calendar, ArrowLeft, Mail } from 'lucide-react';
+import { User, Briefcase, Star, Calendar, ArrowLeft, Mail, Edit } from 'lucide-react';
 import { useGetUserByIdQuery } from '@/api-service/user/user.api';
 
-// Color palette for profile icons - darker shades
+// Custom color palette
 const profileColors = [
-  'bg-slate-700',
-  'bg-gray-700', 
-  'bg-zinc-700',
-  'bg-neutral-700',
-  'bg-stone-700',
-  'bg-red-700',
-  'bg-orange-700',
-  'bg-amber-700',
-  'bg-yellow-700',
-  'bg-lime-700',
-  'bg-green-700',
-  'bg-emerald-700',
-  'bg-teal-700',
-  'bg-cyan-700',
-  'bg-sky-700',
-  'bg-blue-700',
-  'bg-indigo-700',
-  'bg-violet-700',
-  'bg-purple-700',
-  'bg-fuchsia-700',
-  'bg-pink-700',
-  'bg-rose-700'
+  '#FF204E',
+  '#A0153E',
+  '#5D0E41',
+  '#00224D'
 ];
 
 const getProfileColor = (name: string) => {
@@ -51,9 +33,8 @@ const EngineerDetails = () => {
     return (
       <div className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate('/hr/engineers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Engineers
+          <Button variant="ghost" size="icon" onClick={() => navigate('/hr/engineers')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-center py-12">
@@ -67,9 +48,8 @@ const EngineerDetails = () => {
     return (
       <div className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate('/hr/engineers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Engineers
+          <Button variant="ghost" size="icon" onClick={() => navigate('/hr/engineers')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-center py-12">
@@ -153,15 +133,14 @@ const EngineerDetails = () => {
     }
   };
 
-  const profileColorClass = getProfileColor(engineer.name);
+  const profileColor = getProfileColor(engineer.name);
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/hr/engineers')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Engineers
+          <Button variant="ghost" size="icon" onClick={() => navigate('/hr/engineers')}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">{engineer.name}</h1>
@@ -169,9 +148,10 @@ const EngineerDetails = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className={getAvailabilityColor(engineer.availability)}>
-            {engineer.availability.replace('_', ' ')}
-          </Badge>
+          <Button variant="outline" onClick={() => navigate(`/hr/engineers/${engineer.id}/edit`)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
+          </Button>
         </div>
       </div>
 
@@ -186,7 +166,10 @@ const EngineerDetails = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center">
-              <div className={`w-20 h-20 ${profileColorClass} rounded-full flex items-center justify-center mx-auto mb-3`}>
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{ backgroundColor: profileColor }}
+              >
                 <span className="text-2xl font-bold text-white">
                   {engineer.name.split(' ').map(n => n[0]).join('')}
                 </span>
@@ -208,6 +191,13 @@ const EngineerDetails = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">{engineer.allocations}/{engineer.maxProjects} Projects</span>
               </div>
+            </div>
+
+            <div className="pt-2">
+              <h4 className="font-medium mb-2">Availability Status</h4>
+              <Badge className={getAvailabilityColor(engineer.availability)}>
+                {engineer.availability.replace('_', ' ')}
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -293,26 +283,6 @@ const EngineerDetails = () => {
               <p className="text-muted-foreground">No current projects assigned</p>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <Button 
-              disabled={engineer.availability === 'FULLY_ALLOCATED'}
-              onClick={() => navigate(`/hr/assign-project/${engineer.id}`)}
-            >
-              Assign to Project
-            </Button>
-            <Button variant="outline" onClick={() => navigate(`/hr/engineers/${engineer.id}/edit`)}>
-              Edit Profile
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
