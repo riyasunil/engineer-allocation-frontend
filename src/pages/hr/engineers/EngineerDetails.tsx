@@ -6,30 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { User, Briefcase, Star, Calendar, ArrowLeft, Mail } from 'lucide-react';
 import { useGetUserByIdQuery } from '@/api-service/user/user.api';
 
-// Color palette for profile icons - darker shades
+// Custom color palette
 const profileColors = [
-  'bg-slate-700',
-  'bg-gray-700', 
-  'bg-zinc-700',
-  'bg-neutral-700',
-  'bg-stone-700',
-  'bg-red-700',
-  'bg-orange-700',
-  'bg-amber-700',
-  'bg-yellow-700',
-  'bg-lime-700',
-  'bg-green-700',
-  'bg-emerald-700',
-  'bg-teal-700',
-  'bg-cyan-700',
-  'bg-sky-700',
-  'bg-blue-700',
-  'bg-indigo-700',
-  'bg-violet-700',
-  'bg-purple-700',
-  'bg-fuchsia-700',
-  'bg-pink-700',
-  'bg-rose-700'
+  '#FF204E',
+  '#A0153E',
+  '#5D0E41',
+  '#00224D'
 ];
 
 const getProfileColor = (name: string) => {
@@ -153,7 +135,7 @@ const EngineerDetails = () => {
     }
   };
 
-  const profileColorClass = getProfileColor(engineer.name);
+  const profileColor = getProfileColor(engineer.name);
 
   return (
     <div className="p-6 space-y-6">
@@ -186,7 +168,10 @@ const EngineerDetails = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center">
-              <div className={`w-20 h-20 ${profileColorClass} rounded-full flex items-center justify-center mx-auto mb-3`}>
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{ backgroundColor: profileColor }}
+              >
                 <span className="text-2xl font-bold text-white">
                   {engineer.name.split(' ').map(n => n[0]).join('')}
                 </span>

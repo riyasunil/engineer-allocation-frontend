@@ -8,6 +8,37 @@ import { useNavigate } from "react-router-dom";
 import { User } from "@/utils/types";
 import { useGetEngineersQuery } from "@/api-service/user/user.api";
 
+// Function to generate consistent colors based on engineer ID
+const generateAvatarColor = (id: string | number) => {
+  const colors = [
+    "#FF204E",
+    "#A0153E", 
+    "#5D0E41",
+    "#00224D"
+  ];
+  
+  // Convert id to string and create a simple hash
+  const str = String(id);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  // Use hash to select color consistently
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
+
+// Function to get initials from name
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2); // Limit to 2 characters
+};
+
 export default function Engineers() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("ALL");
@@ -39,6 +70,9 @@ export default function Engineers() {
       strengths:
         user.userSkills?.slice(0, 2).map((skill) => skill.skill.skill_name) ||
         [], // Take first 2 skills as strengths
+      // Add avatar properties
+      initials: getInitials(user.name),
+      avatarColor: generateAvatarColor(user.user_id),
     }));
 
   const filteredEngineers = transformedEngineers.filter(
