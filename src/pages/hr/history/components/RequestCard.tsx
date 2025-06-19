@@ -15,7 +15,7 @@ export default function RequestCard({ request }: { request: AuditLog }) {
     isLoading,
     isError,
   } = useGetUserByIdQuery(request.actor_user_id, {
-    // RTKQ will cache by ID so duplicates aren’t re-fetched
+    // RTKQ will cache by ID so duplicates aren't re-fetched
     skip: !request.actor_user_id,
   });
 
