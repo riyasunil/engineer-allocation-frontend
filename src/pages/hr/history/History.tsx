@@ -3,7 +3,7 @@ import { HistoryIcon, User } from "lucide-react";
 import React, { useState } from "react";
 import RequestCard from "./components/HistoryRequestCard";
 import { SearchFilterBar } from "@/components/ui/searchFilterBar";
-import { useGetAllLogsQuery } from "@/api-service/logs/logs.api";
+import { useGetAllLogsQuery } from "@/api-service/audit/auditLogs.api";
 
 export interface AuditLog {
   id: number;
