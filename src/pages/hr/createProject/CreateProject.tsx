@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useCreateProjectMutation } from '@/api-service/projects/projects.api';
 import { useGetDesignationQuery } from '@/api-service/designation/designation.api';
 import { useGetSkillsQuery } from '@/api-service/skill/skill.api';
+import { useGetAllAvailableUsersQuery } from '@/api-service/user/user.api';
+import { toast } from 'sonner';
 
 interface ProjectRequirement {
   designation: string;
@@ -63,7 +65,8 @@ const CreateProject = () => {
   const [createProject, { isLoading }] = useCreateProjectMutation();
   const { data: designationsWithIds } = useGetDesignationQuery();
   const { data: skillsWithIds } = useGetSkillsQuery();
-
+  const {data: availableUsers}= useGetAllAvailableUsersQuery();
+  
   
   const today = new Date().toISOString().split('T')[0];
 
@@ -86,6 +89,7 @@ const CreateProject = () => {
   const [showEngineerCard, setShowEngineerCard] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    console.log(availableUsers) 
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -198,11 +202,11 @@ const CreateProject = () => {
     console.log("in submit" , engineerAssignments)
     try {
       const response = await createProject(formData).unwrap();
-      alert(response.message || 'Project created successfully');
+      toast.success('Project created successfully')
       navigate('/hr/projects');
     } catch (error: any) {
       console.error('Error creating project:', error);
-      alert(error?.data?.message || 'Failed to create project');
+      toast.error('Error creating project')
     }
   };
 
@@ -292,7 +296,7 @@ const CreateProject = () => {
                 required
               >
                 <option value="">Select Project Manager</option>
-                {dummyEmployees.map(emp => (
+                {availableUsers?.filter(user => user.id!==formData.leadId).map(emp => (
                   <option key={emp.id} value={emp.id}>{emp.name}</option>
                 ))}
               </select>
@@ -307,7 +311,7 @@ const CreateProject = () => {
                 required
               >
                 <option value="">Select Team Lead</option>
-                {dummyEmployees.map(emp => (
+                {availableUsers?.filter(user=>user.id!==formData.pmId).map(emp => (
                   <option key={emp.id} value={emp.id}>{emp.name}</option>
                 ))}
               </select>
