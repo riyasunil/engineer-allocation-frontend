@@ -9,13 +9,13 @@ import { FolderOpen } from "lucide-react";
 import { AuditLog } from "../History";
 import { useGetUserByIdQuery } from "@/api-service/user/user.api";
 
-export default function RequestCard({ request }: { request: AuditLog }) {
+export default function HistoryRequestCard({ request }: { request: AuditLog }) {
   const {
     data: actor,
     isLoading,
     isError,
   } = useGetUserByIdQuery(request.actor_user_id, {
-    // RTKQ will cache by ID so duplicates aren’t re-fetched
+    // RTKQ will cache by ID so duplicates aren't re-fetched
     skip: !request.actor_user_id,
   });
 
