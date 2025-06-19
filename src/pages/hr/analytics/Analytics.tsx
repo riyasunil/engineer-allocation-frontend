@@ -9,12 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { exportEngineersData, useAnalyticsData } from "./AnalyticsDataService";
 import ProjectAnalytics from "@/components/Analytics/ProjectAnaytics";
 
-
 const Analytics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("projects");
 
   const { engineers, projects, skillDistribution, engineerSummary, isLoading } =
     useAnalyticsData();
+
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleExport = (): void => {
     if (isLoading) {
@@ -35,6 +36,37 @@ const Analytics: React.FC = () => {
     }
   };
 
+  const handleDownloadReport = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch("http://localhost:5000/report/download", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to download report");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "engineer_insights_report.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success(
+        "AI report exported successfully! Check your downloads folder for the report."
+      );
+    } catch (err) {
+      console.error("Download failed:", err);
+      toast.error("Failed to download report");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -46,6 +78,16 @@ const Analytics: React.FC = () => {
             Comprehensive insights into projects and engineer performance
           </p>
         </div>
+        <div className="flex gap-2">
+        <Button
+          onClick={handleDownloadReport}
+          className="flex items-center gap-2"
+          disabled={isGenerating}
+        >
+          <Download className="h-4 w-4" />
+          {isGenerating ? "Generating..." : "Download AI Report"}
+        </Button>
+
         <Button
           onClick={handleExport}
           className="flex items-center gap-2"
@@ -54,6 +96,7 @@ const Analytics: React.FC = () => {
           <Download className="h-4 w-4" />
           {isLoading ? "Loading..." : "Export Engineers Data"}
         </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -71,15 +114,7 @@ const Analytics: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Export info card */}
-      <Card className="border-dashed">
-        <CardContent className="pt-6">
-          <div className="text-sm text-muted-foreground">
-            <strong>Export Data:</strong> All engineers summary + skills
-            distribution (2 CSV files)
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 };
