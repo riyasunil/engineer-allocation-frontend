@@ -203,7 +203,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
         name: initialData.name || "",
         user_id: initialData.user_id || "",
         email: initialData.email || "",
-        password: "",
+        password: initialData.password,
         joined_at: initialData.joined_at
           ? new Date(initialData.joined_at).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],

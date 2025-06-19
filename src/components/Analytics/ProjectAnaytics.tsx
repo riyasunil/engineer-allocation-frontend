@@ -118,13 +118,15 @@ export default function ProjectAnalytics() {
     value,
     color:
       status === "CLOSED"
-        ? "#22c55e"
+        ? "#34D399" // Soft Green (CLOSED)
         : status === "IN_PROGRESS"
-        ? "#3b82f6"
+        ? "#60A5FA" // Soft Blue (IN_PROGRESS)
         : status === "NEW"
-        ? "#f59e0b"
-        : "#ef4444",
+        ? "#FBBF24" // Golden Yellow (NEW)
+        : "#F87171", // Soft Red (Default/Other)
   }));
+  
+  
 
   // Create monthly project data based on start dates
   const monthlyData = transformedProjects.reduce((acc, project) => {
@@ -150,9 +152,28 @@ export default function ProjectAnalytics() {
   }, [] as Array<{ month: string; started: number; completed: number }>);
 
   // If no date-based data, create summary data
+  const monthOrder = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const sortedMonthlyData = monthlyData.sort(
+    (a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month)
+  );
+
   const barData =
-    monthlyData.length > 0
-      ? monthlyData
+    sortedMonthlyData.length > 0
+      ? sortedMonthlyData
       : [
           {
             month: "Overall",
@@ -161,6 +182,7 @@ export default function ProjectAnalytics() {
               .length,
           },
         ];
+
 
   if (isLoading) {
     return (
