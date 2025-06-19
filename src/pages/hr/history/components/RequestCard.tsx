@@ -7,21 +7,24 @@ import {
 } from "@/components/ui/card";
 import { FolderOpen } from "lucide-react";
 import { AuditLog } from "../History";
-
-const users = [
-  {
-    id: 1,
-    name: "Ria Sunil",
-    role: "HR",
-  },
-  {
-    id: 2,
-    name: "Hritik Koshi",
-    role: "PM",
-  },
-];
+import { useGetUserByIdQuery } from "@/api-service/user/user.api";
 
 export default function RequestCard({ request }: { request: AuditLog }) {
+  const {
+    data: actor,
+    isLoading,
+    isError,
+  } = useGetUserByIdQuery(request.actor_user_id, {
+    // RTKQ will cache by ID so duplicates aren’t re-fetched
+    skip: !request.actor_user_id,
+  });
+
+  const name = isLoading
+    ? "Loading…"
+    : isError || !actor?.name
+    ? request.actor_user_id // fallback to ID
+    : actor.name;
+
   const getLogTypeColor = () => {
     if (request.action_type === "Project Created")
       return "bg-blue-100 text-green-800 border-green-200";
@@ -30,10 +33,6 @@ export default function RequestCard({ request }: { request: AuditLog }) {
     if (request.action_type === "Project Updated")
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     return "bg-red-100 text-red-800 border-red-200";
-  };
-
-  const getActionUserDetails = (uid: number) => {
-    return users.find((u) => u.id === uid);
   };
 
   return (
@@ -48,23 +47,21 @@ export default function RequestCard({ request }: { request: AuditLog }) {
           </CardTitle>
         </div>
         <p className="text-sm text-muted-foreground">
-          {request.timestamp.toDateString()}
+          {new Date(request.timestamp).toDateString()}{" "}
         </p>
       </CardHeader>
 
       <CardContent className="space-y-3 ">
         {/* add an author to audit log  */}
         <div className="flex flex-row items-start gap-x-4 text-sm max-w-fit">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-500 font-normal">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-500 font-normal">
             HR
           </div>
           <div className="flex flex-col items-start">
-            <p className="font-medium">
-            {getActionUserDetails(request.actor_user_id)?.name}
-          </p>
-          <p className="font-normal text-muted-foreground text-xs">
-            {getActionUserDetails(request.actor_user_id)?.role}
-          </p>
+            <p className="font-medium">{name}</p>
+            <p className="font-normal text-muted-foreground text-xs">
+              {actor?.role.role_name}
+            </p>
           </div>
         </div>
 
