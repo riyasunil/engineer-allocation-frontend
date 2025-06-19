@@ -1,17 +1,28 @@
 import React from "react";
 import { Briefcase } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export interface ProcessedRequest {
   id: number;
   project: string;
+  projectId: number; // Add projectId to the interface
   skill: string;
   experience?: number;
   reason: string;
 }
 
 const RequestCard = ({ request }: { request: ProcessedRequest }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/hr/projects/${request.projectId}`);
+  };
+
   return (
-    <div className="w-full p-5 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition space-y-4">
+    <div 
+      className="w-full p-5 border border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition space-y-4 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600"
+      onClick={handleCardClick}
+    >
       <div className="flex items-center gap-3">
         <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
           <Briefcase className="text-blue-600 dark:text-blue-300" size={20} />

@@ -4,6 +4,7 @@ import RequestCard from "./components/RequestCard";
 
 const Alerts = () => {
   const { data, isLoading, error } = useGetAdditionalRequestsQuery();
+  console.log(data)
   const alerts = data?.data ?? [];
 
   return (
@@ -29,6 +30,7 @@ const Alerts = () => {
             request={{
               id: req.id!,
               project: req.project.name,
+              projectId: req.project?.id, // Add this line to pass the project ID
               skill: req.requirementSkills?.map((s) => s.skill.skill_name).join(", ") || "N/A",
               reason: `Need ${req.required_count} ${req.designation.name}(s)`,
             }}
