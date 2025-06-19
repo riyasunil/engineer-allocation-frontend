@@ -44,7 +44,7 @@ const dummyEngineers = [
   { id: 106, name: 'Emma Watson' }
 ];
 
-const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
+const projectStatuses = ['New', 'Active', 'Completed'];
 
 const EditProject = () => {
   const navigate = useNavigate();

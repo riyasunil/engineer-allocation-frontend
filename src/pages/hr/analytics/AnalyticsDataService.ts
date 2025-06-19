@@ -154,7 +154,7 @@ export const transformProjectsData = (
     return {
       id: project.project_id,
       name: project.name,
-      status: project.status || "NEW",
+      status: project.status || "New",
       staffingPercentage,
       teamSize: assignedEngineers,
       duration: duration.toString(),
