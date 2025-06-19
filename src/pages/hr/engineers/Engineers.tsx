@@ -66,6 +66,11 @@ export default function Engineers() {
         ).toFixed(1)
       : "0.0";
 
+  // Handle engineer card click to navigate to details page
+  const handleEngineerClick = (engineer: any) => {
+    navigate(`/hr/engineers/${engineer.id}`);
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -162,7 +167,7 @@ export default function Engineers() {
             <EngineerCard
               key={engineer.id}
               engineer={engineer}
-              onClick={() => console.log(engineer)}
+              onClick={() => navigate(`/hr/engineers/${engineer.id}`)}
             />
           ))}
         </div>
