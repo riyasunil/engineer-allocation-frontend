@@ -13,6 +13,10 @@ import { useAppSelector } from "@/store/store";
 import { useGetProjectsByUserIdQuery } from "@/api-service/projects/projects.api";
 import ProfileLoader from "./ProfileLoader";
 import { Key, useState } from "react";
+import { useUpdateExperienceMutation } from "@/api-service/user/user.api";
+import { useDispatch } from "react-redux";
+import { setCurrentUser } from "@/store/slices/userSlice";
+import { toast } from "sonner";
 
 const EngineerProfile = () => {
   const currentUser = useAppSelector((state) => state.user.currentUser);
@@ -24,16 +28,28 @@ const EngineerProfile = () => {
     filter: "inprogress",
   });
 
+  const [updateExperience] = useUpdateExperienceMutation();
+  const dispatch = useDispatch();
+
   const handleEditExperience = () => {
     setExperienceValue(currentUser.experience.toString());
     setIsEditingExperience(true);
   };
 
-  const handleSaveExperience = () => {
-    // Add actual save logic here later
-    console.log("Saving experience:", experienceValue);
-    setIsEditingExperience(false);
+  const handleSaveExperience = async () => {
+    const result = await updateExperience({
+      id: currentUser.user_id,
+      experience: Number(experienceValue),
+    });
+
+    console.log("Mutation result:", result);
+
+    if (result.data) {
+      dispatch(setCurrentUser(result.data)); // Set updated user in Redux
+      toast.success("Experience updated successfully");
+    }
   };
+  
 
   const handleCancelEdit = () => {
     setIsEditingExperience(false);
@@ -73,9 +89,15 @@ const EngineerProfile = () => {
               <div className="w-20 h-20 rounded-full bg-slate-700 text-white flex items-center justify-center text-2xl font-bold shadow">
                 {initials}
               </div>
-              <h3 className="text-lg font-semibold text-slate-800">{currentUser.name}</h3>
-              <p className="text-sm text-muted-foreground">{currentUser.email}</p>
-              <p className="text-sm text-slate-600">{currentUser.role?.role_name}</p>
+              <h3 className="text-lg font-semibold text-slate-800">
+                {currentUser.name}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {currentUser.email}
+              </p>
+              <p className="text-sm text-slate-600">
+                {currentUser.role?.role_name}
+              </p>
             </div>
 
             <div className="space-y-3 text-base text-slate-600">
@@ -132,32 +154,40 @@ const EngineerProfile = () => {
         {/* Skills */}
         <Card className="w-full md:w-1/2 bg-white shadow-sm border border-slate-200">
           <CardContent className="p-6 space-y-5">
-            <h2 className="text-lg font-semibold text-slate-800">Skills & Expertise</h2>
+            <h2 className="text-lg font-semibold text-slate-800">
+              Skills & Expertise
+            </h2>
             <div>
               <p className="font-medium text-slate-700">Technical Skills</p>
               {currentUser.userSkills.length > 0 ? (
                 <ul className="flex flex-wrap gap-3 mt-4">
-                  {currentUser.userSkills.map((s: {
-                    skill: { id: Key; skill_name: string };
-                    level: string;
-                  }) => (
-                    <li
-                      key={s.skill.id}
-                      className="bg-slate-100 border border-slate-300 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 hover:bg-slate-200 transition-all"
-                    >
-                      <span className="text-sm font-medium text-slate-800">{s.skill.skill_name}</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                  {currentUser.userSkills.map(
+                    (s: {
+                      skill: { id: Key; skill_name: string };
+                      level: string;
+                    }) => (
+                      <li
+                        key={s.skill.id}
+                        className="bg-slate-100 border border-slate-300 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 hover:bg-slate-200 transition-all"
+                      >
+                        <span className="text-sm font-medium text-slate-800">
+                          {s.skill.skill_name}
+                        </span>
+                        <span
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full
                         ${
-                          s.level === 'Expert'
-                            ? 'bg-green-200 text-green-800'
-                            : s.level === 'Intermediate'
-                            ? 'bg-yellow-200 text-yellow-800'
-                            : 'bg-slate-200 text-slate-700'
-                        }`}>
-                        {s.level}
-                      </span>
-                    </li>
-                  ))}
+                          s.level === "Expert"
+                            ? "bg-green-200 text-green-800"
+                            : s.level === "Intermediate"
+                            ? "bg-yellow-200 text-yellow-800"
+                            : "bg-slate-200 text-slate-700"
+                        }`}
+                        >
+                          {s.level}
+                        </span>
+                      </li>
+                    )
+                  )}
                 </ul>
               ) : (
                 <p className="text-muted-foreground text-sm mt-2">
@@ -167,7 +197,6 @@ const EngineerProfile = () => {
             </div>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Current Projects Section */}
@@ -183,10 +212,18 @@ const EngineerProfile = () => {
           ) : activeProjects.length > 0 ? (
             <div className="grid md:grid-cols-2 gap-4 mt-2">
               {activeProjects
-                .filter((project: any) => typeof project.id === "number" && project.id !== undefined)
+                .filter(
+                  (project: any) =>
+                    typeof project.id === "number" && project.id !== undefined
+                )
                 .map((project: any) => (
-                  <div key={project.id} className="border rounded-md p-4 bg-slate-50">
-                    <h3 className="font-semibold text-slate-800">{project.name}</h3>
+                  <div
+                    key={project.id}
+                    className="border rounded-md p-4 bg-slate-50"
+                  >
+                    <h3 className="font-semibold text-slate-800">
+                      {project.name}
+                    </h3>
                     <p className="text-sm text-slate-600">
                       Role: {project.role ?? "Contributor"}
                     </p>
