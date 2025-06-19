@@ -17,10 +17,12 @@ import {
 import { Designation, Skill, UserData } from "@/utils/types";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
-import { useAddEngineerMutation } from "@/api-service/user/user.api";
+import {
+  useAddEngineerMutation,
+  useUpdateEngineerMutation,
+} from "@/api-service/user/user.api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
 
 interface SelectedOption {
   id: string | number;
@@ -106,6 +108,11 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
     { isLoading: isAddingEngineer, error: addEngineerError },
   ] = useAddEngineerMutation();
 
+  const [
+    updateEngineer,
+    { isLoading: isUpdatingEngineer, error: updateEngineerError },
+  ] = useUpdateEngineerMutation();
+
   // Icon mapping for skills
   const getSkillIcon = (skillName: string): React.ElementType => {
     const iconMap: Record<string, React.ElementType> = {
@@ -159,6 +166,55 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   const [designationsDropdownOpen, setDesignationsDropdownOpen] =
     useState(false);
+
+  // Effect to populate form data when in edit mode
+  useEffect(() => {
+    if (mode === "edit" && initialData && skillsData && designationsData) {
+      const apiSkillIds =
+        initialData.userSkills?.map((us: { skill: { skill_id: any; }; }) => us.skill.skill_id) || [];
+      const apiDesignationIds =
+        initialData.designations?.map((ud: { designation: { id: any; }; }) => ud.designation.id) || [];
+
+      const selectedSkills = skillsData
+        .filter(
+          (skill) =>
+            initialData.skill_id?.includes(skill.skill_id) ||
+            apiSkillIds.includes(skill.skill_id)
+        )
+        .map((skill) => ({
+          id: skill.skill_id,
+          name: skill.skill_name,
+          icon: getSkillIcon(skill.skill_name),
+        }));
+
+      const selectedDesignations = designationsData
+        .filter(
+          (designation) =>
+            initialData.designation_id?.includes(designation.id) ||
+            apiDesignationIds.includes(designation.id)
+        )
+        .map((designation) => ({
+          id: designation.id ?? "",
+          name: designation.name ?? "",
+          icon: getDesignationIcon(designation.name),
+        }));
+
+      setFormData({
+        name: initialData.name || "",
+        user_id: initialData.user_id || "",
+        email: initialData.email || "",
+        password: initialData.password,
+        joined_at: initialData.joined_at
+          ? new Date(initialData.joined_at).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        experience: initialData.experience || 0,
+        skill_id: selectedSkills,
+        designation_id: selectedDesignations,
+        notes: initialData.notes || "",
+      });
+    }
+  }, [mode, initialData, skillsData, designationsData]);
+  
 
   // Handle click outside to close dropdowns
   useEffect(() => {
@@ -269,7 +325,7 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
           user_id: formData.user_id,
           name: formData.name,
           email: formData.email,
-          password: formData.password,
+          password: mode === "add" ? formData.password : initialData.password,
           joined_at: new Date(formData.joined_at),
           experience: formData.experience,
           role_id: 2,
@@ -282,34 +338,44 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
         };
 
         if (mode === "add") {
-          console.log(userData);
           const result = await addEngineer(userData);
           if (result.data) {
             toast.success("Engineer created successfully");
-
-            // Navigate after short delay
             setTimeout(() => {
               navigate(-1);
-            }, 1500); 
-          }
-          else if (result.error) {
+            }, 1000);
+          } else if (result.error) {
             toast.error("Failed to create engineer", {
-              description:
-                ("Something went wrong. Please try again."),
+              description: "Something went wrong. Please try again.",
             });
           }
         } else if (mode === "edit") {
-          // Handle edit logic here
-          console.log("Edit mode - update logic needed");
+          const result = await updateEngineer(userData);
+          if (result.data) {
+            toast.success("Engineer updated successfully");
+            setTimeout(() => {
+              navigate(-1);
+            }, 1000);
+          } else if (result.error) {
+            console.log("Update error:", result.error);
+            toast.error("Failed to update engineer", {
+              description: "Something went wrong. Please try again.",
+            });
+          }
         }
       } catch (error) {
-        toast.error("Failed to create engineer", {
+        const errorMessage =
+          mode === "edit"
+            ? "Failed to update engineer"
+            : "Failed to create engineer";
+
+        toast.error(errorMessage, {
           description:
-            (addEngineerError as any)?.data?.message ||
+            (mode === "edit" ? updateEngineerError : (addEngineerError as any))
+              ?.data?.message ||
             (error as Error)?.message ||
             "Something went wrong. Please try again.",
         });
-        
       }
     }
   };
@@ -489,6 +555,8 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
     </div>
   );
 
+  const isLoading = isAddingEngineer || isUpdatingEngineer;
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -556,6 +624,8 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
               </div>
+
+              
 
               {mode === "add" && (
                 <div>
@@ -668,22 +738,6 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
                 isLoading={skillsLoading}
                 error={skillsError}
               />
-
-              {/*
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Additional Notes
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Any additional notes or comments"
-                />
-              </div>
-              */}
             </div>
           </div>
         </div>
@@ -701,21 +755,21 @@ const EngineerForm: React.FC<EngineerFormProps> = ({
             <button
               type="button"
               onClick={handleSaveAndAddAnother}
-              disabled={isAddingEngineer}
+              disabled={isLoading}
               className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isAddingEngineer ? "Saving..." : "Save & Add Another"}
+              {isLoading ? "Saving..." : "Save & Add Another"}
             </button>
           )}
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isAddingEngineer}
+            disabled={isLoading}
             className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="h-4 w-4 mr-2" />
-            {isAddingEngineer
+            {isLoading
               ? "Saving..."
               : mode === "edit"
               ? "Update Engineer"
