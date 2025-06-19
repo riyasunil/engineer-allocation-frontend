@@ -89,7 +89,6 @@ const CreateProject = () => {
   const [showEngineerCard, setShowEngineerCard] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    console.log(availableUsers) 
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
