@@ -6,6 +6,8 @@ import ProjectAnalytics from "@/components/Analytics/ProjectAnaytics";
 import EngineerAnalytics from "@/components/Analytics/EngineerAnalytics";
 import { toast } from "sonner";
 
+
+
 // Types
 interface StatCardProps {
   title: string;
@@ -38,6 +40,38 @@ const Analytics: React.FC = () => {
   );
   const [selectedEngineer, setSelectedEngineer] = useState<string>("all");
   const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleDownloadReport = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch("http://localhost:5000/report/download", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to download report");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "engineer_insights_report.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed:", err);
+      toast.error("Failed to download report");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+
+
 
   const handleExport = () => {
     toast(`Exporting ${activeTab} analytics data...`);
@@ -60,10 +94,22 @@ const Analytics: React.FC = () => {
             Comprehensive insights into projects and engineer performance
           </p>
         </div>
-        <Button onClick={handleExport} className="flex items-center gap-2">
+        <div className="flex gap-2">
+        <Button
+          onClick={handleDownloadReport}
+          className="flex items-center gap-2"
+          disabled={isGenerating}
+        >
           <Download className="h-4 w-4" />
-          Export Data
+          {isGenerating ? "Generating..." : "Download AI Report"}
         </Button>
+
+
+          <Button onClick={handleExport} className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Export Data
+          </Button>
+        </div>
       </div>
 
       {/* Custom Tabs */}
