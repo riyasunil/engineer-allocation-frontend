@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { useGetProjectByIdQuery } from '@/api-service/projects/projects.api';
 import { userApi } from '@/api-service/user/user.api';
 import { useGetEngineersQuery } from '@/api-service/user/user.api';
+import { Separator } from '@radix-ui/react-separator';
 
 interface ProjectRequirement {
   designation: string;
@@ -455,6 +456,12 @@ const EditProject = () => {
                 <div className="flex-1">
                   <span className="text-sm font-medium">
                     {req.required_count} × {req.designation.name}
+                  </span>
+                  <Separator className="mx-1" />
+                  <span className="text-sm font-medium">
+                    SKILLS :
+                    {req.requirementSkills.skill}
+
                   </span>
 
                   {req.projectAssignments.length > 0 && (
