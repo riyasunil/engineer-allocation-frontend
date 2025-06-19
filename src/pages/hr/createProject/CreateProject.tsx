@@ -37,28 +37,28 @@ interface CreateProjectDto {
   requirements?: ProjectRequirementDto[];
 }
 
-interface Engineer {
-  id: number;
-  //name: string;
-}
+// interface Engineer {
+//   id: number;
+//   //name: string;
+// }
 
-const dummyEmployees = [
-  { id: 20, name: 'Alice Johnson' },
-  { id: 8, name: 'Bob Smith' },
-  { id: 23, name: 'Charlie Davis' },
-  { id: 25, name: 'Diana White' }
-];
+// const dummyEmployees = [
+//   { id: 20, name: 'Alice Johnson' },
+//   { id: 8, name: 'Bob Smith' },
+//   { id: 23, name: 'Charlie Davis' },
+//   { id: 25, name: 'Diana White' }
+// ];
 
-const dummyEngineers = [
-  { id: 101, name: 'John Doe' },
-  { id: 102, name: 'Jane Smith' },
-  { id: 103, name: 'Mike Wilson' },
-  { id: 104, name: 'Sarah Connor' },
-  { id: 105, name: 'Tom Hardy' },
-  { id: 106, name: 'Emma Watson' }
-];
+// const dummyEngineers = [
+//   { id: 101, name: 'John Doe' },
+//   { id: 102, name: 'Jane Smith' },
+//   { id: 103, name: 'Mike Wilson' },
+//   { id: 104, name: 'Sarah Connor' },
+//   { id: 105, name: 'Tom Hardy' },
+//   { id: 106, name: 'Emma Watson' }
+// ];
 
-const projectStatuses = ['NEW'];
+//const projectStatuses = ['NEW'];
 
 const CreateProject = () => {
   const navigate = useNavigate();
@@ -84,9 +84,9 @@ const CreateProject = () => {
   const [newReq, setNewReq] = useState<ProjectRequirement>({ designation: '', designation_id: 0, skills: [], count: 1});
   const [selectedSkill, setSelectedSkill] = useState('');
 
-  const [engineerAssignments, setEngineerAssignments] = useState<{ [index: number]: Engineer[] }>({});
-  const [selectedEngineers, setSelectedEngineers] = useState<Engineer[]>([]);
-  const [showEngineerCard, setShowEngineerCard] = useState(false);
+  // const [engineerAssignments, setEngineerAssignments] = useState<{ [index: number]: Engineer[] }>({});
+  // const [selectedEngineers, setSelectedEngineers] = useState<Engineer[]>([]);
+  // const [showEngineerCard, setShowEngineerCard] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -133,21 +133,24 @@ const CreateProject = () => {
     }));
   };
 
-  const handleConfirmRequirement = () => {
-    if (newReq.designation && newReq.designation_id && newReq.count > 0) {
-      setShowEngineerCard(true);
-    }
-  };
+  // const handleConfirmRequirement = () => {
+  //   if (newReq.designation && newReq.designation_id && newReq.count > 0) {
+  //     setShowEngineerCard(true);
+  //   }
+  // };
 
   const handleClearRequirement = () => {
     setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     setSelectedSkill('');
-    setShowEngineerCard(false); 
-    setSelectedEngineers([]);
+    // setShowEngineerCard(false); 
+    // setSelectedEngineers([]);
   };
 
   const handleAddRequirement = () => {
-    const index = formData.requirements?.length || 0;
+    if (!newReq.designation || !newReq.designation_id) {
+    toast.error('Please select a role before adding requirement');
+    return;
+  }
     setFormData(prev => ({
       ...prev,
       requirements: [...(prev.requirements || []), {
@@ -158,13 +161,9 @@ const CreateProject = () => {
       }]
     }));
 
-    setEngineerAssignments((prev) => ({
-      ...prev,
-      [index]: selectedEngineers,
-    }));
     setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
-    setShowEngineerCard(false);
-    setSelectedEngineers([]);
+    setSelectedSkill('');
+  toast.success('Requirement added successfully');
   };
 
   const handleRemoveRequirement = (index: number) => {
@@ -172,24 +171,9 @@ const CreateProject = () => {
       ...prev,
       requirements: prev.requirements?.filter((_, i) => i !== index)
     }));
-    setEngineerAssignments((prev) => {
-      const newAssignments = { ...prev };
-      delete newAssignments[index];
-      return newAssignments;
-    });
+    toast.info('Requirement Removed')
   };
 
-  const handleAddEngineerToNewReq = (engineerId: number) => {
-    if (!selectedEngineers.some(e => e.id === engineerId)) {
-    setSelectedEngineers(prev => [...prev, { id: engineerId }]);
-    }
-    console.log("after add engg",selectedEngineers)
-  };
-
-  const handleRemoveEngineerFromNewReq = (engineerId: number) => {
-    setSelectedEngineers(prev => prev.filter(e => e.id !== engineerId));
-    console.log("after remove engg",selectedEngineers)
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,7 +182,6 @@ const CreateProject = () => {
       return;
     }
     console.log("in submit" , formData)
-    console.log("in submit" , engineerAssignments)
     try {
       const response = await createProject(formData).unwrap();
       toast.success('Project created successfully')
@@ -218,8 +201,9 @@ const CreateProject = () => {
       <form onSubmit={handleSubmit} className="space-y-10">
 
         {/* Project Details Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Details</h2>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+         <h2 className="text-lg font-bold mb-6 text-gray-900 border-b border-gray-100 pb-2">Project Details</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <div>
@@ -229,7 +213,7 @@ const CreateProject = () => {
                 value={formData.name} 
                 onChange={handleChange} 
                 required 
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
               />
             </div>
             <div>
@@ -239,7 +223,7 @@ const CreateProject = () => {
                 value={formData.project_id} 
                 onChange={handleChange} 
                 required 
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
               />
             </div>
             <div>
@@ -250,7 +234,7 @@ const CreateProject = () => {
                 value={formData.startdate ? formData.startdate.toISOString().split('T')[0] : ''} 
                 onChange={handleChange}
                 min={today}
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
               />
             </div>
             <div>
@@ -261,7 +245,7 @@ const CreateProject = () => {
                 value={formData.enddate ? formData.enddate.toISOString().split('T')[0] : ''} 
                 onChange={handleChange}
                 min={formData.startdate ? new Date(formData.startdate.getTime() + 86400000) .toISOString().split('T')[0] : today}
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
               />
             </div>
             
@@ -269,8 +253,9 @@ const CreateProject = () => {
         </div>
 
         {/* Project Management Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Management</h2>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-lg font-bold mb-6 text-gray-900 border-b border-gray-100 pb-2">Project Management</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-base font-medium mb-2">Project Manager<span className="text-red-500">*</span></label>
@@ -278,7 +263,7 @@ const CreateProject = () => {
                 name="pmId" 
                 value={formData.pmId} 
                 onChange={handleChange} 
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
                 required
               >
                 <option value="">Select Project Manager</option>
@@ -293,7 +278,7 @@ const CreateProject = () => {
                 name="leadId" 
                 value={formData.leadId} 
                 onChange={handleChange} 
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
                 required
               >
                 <option value="">Select Team Lead</option>
@@ -306,15 +291,16 @@ const CreateProject = () => {
         </div>
 
         {/* Project Requirements Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Project Requirements<span className="text-gray-400">(Optional)</span></h2>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-lg font-bold mb-6 text-gray-900 border-b border-gray-100 pb-2">Project Requirements<span className="text-gray-400 font-normal">(Optional)</span></h2>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-2">Role</label>
               <select 
                 value={newReq.designation_id} 
                 onChange={handleDesignationChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
               >
                 <option value="">Select Role</option>
                 {designationsWithIds?.map(d => (
@@ -328,7 +314,7 @@ const CreateProject = () => {
               <select 
                 value={selectedSkill} 
                 onChange={handleAddSkillToRequirement} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white">
                 <option value="">Select Skill</option>
                 {skillsWithIds?.filter(s => !newReq.skills.some(skill => skill.skill_id === s.id)).map(s => (
                   <option key={s.id} value={s.id}>{s.skill_name}</option>
@@ -358,11 +344,12 @@ const CreateProject = () => {
                   value={newReq.count}
                   onChange={e => setNewReq({ ...newReq, count: parseInt(e.target.value) })}
                   placeholder="Count"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+
                 />
                 <button 
                   type="button" 
-                  onClick={handleConfirmRequirement}
+                  onClick={handleAddRequirement}
                   className="p-2 bg-black text-white rounded-lg hover:bg-green-600 transition-colors"
                   title="Confirm requirement"
                 >
@@ -380,77 +367,26 @@ const CreateProject = () => {
             </div>
           </div>
 
-          {showEngineerCard && (
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-              <h4 className="text-sm font-medium mb-3 text-blue-800">Assign Engineers (Optional)</h4>
-              <div className="mb-3">
-                <select 
-                  onChange={e => {
-                    const engineerId = parseInt(e.target.value);  
-                    if (engineerId) {
-                      handleAddEngineerToNewReq(engineerId);
-                      e.target.value = ''; // Reset selection
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="">Select Engineer</option>
-                  {dummyEngineers
-                    .filter(eng => !selectedEngineers.some(e => e.id === eng.id))
-                    .map(eng => (
-                      <option key={eng.id} value={eng.id}>{eng.name}</option>
-                    ))}
-                </select>
-              </div>
-              
-              {selectedEngineers.length > 0 && (
-                <div className="flex gap-1 flex-wrap mb-3">
-                  {selectedEngineers.map(({ id }) => {
-                    const engineer = dummyEngineers.find(eng => eng.id === id);
-                    return (
-                      <span key={id} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                        {engineer?.name || 'Unknown Engineer'}
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveEngineerFromNewReq(id)} 
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {showEngineerCard && (
-            <Button type="button" onClick={handleAddRequirement} className="mb-4">Add Requirement</Button>
-          )}
           
-          {formData.requirements?.map((req, i) => {
+          
+          {formData.requirements?.slice().reverse().map((req, i) => {
             // Find designation name for display
             const designationName = designationsWithIds?.find(d => d.id === req.designation_id)?.name || 'Unknown';
-            const assignedEngineers = engineerAssignments[i] || [];
             
             return (
-              <div key={i} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center mb-2">
+              <div key={i} className="bg-white border border-gray-300 p-4 rounded-lg flex justify-between items-center mb-3 shadow-sm">
                 <div className="flex-1">
                   <span className="text-sm font-medium">
-                    {req.required_count} × {designationName}
+                     {designationName} - {req.required_count}
                   </span>
-                  {assignedEngineers.length > 0 && (
-                    <div className="mt-1">
-                      <span className="text-xs text-gray-600">Engineers: </span>
-                      {assignedEngineers.map(eng => {
-                        const engineer = dummyEngineers.find(eng => eng.id === eng.id);
-                        return engineer?.name;
-                      }).filter(Boolean).join(', ')}
+                  {req.requirement_skills.length > 0 && (
+                    <div className="mt-2">
+                      <span className="text-sm text-gray-600 font-medium">Skills: </span>
+                      <span className="text-sm text-gray-800">{req.requirement_skills.map(skill => skill.skill_name).join(', ')}</span>
                     </div>
                   )}
                 </div>
-                <button onClick={() => handleRemoveRequirement(i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
+                <button onClick={() => handleRemoveRequirement(formData.requirements!.length - 1 - i)} className="text-red-500 hover:text-red-700 text-sm">Remove</button>
               </div>
             );
           })}
@@ -459,7 +395,7 @@ const CreateProject = () => {
         {/* Form Actions */}
         <div className="flex gap-4 pt-3">
           <Button type="submit" className="w-48">{isLoading ? 'Creating...' : 'Create Project'}</Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/hr/projects')} className="w-48">Cancel</Button>
+          <Button type="button" variant="outline" onClick={() => navigate('/hr/projects')} className="w-48 border-2 font-semibold">Cancel</Button>
         </div>
       </form>
     </div>
