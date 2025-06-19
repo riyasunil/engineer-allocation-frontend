@@ -17,7 +17,8 @@ import { Provider } from "react-redux";
 import store from "./store/store";
 import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import HrProjectDetails from "./pages/hr/hrProjectDetails/HrProjectDetails";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
+import EngineerDetails from "./pages/hr/engineers/EngineerDetails";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
       { path: "projects", element: <Projects /> },
       { path: "projects/:id", element: <HrProjectDetails /> },
       { path: "engineers", element: <Engineers /> },
+      {path: "engineers/:id", element: <EngineerDetails /> },
       { path: "alerts", element: <Alerts /> },
       { path: "history", element: <History /> },
       { path: "profile", element: <Profile /> },
