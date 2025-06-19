@@ -75,7 +75,7 @@ const CreateProject = () => {
     name: '',
     startdate: undefined,
     enddate: undefined,
-    status: '',
+    status: 'NEW',
     pmId: 0,
     leadId: 0,
     requirements: [],
@@ -265,20 +265,7 @@ const CreateProject = () => {
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
-            <div>
-              <label className="block text-base font-medium mb-2">Status</label>
-              <select 
-                name="status" 
-                value={formData.status} 
-                onChange={handleChange} 
-                className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-              >
-                <option value="">Select Status</option>
-                {projectStatuses.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-            </div>
+            
           </div>
         </div>
 
