@@ -8,13 +8,20 @@ import { useGetSkillsQuery } from '@/api-service/skill/skill.api';
 interface ProjectRequirement {
   designation: string;
   designation_id: number;
-  skills: string[];
+  skills: Skill[];
   count: number;
 }
 interface ProjectRequirementDto {
   designation_id: number;
   required_count: number;
   is_requested: boolean;
+  requirement_skills: Skill[]; 
+}
+
+interface Skill{
+  id: number | undefined;
+  skill_id: number;
+  skill_name: string;
 }
 
 interface CreateProjectDto {
@@ -49,7 +56,7 @@ const dummyEngineers = [
   { id: 106, name: 'Emma Watson' }
 ];
 
-const projectStatuses = ['NEW', 'IN PROGRESS', 'CLOSED'];
+const projectStatuses = ['NEW'];
 
 const CreateProject = () => {
   const navigate = useNavigate();
@@ -76,16 +83,15 @@ const CreateProject = () => {
 
   const [engineerAssignments, setEngineerAssignments] = useState<{ [index: number]: Engineer[] }>({});
   const [selectedEngineers, setSelectedEngineers] = useState<Engineer[]>([]);
-  //const [requirementEngineers, setRequirementEngineers] = useState<{[key: number]: number[]}>({});
   const [showEngineerCard, setShowEngineerCard] = useState(false);
-  //const [selectedEngineers, setNewReqEngineers] = useState<number[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['pmId', 'leadId'].includes(name) ? parseInt(value) : 
-            ['startdate', 'enddate'].includes(name) ? (value ? new Date(value) : undefined) : value
+      [name]: ['pmId', 'leadId'].includes(name) ? 
+        parseInt(value) : 
+        ['startdate', 'enddate'].includes(name) ? (value ? new Date(value) : undefined) : value
     }));
   };
 
@@ -98,20 +104,29 @@ const CreateProject = () => {
     }));
   };
 
-  const handleAddSkillToRequirement = () => {
-    if (selectedSkill && !newReq.skills.includes(selectedSkill)) {
+  const handleAddSkillToRequirement = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const skillId = parseInt(e.target.value);
+  if (skillId) {
+    const selectedSkillData = skillsWithIds?.find(s => s.id === skillId);
+    if (selectedSkillData && !newReq.skills.some(skill => skill.skill_id === skillId)) {
+      const newSkill: Skill = {
+        id: selectedSkillData.id, 
+        skill_id: selectedSkillData.skill_id,
+        skill_name: selectedSkillData.skill_name
+      };
       setNewReq(prev => ({
         ...prev,
-        skills: [...prev.skills, selectedSkill]
+        skills: [...prev.skills, newSkill]
       }));
-      setSelectedSkill('');
+      console.log(newReq)
     }
+  }
   };
 
-  const handleRemoveSkillFromRequirement = (skill: string) => {
+  const handleRemoveSkillFromRequirement = (skillId: number | undefined) => {
     setNewReq(prev => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
+      skills: prev.skills.filter(s => s.id !== skillId)
     }));
   };
 
@@ -124,7 +139,7 @@ const CreateProject = () => {
   const handleClearRequirement = () => {
     setNewReq({ designation: '', designation_id: 0, skills: [], count: 1 });
     setSelectedSkill('');
-    setShowEngineerCard(false);
+    setShowEngineerCard(false); 
     setSelectedEngineers([]);
   };
 
@@ -135,9 +150,11 @@ const CreateProject = () => {
       requirements: [...(prev.requirements || []), {
         designation_id: newReq.designation_id,
         required_count: newReq.count,
-        is_requested: false
+        is_requested: false,
+        requirement_skills: newReq.skills
       }]
     }));
+
     setEngineerAssignments((prev) => ({
       ...prev,
       [index]: selectedEngineers,
@@ -240,7 +257,7 @@ const CreateProject = () => {
                 name="enddate" 
                 value={formData.enddate ? formData.enddate.toISOString().split('T')[0] : ''} 
                 onChange={handleChange}
-                min={formData.startdate ? formData.startdate.toISOString().split('T')[0] : today}
+                min={formData.startdate ? new Date(formData.startdate.getTime() + 86400000) .toISOString().split('T')[0] : today}
                 className="w-full max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
               />
             </div>
@@ -320,32 +337,21 @@ const CreateProject = () => {
               <label className="block text-sm font-medium mb-2">Required Skill</label>
               <select 
                 value={selectedSkill} 
-                onChange={e => {
-                  const value = e.target.value;
-                  setSelectedSkill(value);
-                  if (value && !newReq.skills.includes(value)) {
-                    setNewReq(prev => ({
-                      ...prev,
-                      skills: [...prev.skills, value]
-                    }));
-                    setSelectedSkill('');
-                  }
-                }} 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
+                onChange={handleAddSkillToRequirement} 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="">Select Skill</option>
-                {skillsWithIds?.filter(s => !newReq.skills.includes(s.skill_name)).map(s => (
+                {skillsWithIds?.filter(s => !newReq.skills.some(skill => skill.skill_id === s.id)).map(s => (
                   <option key={s.id} value={s.id}>{s.skill_name}</option>
                 ))}
               </select>
               {newReq.skills.length > 0 && (
                 <div className="flex gap-1 flex-wrap mt-2">
-                  {newReq.skills.map((skillId, i) => {
-                    const skillName = skillsWithIds?.find(s => s.id === parseInt(skillId))?.skill_name || skillId;
+                  {newReq.skills.map((skill, i) => {
+                    
                     return (
                       <span key={i} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                        {skillName}
-                        <button type="button" onClick={() => handleRemoveSkillFromRequirement(skillId)} className="text-red-500 hover:text-red-700">×</button>
+                        {skill.skill_name}
+                        <button type="button" onClick={() => handleRemoveSkillFromRequirement(skill.id)} className="text-red-500 hover:text-red-700">×</button>
                       </span>
                     );
                   })}
