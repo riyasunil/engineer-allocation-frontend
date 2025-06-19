@@ -114,7 +114,7 @@ export const projectApi = baseApi.injectEndpoints({
       { id: string | number; engineers: AssignEngineerRequest["engineers"] }
     >({
       query: ({ id, engineers }) => ({
-        url: `/project/${id}/assign-engineer`,
+        url: `/project/${id}/engineer`,
         method: "POST",
         body: { engineers },
       }),
