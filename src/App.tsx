@@ -19,6 +19,8 @@ import EngineerProfile from "./pages/engineer/profile/EngineerProfile";
 import HrProjectDetails from "./pages/hr/hrProjectDetails/HrProjectDetails";
 import { Toaster } from "@/components/ui/sonner";
 import EngineerDetails from "./pages/hr/engineers/EngineerDetails";
+import { Toaster } from "@/components/ui/sonner"
+import EditProject from "./components/editProject/EditProject";
 
 const router = createBrowserRouter([
   {
@@ -43,6 +45,7 @@ const router = createBrowserRouter([
       { path: "history", element: <History /> },
       { path: "profile", element: <Profile /> },
       { path: "projects/create", element: <CreateProject /> },
+      { path: "projects/:id/edit", element: <EditProject /> },
       { path: "addengineer", element: <AddEngineer /> },
     ],
   },

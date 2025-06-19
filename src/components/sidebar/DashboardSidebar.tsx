@@ -31,7 +31,6 @@ import { clearCurrentUser } from "@/store/slices/userSlice";
 import { useAppDispatch } from "@/store/store";
 import { useAppSelector } from "@/store/store";
 
-
 type UserRole = "hr" | "pm" | "lead" | "engineer";
 
 interface DashboardSidebarProps {
