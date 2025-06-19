@@ -9,7 +9,7 @@ import { FolderOpen } from "lucide-react";
 import { AuditLog } from "../History";
 import { useGetUserByIdQuery } from "@/api-service/user/user.api";
 
-export default function HistoryRequestCard({ request }: { request: AuditLog }) {
+export default function RequestCard({ request }: { request: AuditLog }) {
   const {
     data: actor,
     isLoading,

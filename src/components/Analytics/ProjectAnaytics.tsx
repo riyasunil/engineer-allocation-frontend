@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -7,131 +7,181 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetAllProjectsQuery } from "@/api-service/projects/projects.api";
 import {
+  PieChart,
+  Pie,
+  Cell,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
-// Types
-interface Project {
-  id: string;
-  name: string;
-  status: string;
-  completion: number;
-  budget: number;
-  spent: number;
-  timeline: string;
-  teamSize: number;
-}
+export default function ProjectAnalytics() {
+  const { data: projects = [], isLoading, error } = useGetAllProjectsQuery();
+  const [selectedProject, setSelectedProject] = useState("all");
 
-interface ProjectStatusData {
-  name: string;
-  value: number;
-  color: string;
-}
+  const transformedProjects = projects.map((project) => {
+    const assignedEngineers = project.projectUsers?.length || 0;
+    const requiredEngineers =
+      project.requirements?.reduce(
+        (sum, req) => sum + (req.required_count || 1),
+        0
+      ) || 0;
 
-interface ProjectTrendsData {
-  month: string;
-  completed: number;
-  started: number;
-}
+    const duration =
+      project.startdate && project.enddate
+        ? Math.ceil(
+            (new Date(project.enddate).getTime() -
+              new Date(project.startdate).getTime()) /
+              (1000 * 60 * 60 * 24 * 30)
+          )
+        : 0;
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle: string;
-  color?: string;
-}
+    // Calculate staffing percentage
+    const staffingPercentage =
+      requiredEngineers > 0
+        ? Math.round((assignedEngineers / requiredEngineers) * 100)
+        : assignedEngineers > 0
+        ? 100
+        : 0;
 
-interface ProjectAnalyticsProps {
-  selectedProject: string;
-  setSelectedProject: (value: string) => void;
-}
+    return {
+      id: project.project_id,
+      name: project.name,
+      status: project.status || "NEW",
+      staffingPercentage,
+      teamSize: assignedEngineers,
+      duration: duration.toString(),
+      requiredEngineers,
+      assignedEngineers,
+      startDate: project.startdate,
+      endDate: project.enddate,
+    };
+  });
 
-// Project data
-const projects: Project[] = [
-  {
-    id: "1",
-    name: "E-commerce Platform",
-    status: "In Progress",
-    completion: 75,
-    budget: 150000,
-    spent: 112500,
-    timeline: "On Track",
-    teamSize: 8,
-  },
-  {
-    id: "2",
-    name: "Mobile Banking App",
-    status: "Completed",
-    completion: 100,
-    budget: 200000,
-    spent: 195000,
-    timeline: "Completed Early",
-    teamSize: 12,
-  },
-  {
-    id: "3",
-    name: "CRM System",
-    status: "Planning",
-    completion: 10,
-    budget: 100000,
-    spent: 15000,
-    timeline: "Planning Phase",
-    teamSize: 6,
-  },
-];
+  const selectedProjectData = transformedProjects.find(
+    (p) => p.id === selectedProject
+  );
 
-const projectStatusData: ProjectStatusData[] = [
-  { name: "Completed", value: 25, color: "#22c55e" },
-  { name: "In Progress", value: 15, color: "#3b82f6" },
-  { name: "Planning", value: 8, color: "#f59e0b" },
-  { name: "On Hold", value: 3, color: "#ef4444" },
-];
+  // Calculate actual metrics from data
+  const totalProjects = transformedProjects.length;
 
-const projectTrendsData: ProjectTrendsData[] = [
-  { month: "Jan", completed: 4, started: 6 },
-  { month: "Feb", completed: 6, started: 8 },
-  { month: "Mar", completed: 5, started: 7 },
-  { month: "Apr", completed: 8, started: 9 },
-  { month: "May", completed: 7, started: 5 },
-  { month: "Jun", completed: 9, started: 8 },
-];
+  // Calculate success rate based on completed projects that are fully staffed
+  const fullyStaffedProjects = transformedProjects.filter(
+    (p) => p.staffingPercentage >= 100
+  );
+  const successRate =
+    totalProjects > 0
+      ? Math.round((fullyStaffedProjects.length / totalProjects) * 100) + "%"
+      : "0%";
 
-// Reusable StatCard component
-const StatCard: React.FC<StatCardProps> = ({
-  title,
-  value,
-  subtitle,
-  color = "text-foreground",
-}) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-sm">{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
-    </CardContent>
-  </Card>
-);
+  // Calculate average duration from projects with dates
+  const projectsWithDuration = transformedProjects.filter(
+    (p) => parseInt(p.duration) > 0
+  );
+  const avgDuration =
+    projectsWithDuration.length > 0
+      ? (
+          projectsWithDuration.reduce(
+            (sum, p) => sum + parseInt(p.duration),
+            0
+          ) / projectsWithDuration.length
+        ).toFixed(1)
+      : "0.0";
 
-const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
-  selectedProject,
-  setSelectedProject,
-}) => {
-  const selectedData = projects.find((p) => p.id === selectedProject);
+  // Calculate average team size
+  const avgTeamSize =
+    totalProjects > 0
+      ? (
+          transformedProjects.reduce((sum, p) => sum + p.teamSize, 0) /
+          totalProjects
+        ).toFixed(1)
+      : "0.0";
+
+  // Status distribution for pie chart
+  const statusCounts: Record<string, number> = {};
+  transformedProjects.forEach((p) => {
+    statusCounts[p.status] = (statusCounts[p.status] || 0) + 1;
+  });
+
+  const pieData = Object.entries(statusCounts).map(([status, value]) => ({
+    name: status,
+    value,
+    color:
+      status === "CLOSED"
+        ? "#22c55e"
+        : status === "IN_PROGRESS"
+        ? "#3b82f6"
+        : status === "NEW"
+        ? "#f59e0b"
+        : "#ef4444",
+  }));
+
+  // Create monthly project data based on start dates
+  const monthlyData = transformedProjects.reduce((acc, project) => {
+    if (project.startDate) {
+      const month = new Date(project.startDate).toLocaleDateString("en-US", {
+        month: "short",
+      });
+      const existing = acc.find((item) => item.month === month);
+      if (existing) {
+        existing.started += 1;
+        if (project.status === "CLOSED") {
+          existing.completed += 1;
+        }
+      } else {
+        acc.push({
+          month,
+          started: 1,
+          completed: project.status === "CLOSED" ? 1 : 0,
+        });
+      }
+    }
+    return acc;
+  }, [] as Array<{ month: string; started: number; completed: number }>);
+
+  // If no date-based data, create summary data
+  const barData =
+    monthlyData.length > 0
+      ? monthlyData
+      : [
+          {
+            month: "Overall",
+            started: transformedProjects.length,
+            completed: transformedProjects.filter((p) => p.status === "CLOSED")
+              .length,
+          },
+        ];
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Loading projects...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">
+          Error loading projects. Please try again.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Project Selection */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -142,7 +192,7 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((project) => (
+                {transformedProjects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
                   </SelectItem>
@@ -154,88 +204,179 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       </Card>
 
       {selectedProject === "all" ? (
-        // Overall Analytics
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Project Status Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Status Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={projectStatusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      dataKey="value"
-                    >
-                      {projectStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Status Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={{}} className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-          {/* Project Performance Trends */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Performance Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={projectTrendsData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Bar dataKey="completed" fill="#22c55e" />
-                    <Bar dataKey="started" fill="#3b82f6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Activity Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={{}} className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar
+                        dataKey="completed"
+                        fill="#22c55e"
+                        name="Completed"
+                      />
+                      <Bar dataKey="started" fill="#3b82f6" name="Started" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Total Projects</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalProjects}</div>
+                <p className="text-sm text-muted-foreground">All time</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Staffing Success Rate</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {successRate}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Fully staffed projects
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Average Duration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{avgDuration}</div>
+                <p className="text-sm text-muted-foreground">
+                  Months per project
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Average Team Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {avgTeamSize}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Engineers per project
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </>
       ) : (
-        // Specific Project Analytics
-        selectedData && (
+        selectedProjectData && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Project Status"
-              value={selectedData.status}
-              subtitle={`${selectedData.completion}% Complete`}
-              color="text-primary"
-            />
-            <StatCard
-              title="Budget Status"
-              value={`$${selectedData.spent.toLocaleString()}`}
-              subtitle={`of $${selectedData.budget.toLocaleString()} budget`}
-              color="text-green-600"
-            />
-            <StatCard
-              title="Timeline"
-              value={selectedData.timeline}
-              subtitle="Current status"
-              color="text-blue-600"
-            />
-            <StatCard
-              title="Team Size"
-              value={selectedData.teamSize}
-              subtitle="Engineers assigned"
-              color="text-purple-600"
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Project Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">
+                  {selectedProjectData.status}
+                </div>
+                <p className="text-sm text-muted-foreground">Current status</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Team Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {selectedProjectData.teamSize}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Engineers assigned
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Required Engineers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">
+                  {selectedProjectData.requiredEngineers}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Based on requirements
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Staffing Level</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className={`text-2xl font-bold ${
+                    selectedProjectData.staffingPercentage >= 100
+                      ? "text-green-600"
+                      : selectedProjectData.staffingPercentage >= 75
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {selectedProjectData.staffingPercentage}%
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Staffing percentage
+                </p>
+              </CardContent>
+            </Card>
           </div>
         )
       )}
     </div>
   );
-};
-
-export default ProjectAnalytics;
+}
