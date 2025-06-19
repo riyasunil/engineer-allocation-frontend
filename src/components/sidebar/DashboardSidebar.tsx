@@ -29,20 +29,24 @@ import {
 } from "../ui/dropdown-menu";
 import { clearCurrentUser } from "@/store/slices/userSlice";
 import { useAppDispatch } from "@/store/store";
+import { useAppSelector } from "@/store/store";
 
 type UserRole = "hr" | "pm" | "lead" | "engineer";
 
 interface DashboardSidebarProps {
   userRole: UserRole;
-  userName : string;
+  userName: string;
 }
 
-export default function DashboardSidebar({ userRole, userName }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  userRole,
+  userName,
+}: DashboardSidebarProps) {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const newAlertsCount = 2;
-
+  const currentUser = useAppSelector((state) => state.user.currentUser);
 
   const items = [
     {
@@ -95,10 +99,10 @@ export default function DashboardSidebar({ userRole, userName }: DashboardSideba
 
   const handleLogout = () => {
     dispatch(clearCurrentUser());
-    localStorage.setItem("token" , "");
+    localStorage.setItem("token", "");
     localStorage.setItem("user_id", "");
     navigate("/login");
-  }
+  };
   return (
     <Sidebar className="h-screen w-64 border-r bg-white flex flex-col justify-between">
       <SidebarContent className="p-6">
@@ -148,15 +152,23 @@ export default function DashboardSidebar({ userRole, userName }: DashboardSideba
 
       <div className="flex flex-row justify-between items-center  border-t">
         <NavLink to={`/${userRole}/profile`}>
-          <div className="p-4  flex items-center gap-3">
+          <div className="p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
-              {userName? userName.toUpperCase().slice(0, 2) : "KV" }
+              {currentUser?.name
+                ? currentUser.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                : "KV"}
             </div>
             <div>
               <p className="text-sm font-medium text-black">
-                {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                {currentUser?.name || "User"}
               </p>
-              <p className="text-xs text-muted-foreground">User Role</p>
+              <p className="text-xs text-muted-foreground">
+                {currentUser?.role?.role_name || "Role"}
+              </p>
             </div>
           </div>
         </NavLink>
@@ -168,11 +180,7 @@ export default function DashboardSidebar({ userRole, userName }: DashboardSideba
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem
-              onClick={() => 
-                handleLogout()
-              }
-            >
+            <DropdownMenuItem onClick={() => handleLogout()}>
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
