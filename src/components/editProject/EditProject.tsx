@@ -819,8 +819,8 @@ const handleAddRequirement = async () => {
       </div>
 
       {/* Add Engineer Section */}
-      <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="flex items-center gap-2">
+      <div className="mt-3 pt-3">
+        {/* <div className="flex items-center gap-2">
           <select
             onChange={(e) => {
               const engineerId = parseInt(e.target.value);
@@ -846,7 +846,7 @@ const handleAddRequirement = async () => {
           {isAssigningEngineer && (
             <span className="text-xs text-gray-500">Assigning...</span>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
