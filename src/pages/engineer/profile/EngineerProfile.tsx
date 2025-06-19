@@ -1,24 +1,44 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/pageHeader";
 import {
-  PenLine,
   User,
   CalendarDays,
   Briefcase,
   FolderKanban,
+  Edit3,
+  Save,
+  X,
 } from "lucide-react";
 import { useAppSelector } from "@/store/store";
 import { useGetProjectsByUserIdQuery } from "@/api-service/projects/projects.api";
 import ProfileLoader from "./ProfileLoader";
-import { Key } from "react";
+import { Key, useState } from "react";
 
 const EngineerProfile = () => {
   const currentUser = useAppSelector((state) => state.user.currentUser);
+  const [isEditingExperience, setIsEditingExperience] = useState(false);
+  const [experienceValue, setExperienceValue] = useState("");
 
   const { data: activeProjects = [], isLoading } = useGetProjectsByUserIdQuery({
     userId: currentUser?.id,
     filter: "inprogress",
   });
+
+  const handleEditExperience = () => {
+    setExperienceValue(currentUser.experience.toString());
+    setIsEditingExperience(true);
+  };
+
+  const handleSaveExperience = () => {
+    // Add actual save logic here later
+    console.log("Saving experience:", experienceValue);
+    setIsEditingExperience(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingExperience(false);
+    setExperienceValue("");
+  };
 
   if (!currentUser) return <ProfileLoader />;
 
@@ -38,9 +58,6 @@ const EngineerProfile = () => {
       <PageHeader
         title="My Profile"
         description="Manage your professional information"
-        buttonText="Edit Profile"
-        ButtonIcon={PenLine}
-        onButtonClick={() => console.log("Edit Profile")}
       />
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -61,13 +78,51 @@ const EngineerProfile = () => {
               <p className="text-sm text-slate-600">{currentUser.role?.role_name}</p>
             </div>
 
-            <div className="space-y-2 text-sm text-slate-600">
+            <div className="space-y-3 text-base text-slate-600">
               <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-slate-500" />
-                <span>{currentUser.experience} years of experience</span>
+                <Briefcase className="w-5 h-5 text-slate-500" />
+                {isEditingExperience ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="number"
+                      value={experienceValue}
+                      onChange={(e) => setExperienceValue(e.target.value)}
+                      className="w-20 px-2 py-1 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Years"
+                      autoFocus
+                    />
+                    <span>years of experience</span>
+                    <div className="flex items-center gap-1 ml-2">
+                      <button
+                        onClick={handleSaveExperience}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Save className="w-3 h-3" />
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>{currentUser.experience} years of experience</span>
+                    <button
+                      onClick={handleEditExperience}
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors ml-1"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      Edit
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-slate-500" />
+                <CalendarDays className="w-5 h-5 text-slate-500" />
                 <span>Joined {formattedJoinDate}</span>
               </div>
             </div>
