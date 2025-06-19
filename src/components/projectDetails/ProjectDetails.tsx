@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
-  Calendar, Users, Plus, ArrowLeft, Pencil, Trash2
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+  Calendar,
+  Users,
+  Plus,
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Edit,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useGetNotesByProjectIdQuery,
   useUpdateNoteMutation,
   useCreateNoteMutation,
-  useDeleteNoteMutation
-} from '@/api-service/notes/notes.api';
-import { useGetProjectByIdQuery } from '@/api-service/projects/projects.api';
+  useDeleteNoteMutation,
+} from "@/api-service/notes/notes.api";
+import { useGetProjectByIdQuery } from "@/api-service/projects/projects.api";
 
 interface ProjectDetailsProps {
-  source: 'HR' | 'ENGINEER';
+  source: "HR" | "ENGINEER";
   authorId: string;
   backUrl: string;
   canAddNote?: boolean;
@@ -24,31 +30,36 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   source,
   authorId,
   backUrl,
-  canAddNote = true
+  canAddNote = true,
 }) => {
   const { id } = useParams(); // This is the numeric database ID
   const navigate = useNavigate();
 
   // Fetch project data using the numeric ID
-  const { data: project, isLoading: projectLoading, error: projectError } = useGetProjectByIdQuery(id!, {
-    skip: !id
+  const {
+    data: project,
+    isLoading: projectLoading,
+    error: projectError,
+  } = useGetProjectByIdQuery(id!, {
+    skip: !id,
   });
 
   // Extract the project_id (string) from the fetched project data
   const projectId = project?.project_id;
 
   // Fetch notes using the project_id (string)
-  const { data: notes = [], isLoading: notesLoading } = useGetNotesByProjectIdQuery(projectId!, {
-    skip: !projectId
-  });
+  const { data: notes = [], isLoading: notesLoading } =
+    useGetNotesByProjectIdQuery(projectId!, {
+      skip: !projectId,
+    });
 
   const [createNote] = useCreateNoteMutation();
   const [updateNote] = useUpdateNoteMutation();
   const [deleteNote] = useDeleteNoteMutation();
 
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
-  const [editedContent, setEditedContent] = useState('');
-  const [newNote, setNewNote] = useState('');
+  const [editedContent, setEditedContent] = useState("");
+  const [newNote, setNewNote] = useState("");
   const [addNoteLoading, setAddNoteLoading] = useState(false);
 
   const handleEdit = (noteId: number, content: string) => {
@@ -58,24 +69,24 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
   const handleCancel = () => {
     setEditingNoteId(null);
-    setEditedContent('');
+    setEditedContent("");
   };
 
   const handleSave = async (noteId: number) => {
     if (!projectId) return;
-    
+
     await updateNote({
       projectId: projectId,
       noteId,
-      data: { content: editedContent }
+      data: { content: editedContent },
     });
     setEditingNoteId(null);
   };
 
   const handleDelete = async (noteId: number) => {
     if (!projectId) return;
-    
-    if (confirm('Are you sure you want to delete this note?')) {
+
+    if (confirm("Are you sure you want to delete this note?")) {
       await deleteNote({ projectId: projectId, noteId });
     }
   };
@@ -95,39 +106,41 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
         },
       }).unwrap();
 
-      setNewNote('');
+      setNewNote("");
     } catch (err) {
-      console.error('Failed to add note:', err);
-      alert('Error adding note');
+      console.error("Failed to add note:", err);
+      alert("Error adding note");
     } finally {
       setAddNoteLoading(false);
     }
   };
 
   const formatDate = (dateString: string | Date | undefined) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
-      case 'NEW':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'IN_PROGRESS':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'CLOSED':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case "NEW":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "IN_PROGRESS":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "CLOSED":
+        return "bg-gray-100 text-gray-800 border-gray-200";
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const calculateDaysRemaining = (endDate: string | Date | undefined | null) => {
-    if (!endDate) return 'N/A';
+  const calculateDaysRemaining = (
+    endDate: string | Date | undefined | null
+  ) => {
+    if (!endDate) return "N/A";
     const today = new Date();
     const end = new Date(endDate);
     const diffTime = end.getTime() - today.getTime();
@@ -135,19 +148,24 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     return diffDays > 0 ? diffDays : 0;
   };
 
-  const calculateDuration = (startDate: string | Date | undefined, endDate: string | Date | undefined | null) => {
-    if (!startDate) return 'N/A';
+  const calculateDuration = (
+    startDate: string | Date | undefined,
+    endDate: string | Date | undefined | null
+  ) => {
+    if (!startDate) return "N/A";
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date();
     const diffTime = end.getTime() - start.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const months = Math.floor(diffDays / 30);
     const days = diffDays % 30;
-    
+
     if (months > 0) {
-      return `${months} month${months > 1 ? 's' : ''}${days > 0 ? ` ${days} day${days > 1 ? 's' : ''}` : ''}`;
+      return `${months} month${months > 1 ? "s" : ""}${
+        days > 0 ? ` ${days} day${days > 1 ? "s" : ""}` : ""
+      }`;
     }
-    return `${days} day${days > 1 ? 's' : ''}`;
+    return `${days} day${days > 1 ? "s" : ""}`;
   };
 
   // Loading states
@@ -178,11 +196,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Projects
           </Button>
         </div>
         <div className="text-center py-8">
-          <p className="text-lg text-muted-foreground">Project not found or failed to load.</p>
+          <p className="text-lg text-muted-foreground">
+            Project not found or failed to load.
+          </p>
         </div>
       </div>
     );
@@ -203,13 +222,20 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Projects
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
-            <p className="text-muted-foreground">Project Details & Team Overview</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              {project.name}
+            </h1>
+            <p className="text-muted-foreground">
+              Project Details & Team Overview
+            </p>
           </div>
         </div>
+        <Button onClick={() => navigate(`/hr/projects/${id}/edit`)}>
+          <Edit className="h-4 w-4" />
+          Edit
+        </Button>
       </div>
 
       {/* Overview Section */}
@@ -225,8 +251,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
-                {project.status ? project.status.replace('_', ' ') : 'In Progress'}
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                  project.status
+                )}`}
+              >
+                {project.status
+                  ? project.status.replace("_", " ")
+                  : "In Progress"}
               </span>
             </div>
             <div className="flex justify-between">
@@ -238,7 +270,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Timeline</span>
               <span className="text-sm font-medium">
-                {formatDate(project.startdate)} - {project.enddate ? formatDate(project.enddate) : 'Ongoing'}
+                {formatDate(project.startdate)} -{" "}
+                {project.enddate ? formatDate(project.enddate) : "Ongoing"}
               </span>
             </div>
             <div className="flex justify-between">
@@ -248,15 +281,19 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Project Manager</span>
+              <span className="text-sm text-muted-foreground">
+                Project Manager
+              </span>
               <span className="text-sm font-medium">
-                {project.pm?.name || 'Not assigned'}
+                {project.pm?.name || "Not assigned"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Project Lead</span>
+              <span className="text-sm text-muted-foreground">
+                Project Lead
+              </span>
               <span className="text-sm font-medium">
-                {project.lead?.name || 'Not assigned'}
+                {project.lead?.name || "Not assigned"}
               </span>
             </div>
           </CardContent>
@@ -270,7 +307,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
               <div>
                 <p className="text-sm text-muted-foreground">Days Remaining</p>
                 <p className="text-xl font-bold">
-                  {project.enddate ? calculateDaysRemaining(project.enddate) : '∞'}
+                  {project.enddate
+                    ? calculateDaysRemaining(project.enddate)
+                    : "∞"}
                 </p>
               </div>
             </CardContent>
@@ -296,20 +335,25 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
           <CardContent>
             <div className="space-y-4">
               {project.projectUsers.map((projectUser) => (
-                <div key={projectUser.id} className="flex justify-between items-center p-4 border rounded-lg">
+                <div
+                  key={projectUser.id}
+                  className="flex justify-between items-center p-4 border rounded-lg"
+                >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">
                       {projectUser.user?.name
                         ? projectUser.user.name
-                            .split(' ')
+                            .split(" ")
                             .map((n) => n[0])
-                            .join('')
-                        : 'N/A'}
+                            .join("")
+                        : "N/A"}
                     </div>
                     <div>
-                      <h4 className="font-medium">{projectUser.user?.name || 'Unknown'}</h4>
+                      <h4 className="font-medium">
+                        {projectUser.user?.name || "Unknown"}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
-                        {projectUser.designation?.name || 'Engineer'}
+                        {projectUser.designation?.name || "Engineer"}
                       </p>
                     </div>
                     {projectUser.is_shadow && (
@@ -353,7 +397,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                   className="flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  {addNoteLoading ? 'Adding...' : 'Add Note'}
+                  {addNoteLoading ? "Adding..." : "Add Note"}
                 </Button>
               </div>
             </div>
@@ -363,14 +407,18 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             {notesLoading ? (
               <p className="text-sm text-muted-foreground">Loading notes...</p>
             ) : notes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No notes available for this project.</p>
+              <p className="text-sm text-muted-foreground">
+                No notes available for this project.
+              </p>
             ) : (
               notes.map((note) => (
                 <div key={note.id} className="p-4 border rounded-lg space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-sm">{note.author?.name || 'Unknown'}</span>
+                    <span className="font-medium text-sm">
+                      {note.author?.name || "Unknown"}
+                    </span>
                     <span className="text-xs text-muted-foreground">
-                      {note.createdAt ? formatDate(note.createdAt) : ''}
+                      {note.createdAt ? formatDate(note.createdAt) : ""}
                     </span>
                   </div>
                   {editingNoteId === note.id ? (
@@ -381,19 +429,37 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                         onChange={(e) => setEditedContent(e.target.value)}
                       />
                       <div className="flex gap-2 justify-end">
-                        <Button size="sm" onClick={() => note.id !== undefined && handleSave(note.id)}>Save</Button>
-                        <Button size="sm" variant="outline" onClick={handleCancel}>Cancel</Button>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            note.id !== undefined && handleSave(note.id)
+                          }
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCancel}
+                        >
+                          Cancel
+                        </Button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <p className="text-sm text-muted-foreground">{note.content}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {note.content}
+                      </p>
                       {note.author?.user_id === authorId && (
                         <div className="flex gap-2 justify-end">
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => note.id !== undefined && handleEdit(note.id, note.content)}
+                            onClick={() =>
+                              note.id !== undefined &&
+                              handleEdit(note.id, note.content)
+                            }
                             title="Edit Note"
                           >
                             <Pencil className="h-4 w-4" />
@@ -401,7 +467,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => note.id !== undefined && handleDelete(note.id)}
+                            onClick={() =>
+                              note.id !== undefined && handleDelete(note.id)
+                            }
                             title="Delete Note"
                           >
                             <Trash2 className="h-4 w-4 text-red-600" />

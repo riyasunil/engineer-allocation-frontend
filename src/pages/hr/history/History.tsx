@@ -7,7 +7,7 @@ import { useGetAllLogsQuery } from "@/api-service/audit/auditLogs.api";
 
 export interface AuditLog {
   id: number;
-  actor_user_id: number;
+  actor_user_id: string;
   action_type: string;
   timestamp: Date;
   change_summary: string;

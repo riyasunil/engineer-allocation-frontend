@@ -83,7 +83,7 @@ export const projectApi = baseApi.injectEndpoints({
     // Update project
     updateProject: builder.mutation<
       ApiResponse<Project>,
-      { id: string | number; data: UpdateProjectDto }
+      { id: number | number; data: UpdateProjectDto }
     >({
       query: ({ id, data }) => ({
         url: `/project/${id}`,
