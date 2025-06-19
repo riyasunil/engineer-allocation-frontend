@@ -1,24 +1,44 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/pageHeader";
 import {
-  PenLine,
   User,
   CalendarDays,
   Briefcase,
   FolderKanban,
+  Edit3,
+  Save,
+  X,
 } from "lucide-react";
 import { useAppSelector } from "@/store/store";
 import { useGetProjectsByUserIdQuery } from "@/api-service/projects/projects.api";
 import ProfileLoader from "./ProfileLoader";
-import { Key } from "react";
+import { Key, useState } from "react";
 
 const EngineerProfile = () => {
   const currentUser = useAppSelector((state) => state.user.currentUser);
+  const [isEditingExperience, setIsEditingExperience] = useState(false);
+  const [experienceValue, setExperienceValue] = useState("");
 
   const { data: activeProjects = [], isLoading } = useGetProjectsByUserIdQuery({
     userId: currentUser?.id,
     filter: "inprogress",
   });
+
+  const handleEditExperience = () => {
+    setExperienceValue(currentUser.experience.toString());
+    setIsEditingExperience(true);
+  };
+
+  const handleSaveExperience = () => {
+    // Add actual save logic here later
+    console.log("Saving experience:", experienceValue);
+    setIsEditingExperience(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingExperience(false);
+    setExperienceValue("");
+  };
 
   if (!currentUser) return <ProfileLoader />;
 
@@ -38,9 +58,6 @@ const EngineerProfile = () => {
       <PageHeader
         title="My Profile"
         description="Manage your professional information"
-        buttonText="Edit Profile"
-        ButtonIcon={PenLine}
-        onButtonClick={() => console.log("Edit Profile")}
       />
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -61,13 +78,51 @@ const EngineerProfile = () => {
               <p className="text-sm text-slate-600">{currentUser.role?.role_name}</p>
             </div>
 
-            <div className="space-y-2 text-sm text-slate-600">
+            <div className="space-y-3 text-base text-slate-600">
               <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-slate-500" />
-                <span>{currentUser.experience} years of experience</span>
+                <Briefcase className="w-5 h-5 text-slate-500" />
+                {isEditingExperience ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="number"
+                      value={experienceValue}
+                      onChange={(e) => setExperienceValue(e.target.value)}
+                      className="w-20 px-2 py-1 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Years"
+                      autoFocus
+                    />
+                    <span>years of experience</span>
+                    <div className="flex items-center gap-1 ml-2">
+                      <button
+                        onClick={handleSaveExperience}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Save className="w-3 h-3" />
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>{currentUser.experience} years of experience</span>
+                    <button
+                      onClick={handleEditExperience}
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors ml-1"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      Edit
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-slate-500" />
+                <CalendarDays className="w-5 h-5 text-slate-500" />
                 <span>Joined {formattedJoinDate}</span>
               </div>
             </div>
@@ -81,14 +136,24 @@ const EngineerProfile = () => {
             <div>
               <p className="font-medium text-slate-700">Technical Skills</p>
               {currentUser.userSkills.length > 0 ? (
-                <ul className="space-y-2 mt-3">
+                <ul className="flex flex-wrap gap-3 mt-4">
                   {currentUser.userSkills.map((s: {
                     skill: { id: Key; skill_name: string };
                     level: string;
                   }) => (
-                    <li key={s.skill.id} className="flex justify-between items-center">
-                      <span className="text-sm text-slate-700">{s.skill.skill_name}</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                    <li
+                      key={s.skill.id}
+                      className="bg-slate-100 border border-slate-300 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 hover:bg-slate-200 transition-all"
+                    >
+                      <span className="text-sm font-medium text-slate-800">{s.skill.skill_name}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                        ${
+                          s.level === 'Expert'
+                            ? 'bg-green-200 text-green-800'
+                            : s.level === 'Intermediate'
+                            ? 'bg-yellow-200 text-yellow-800'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}>
                         {s.level}
                       </span>
                     </li>
@@ -102,6 +167,7 @@ const EngineerProfile = () => {
             </div>
           </CardContent>
         </Card>
+
       </div>
 
       {/* Current Projects Section */}

@@ -16,7 +16,9 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
     },
   ]);
   const [sendQuery, { isLoading }] = useSendChatbotQueryMutation();
-  const bottomRef = useRef<HTMLDivElement>(null); // :white_check_mark: 1. Ref to scroll target
+
+  const bottomRef = useRef<HTMLDivElement>(null); // ✅ 1. Ref to scroll target
+
 useEffect(() => {
   if (isOpen) {
     // Slight delay to ensure the modal renders before scrolling
@@ -25,6 +27,7 @@ useEffect(() => {
     }, 50);
   }
 }, [isOpen, messages]);
+
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     const userMessage = {
@@ -68,7 +71,7 @@ useEffect(() => {
       <div className="flex items-center justify-between p-4 border-b bg-primary text-white rounded-t-lg">
         <div className="flex items-center gap-2">
           <BotMessageSquare className="h-5 w-5" />
-          <span className="font-medium">AI Assistant</span>
+          <span className="font-medium">Chappy</span>
         </div>
         <button
           onClick={onClose}
@@ -78,26 +81,45 @@ useEffect(() => {
           <X className="h-4 w-4" />
         </button>
       </div>
+
       {/* Messages */}
-      <div className="flex-1 p-4 overflow-auto space-y-3">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.isBot ? "justify-start" : "justify-end"}`}
-          >
-            <div
-              className={`max-w-[70%] whitespace-pre-wrap p-3 rounded-lg text-sm ${
-                msg.isBot
-                  ? "bg-gray-100 text-gray-800"
-                  : "bg-primary text-white"
-              }`}
-            >
-              {msg.text}
-            </div>
-          </div>
-        ))}
-      <div ref={bottomRef} /> {/* :white_check_mark: 3. Invisible scroll target */}
+      {/* Messages */}
+<div className="flex-1 p-4 overflow-auto space-y-3">
+  {messages.map((msg) => (
+    <div
+      key={msg.id}
+      className={`flex ${msg.isBot ? "justify-start" : "justify-end"}`}
+    >
+      <div
+        className={`max-w-[70%] whitespace-pre-wrap p-3 rounded-lg text-sm ${
+          msg.isBot
+            ? "bg-gray-100 text-gray-800"
+            : "bg-primary text-white"
+        }`}
+      >
+        {msg.text}
+      </div>
+    </div>
+  ))}
+
+  {/* ✅ Loading animation inside render */}
+  {isLoading && (
+    <div className="flex justify-start">
+      <div className="bg-gray-100 text-gray-800 text-sm px-3 py-2 rounded-lg max-w-[70%]">
+        <div className="flex space-x-1">
+          <div className="h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+          <div className="h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+          <div className="h-2 w-2 bg-gray-500 rounded-full animate-bounce" />
+        </div>
+      </div>
+    </div>
+  )}
+
+  <div ref={bottomRef} /> {/* ✅ Invisible scroll target */}
 </div>
+
+
+
       {/* Input */}
       <div className="p-4 border-t">
         <div className="flex gap-2">
