@@ -92,6 +92,7 @@ const [requirementSkills, setRequirementSkills] = useState<Record<number, string
   const [trigger, { data: assignableEngineers }] =
     useLazyGetAssignableUsersQuery();
 
+    console.log("Assignale engineers", assignableEngineers)
   const { id } = useParams();
   const {
     data: project,
