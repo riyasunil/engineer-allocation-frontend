@@ -50,14 +50,8 @@ export default function DashboardSidebar({
 
   const items = [
     {
-      title: "Dashboard",
-      url: `/${userRole}/dashboard`,
-      icon: LayoutDashboard,
-      roles: ["hr", "pm", "lead"],
-    },
-    {
       title: "Analytics",
-      url: `/${userRole}/analytics`,
+      url: ``,
       icon: BarChart,
       roles: ["hr", "pm"],
     },
