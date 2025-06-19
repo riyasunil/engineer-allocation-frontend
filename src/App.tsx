@@ -20,6 +20,7 @@ import HrProjectDetails from "./pages/hr/hrProjectDetails/HrProjectDetails";
 import { Toaster } from "@/components/ui/sonner";
 import EngineerDetails from "./pages/hr/engineers/EngineerDetails";
 import EditProject from "./components/editProject/EditProject";
+import HREngineerProfile from "./pages/hr/engineers/EngineerProfile";
 
 const router = createBrowserRouter([
   {
@@ -39,7 +40,8 @@ const router = createBrowserRouter([
       { path: "projects", element: <Projects /> },
       { path: "projects/:id", element: <HrProjectDetails /> },
       { path: "engineers", element: <Engineers /> },
-      {path: "engineers/:id", element: <EngineerDetails /> },
+      { path: "engineers/:id", element: <EngineerDetails /> },
+      { path: "engineers/:id/edit", element: <HREngineerProfile /> },
       { path: "alerts", element: <Alerts /> },
       { path: "history", element: <History /> },
       { path: "profile", element: <Profile /> },

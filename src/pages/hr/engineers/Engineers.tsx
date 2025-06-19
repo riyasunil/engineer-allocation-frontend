@@ -11,11 +11,16 @@ import { useGetEngineersQuery } from "@/api-service/user/user.api";
 // Function to generate consistent colors based on engineer ID
 const generateAvatarColor = (id: string | number) => {
   const colors = [
-    "#FF204E",
-    "#A0153E", 
-    "#5D0E41",
-    "#00224D"
+    "#3E7BFA", // Elegant Blue — neutral and modern
+    "#20C997", // Teal Green — clear and refreshing
+    "#FFB454", // Warm Amber — soft yet eye-catching
+    "#EF476F", // Rich Rose — vibrant without being harsh
+    "#6C5CE7", // Soft Purple — unique and classy
+    "#00B8D9", // Cyan — tech-savvy, fresh
+    "#F95F53", // Coral — energetic, useful for alerts
+    "#9C27B0", // Deep Purple — rich and sleek
   ];
+  
   
   // Convert id to string and create a simple hash
   const str = String(id);

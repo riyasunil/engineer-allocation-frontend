@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Users, BarChart3, Calendar, Edit, Plus, Building } from 'lucide-react';
-
+import { useAppSelector } from '@/store/store';
+import { useNavigate } from 'react-router-dom';
 
 interface HRProfile {
   id: number;
@@ -15,22 +16,24 @@ interface HRProfile {
 }
 
 
-
 const Profile = () => {
+  const data = useAppSelector((state) => state.user.currentUser);
+  const navigate=useNavigate()
+
   const [profile] = useState<HRProfile>({
-    id: 1,
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@keyvalue.com',
-    role: 'HR',
-    user_id: 'KV08',
-    experience: 8,
-    joined_at: '2024-01-15'
+    id: data.id,
+    name: data.name,
+    email: data.email,
+    role: data.role.role_name,
+    user_id: data.user_id,
+    experience: data.experience,
+    joined_at: data.joined_at
   });
 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      {/* Hero Section */}
+
       <div className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-6 py-12">
           <div className="flex flex-col lg:flex-row items-center gap-8">
@@ -96,15 +99,15 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Button className="h-24 flex-col gap-3 text-lg" size="lg">
+              <Button className="h-24 flex-col gap-3 text-lg" size="lg" onClick={() => navigate('../projects/create')}>
                 <Plus className="h-6 w-6" />
                 Create New Project
               </Button>
-              <Button variant="outline" className="h-24 flex-col gap-3 text-lg" size="lg">
+              <Button variant="outline" className="h-24 flex-col gap-3 text-lg" size="lg" onClick={() => navigate('../engineers')}>
                 <Users className="h-6 w-6" />
                 Manage Engineers
               </Button>
-              <Button variant="outline" className="h-24 flex-col gap-3 text-lg" size="lg">
+              <Button variant="outline" className="h-24 flex-col gap-3 text-lg" size="lg" onClick={() => navigate('../analytics')}>
                 <BarChart3 className="h-6 w-6" />
                 View Analytics
               </Button>
