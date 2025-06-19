@@ -1,12 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { HistoryIcon, User } from "lucide-react";
 import React, { useState } from "react";
-
-import { SearchFilterBar } from "@/components/ui/searchFilterBar";
-import { useGetAllLogsQuery } from "@/api-service/auditlogs/auditlogs.api";
-import { useGetUserByIdQuery } from "@/api-service/user/user.api";
 import RequestCard from "./components/HistoryRequestCard";
-
+import { SearchFilterBar } from "@/components/ui/searchFilterBar";
+import { useGetAllLogsQuery } from "@/api-service/audit/auditLogs.api";
 
 export interface AuditLog {
   id: number;
