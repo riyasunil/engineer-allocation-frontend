@@ -16,6 +16,7 @@ import { Key, useState } from "react";
 import { useUpdateExperienceMutation } from "@/api-service/user/user.api";
 import { useDispatch } from "react-redux";
 import { setCurrentUser } from "@/store/slices/userSlice";
+import { toast } from "sonner";
 
 const EngineerProfile = () => {
   const currentUser = useAppSelector((state) => state.user.currentUser);
@@ -37,13 +38,15 @@ const EngineerProfile = () => {
 
   const handleSaveExperience = async () => {
     const result = await updateExperience({
-      id: currentUser.id,
+      id: currentUser.user_id,
       experience: Number(experienceValue),
     });
 
+    console.log("Mutation result:", result);
+
     if (result.data) {
       dispatch(setCurrentUser(result.data)); // Set updated user in Redux
-      setIsEditingExperience(false);
+      toast.success("Experience updated successfully");
     }
   };
   
