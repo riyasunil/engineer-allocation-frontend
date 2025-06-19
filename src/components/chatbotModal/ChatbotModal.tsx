@@ -23,9 +23,13 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
   const bottomRef = useRef<HTMLDivElement>(null); // ✅ 1. Ref to scroll target
 
 useEffect(() => {
-  // ✅ 2. Auto scroll to bottom when messages change
-  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-}, [messages]);
+  if (isOpen) {
+    // Slight delay to ensure the modal renders before scrolling
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    }, 50);
+  }
+}, [isOpen, messages]);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
