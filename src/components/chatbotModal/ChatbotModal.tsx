@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BotMessageSquare, X, Send } from "lucide-react";
 import { useSendChatbotQueryMutation } from "@/api-service/chatbot/chatbot.api";
 
@@ -19,6 +19,13 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
   ]);
 
   const [sendQuery, { isLoading }] = useSendChatbotQueryMutation();
+
+  const bottomRef = useRef<HTMLDivElement>(null); // ✅ 1. Ref to scroll target
+
+useEffect(() => {
+  // ✅ 2. Auto scroll to bottom when messages change
+  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages]);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -101,7 +108,9 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
         ))}
-      </div>
+      <div ref={bottomRef} /> {/* ✅ 3. Invisible scroll target */}
+</div>
+
 
       {/* Input */}
       <div className="p-4 border-t">
