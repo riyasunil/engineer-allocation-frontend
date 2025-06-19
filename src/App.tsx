@@ -65,16 +65,14 @@ const router = createBrowserRouter([
     element: <NotFound />,
   },
 ]);
-
 function App() {
-  return (
-    <>
-      <Provider store={store}>
-        <Toaster position="top-right"/>
-        <RouterProvider router={router}></RouterProvider>
-      </Provider>
-    </>
-  );
+return (
+<>
+<Provider store={store}>
+<Toaster position="top-right"/>
+<RouterProvider router={router}></RouterProvider>
+</Provider>
+</>
+ );
 }
-
 export default App;

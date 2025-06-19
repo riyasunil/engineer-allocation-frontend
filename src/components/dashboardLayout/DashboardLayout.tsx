@@ -3,14 +3,13 @@ import { Outlet, Navigate } from "react-router-dom";
 import DashboardSidebar from "../sidebar/DashboardSidebar";
 import { SidebarProvider } from "../ui/sidebar";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { useLazyGetUserByIdQuery } from "@/api-service/user/user.api";
+import { useGetUserByIdQuery, useLazyGetUserByIdQuery } from "@/api-service/user/user.api";
 import { setCurrentUser } from "@/store/slices/userSlice";
 import { BotMessageSquare } from "lucide-react";
 const ChatbotModal = lazy(() => import("../chatbotModal/ChatbotModal"));
 
 
 const DashboardLayout = () => {
-  const [triggerGetUserById, { isLoading }] = useLazyGetUserByIdQuery();
   const dispatch = useAppDispatch();
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   // const currentUser = useAppSelector((state) => state.user.currentUser);
@@ -22,14 +21,20 @@ const DashboardLayout = () => {
     return !!token;
   };
 
-  useEffect(() => {
-    const user_id = localStorage.getItem("user_id");
-    if (user_id && !currentUser) {
-      triggerGetUserById(user_id)
-        .unwrap()
-        .then((user) => dispatch(setCurrentUser(user)));
-    }
-  }, []);
+  const user_id = localStorage.getItem("user_id");
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useGetUserByIdQuery(user_id, {
+    skip: !user_id,
+  });
+
+useEffect(() => {
+  if (user) {
+    dispatch(setCurrentUser(user));
+  }
+}, [user, dispatch]);
 
 
   if (!isLoggedIn()) {

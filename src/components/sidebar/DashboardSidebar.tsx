@@ -48,10 +48,11 @@ export default function DashboardSidebar({
   const newAlertsCount = 2;
   const currentUser = useAppSelector((state) => state.user.currentUser);
 
+
   const items = [
     {
       title: "Dashboard",
-      url: `/${userRole}/dashboard`,
+      url: `/dashboard`,
       icon: LayoutDashboard,
       roles: ["hr", "pm", "lead"],
     },
