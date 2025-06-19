@@ -1,71 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BotMessageSquare, X, Send } from "lucide-react";
 import { useSendChatbotQueryMutation } from "@/api-service/chatbot/chatbot.api";
-
 interface ChatbotModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "👋 Hi! I'm your AI assistant. How can I help you today?",
+      text: ":wave: Hi! I'm your AI assistant. How can I help you today?",
       isBot: true,
       timestamp: new Date(),
     },
   ]);
-
   const [sendQuery, { isLoading }] = useSendChatbotQueryMutation();
-
+  const bottomRef = useRef<HTMLDivElement>(null); // :white_check_mark: 1. Ref to scroll target
+useEffect(() => {
+  if (isOpen) {
+    // Slight delay to ensure the modal renders before scrolling
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    }, 50);
+  }
+}, [isOpen, messages]);
   const handleSendMessage = async () => {
     if (!message.trim()) return;
-
     const userMessage = {
       id: Date.now(),
       text: message,
       isBot: false,
       timestamp: new Date(),
     };
-
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
-
     try {
       const response = await sendQuery({ query: message }).unwrap();
-
-      const reply = response.message || "🤖 I wasn't sure how to respond.";
-
+      const reply = response.message || ":robot_face: I wasn't sure how to respond.";
       const botMessage = {
         id: Date.now() + 1,
         text: reply,
         isBot: true,
         timestamp: new Date(),
       };
-
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       const errMsg = {
         id: Date.now() + 1,
-        text: "⚠️ Something went wrong. Please try again.",
+        text: ":warning: Something went wrong. Please try again.",
         isBot: true,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errMsg]);
     }
   };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-
   if (!isOpen) return null;
-
   return (
     <div className="fixed bottom-6 right-6 w-120 h-150 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 flex flex-col">
       {/* Header */}
@@ -82,7 +78,6 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
           <X className="h-4 w-4" />
         </button>
       </div>
-
       {/* Messages */}
       <div className="flex-1 p-4 overflow-auto space-y-3">
         {messages.map((msg) => (
@@ -101,8 +96,8 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
         ))}
-      </div>
-
+      <div ref={bottomRef} /> {/* :white_check_mark: 3. Invisible scroll target */}
+</div>
       {/* Input */}
       <div className="p-4 border-t">
         <div className="flex gap-2">
@@ -126,5 +121,4 @@ const ChatbotModal: React.FC<ChatbotModalProps> = ({ isOpen, onClose }) => {
     </div>
   );
 };
-
 export default ChatbotModal;
