@@ -71,7 +71,7 @@ useEffect(() => {
       <div className="flex items-center justify-between p-4 border-b bg-primary text-white rounded-t-lg">
         <div className="flex items-center gap-2">
           <BotMessageSquare className="h-5 w-5" />
-          <span className="font-medium">Chappy</span>
+          <span className="font-medium">AI Assistant</span>
         </div>
         <button
           onClick={onClose}
