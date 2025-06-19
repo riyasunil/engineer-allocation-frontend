@@ -81,14 +81,24 @@ const EngineerProfile = () => {
             <div>
               <p className="font-medium text-slate-700">Technical Skills</p>
               {currentUser.userSkills.length > 0 ? (
-                <ul className="space-y-2 mt-3">
+                <ul className="flex flex-wrap gap-3 mt-4">
                   {currentUser.userSkills.map((s: {
                     skill: { id: Key; skill_name: string };
                     level: string;
                   }) => (
-                    <li key={s.skill.id} className="flex justify-between items-center">
-                      <span className="text-sm text-slate-700">{s.skill.skill_name}</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                    <li
+                      key={s.skill.id}
+                      className="bg-slate-100 border border-slate-300 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 hover:bg-slate-200 transition-all"
+                    >
+                      <span className="text-sm font-medium text-slate-800">{s.skill.skill_name}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                        ${
+                          s.level === 'Expert'
+                            ? 'bg-green-200 text-green-800'
+                            : s.level === 'Intermediate'
+                            ? 'bg-yellow-200 text-yellow-800'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}>
                         {s.level}
                       </span>
                     </li>
@@ -102,6 +112,7 @@ const EngineerProfile = () => {
             </div>
           </CardContent>
         </Card>
+
       </div>
 
       {/* Current Projects Section */}
