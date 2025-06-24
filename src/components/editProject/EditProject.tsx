@@ -148,10 +148,6 @@ const EditProject = () => {
   });
 
   const [originalRequirements, setOriginalRequirements] = useState<any[]>([]);
-  // const [editingRequirement, setEditingRequirement] = useState<{
-  //   index: number;
-  //   data: any;
-  // } | null>(null);
 
   useEffect(() => {
     if (project) {
