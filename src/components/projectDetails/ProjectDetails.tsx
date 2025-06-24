@@ -258,12 +258,21 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             </p>
           </div>
         </div>
-      {(source === "HR" ||project.pm?.id === currentUser.id || project.lead?.id === currentUser.id) && (
-        <Button onClick={() => navigate(`/hr/projects/${id}/edit`)}>
-          <Edit className="h-4 w-4" />
-          Edit
-        </Button>
-      )}
+        {(source === "HR" || project.pm?.id === currentUser.id || project.lead?.id === currentUser.id) && (
+          <Button
+            onClick={() =>
+              navigate(
+                source === "HR"
+                  ? `/hr/projects/${id}/edit`
+                  : `/engineer/projects/${id}/edit`
+              )
+            }
+          >
+            <Edit className="h-4 w-4" />
+            Edit
+          </Button>
+        )}
+
       </div>
 
       {/* Overview Section */}
@@ -385,7 +394,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                       </p>
                     </div>
 
-                    {source === "HR" ? (
+                    {(source === "HR" ||project.pm?.id === currentUser.id || project.lead?.id === currentUser.id) ? (
                       <button
                         onClick={() => {
                           if (projectUser.id !== undefined) {
