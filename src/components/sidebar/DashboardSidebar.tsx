@@ -7,6 +7,7 @@ import {
   History,
   User,
   MoreVertical,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -170,7 +171,7 @@ export default function DashboardSidebar({
           </div>
         </NavLink>
 
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="ml-auto p-2 rounded-md hover:bg-muted">
               <MoreVertical className="h-4 w-4 text-muted-foreground" />
@@ -181,7 +182,8 @@ export default function DashboardSidebar({
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
+        <LogOut onClick={() => handleLogout()} size={18} className="mr-4"/>
       </div>
     </Sidebar>
   );

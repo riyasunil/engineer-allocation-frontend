@@ -765,6 +765,7 @@ const EditProject = () => {
             </Button>
           )}
 
+          {/* Current Requirements */}
           <h3 className="text-md font-semibold mb-3 text-gray-800">
             Current Requirements
           </h3>

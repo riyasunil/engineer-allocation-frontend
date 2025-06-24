@@ -126,10 +126,7 @@ const ProjectList = () => {
                     {project.project_id}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {/* <Badge variant="secondary">{project.role}</Badge>
-                    {project.labels?.map((label) => (
-                      <StatusBadge key={label} label={label} />
-                    ))} */}
+                  
                   </div>
                 </div>
                 <Button
@@ -154,17 +151,9 @@ const ProjectList = () => {
                     })}{" "}
                     days
                   </span>
-                  {/* <span className="ml-4">
-                    <strong>Team:</strong> {project.teamSize} members
-                  </span> */}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 mt-2 text-xs">
-                {/* {project.tags.map((tag) => (
-                  <span key={tag} className="bg-muted px-2 py-1 rounded-md">
-                    {tag}
-                  </span>
-                ))} */}
               </div>
             </div>
           ))}
@@ -213,42 +202,6 @@ const ProjectList = () => {
               </div>
             </div>
           ))}
-          {/* {completedEngineering.map((p) => (
-            <div
-              key={p.project?.id}
-              className="border rounded-lg p-4 space-y-2 hover:shadow-sm transition"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold text-base">{p?.project.name}</h3>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    <StatusBadge label="COMPLETED" />
-                  </div>
-                </div>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handleViewDetails(p.project.id)}
-                >
-                  View Details
-                </Button>
-              </div>
-
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  <strong>Started:</strong> {p?.project?.startdate?.toString()}
-                  <span className="ml-4">
-                    <strong>Duration:</strong>{" "}
-                    {calculateProjectDuration({
-                      startdate: p?.project?.startdate,
-                      enddate: p?.project?.enddate,
-                    })}{" "}
-                    days
-                  </span>
-                </p>
-              </div>
-            </div>
-          ))} */}
         </CardContent>
       </Card>
     </div>
