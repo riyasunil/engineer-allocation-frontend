@@ -71,8 +71,12 @@ const EditProject = () => {
   const { data: skillsWithIds } = useGetSkillsQuery();
   const { data: availableEngineers } = useGetAllAvailableUsersQuery();
   // const [fetchSkillsForRequirement, {isLoading: isLoadingSkills}] = useLazyGetSkillbyRequirementIdQuery();
+  const {data : availableUsers} = useGetAllAvailableUsersQuery();
 
 const [requirementSkills, setRequirementSkills] = useState<Record<number, string[]>>({});  
+
+const [pendingRequirements, setPendingRequirements] = useState<ProjectRequirement[]>([]);
+
   
 
   const unassignEngineer = async (...args: any[]) => {
@@ -197,6 +201,8 @@ const [requirementSkills, setRequirementSkills] = useState<Record<number, string
 
   const handleConfirmRequirement = () => {
     if (newReq.designation && newReq.designation_id && newReq.count > 0) {
+          setPendingRequirements((prev) => [...prev, { ...newReq }]); // Save to local state
+      
       setShowEngineerCard(true);
       const skillIds = newReq.skills.map((s) => s.id);
       handleGetAssignableEngineers(newReq.designation, skillIds);
@@ -805,6 +811,8 @@ const handleAddRequirement = async () => {
               </div>
             </div>
           )}
+
+          
         </div>
 
         <div>
@@ -820,13 +828,13 @@ const handleAddRequirement = async () => {
       </div>
 
       {/* Add Engineer Section */}
-      <div className="mt-3 pt-3">
-        {/* <div className="flex items-center gap-2">
+      {/* <div className="mt-3 pt-3">
+        <div className="flex items-center gap-2">
           <select
             onChange={(e) => {
               const engineerId = parseInt(e.target.value);
               if (engineerId) {
-                handleAssignEngineerToProject(engineerId, req.id);
+                handleAssignEngineerToProject(engineerId);
                 e.target.value = "";
               }
             }}
@@ -834,7 +842,7 @@ const handleAddRequirement = async () => {
             disabled={isAssigningEngineer}
           >
             <option value="">Assign Engineer</option>
-            {assignableEngineers
+            {availableEngineers
               ?.filter(eng => 
                 !req.projectAssignments?.some(pa => pa.user.id === eng.id)
               )
@@ -847,8 +855,8 @@ const handleAddRequirement = async () => {
           {isAssigningEngineer && (
             <span className="text-xs text-gray-500">Assigning...</span>
           )}
-        </div> */}
-      </div>
+        </div>
+      </div> */}
     </div>
   );
 })}
