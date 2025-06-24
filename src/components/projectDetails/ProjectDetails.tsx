@@ -17,7 +17,10 @@ import {
   useCreateNoteMutation,
   useDeleteNoteMutation,
 } from "@/api-service/notes/notes.api";
-import { useGetProjectByIdQuery } from "@/api-service/projects/projects.api";
+import {
+  useGetProjectByIdQuery,
+  useToggleShadowStatusMutation,
+} from "@/api-service/projects/projects.api";
 
 interface ProjectDetailsProps {
   source: "HR" | "ENGINEER";
@@ -40,6 +43,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     data: project,
     isLoading: projectLoading,
     error: projectError,
+    refetch,
   } = useGetProjectByIdQuery(id!, {
     skip: !id,
   });
@@ -56,6 +60,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   const [createNote] = useCreateNoteMutation();
   const [updateNote] = useUpdateNoteMutation();
   const [deleteNote] = useDeleteNoteMutation();
+  const [toggleShadow] = useToggleShadowStatusMutation();
 
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editedContent, setEditedContent] = useState("");
@@ -114,6 +119,24 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
       setAddNoteLoading(false);
     }
   };
+
+  const handleToggleShadow = async (
+    projectUserId: number,
+    currentValue: boolean
+  ) => {
+    try {
+      await toggleShadow({
+        projectId: id!,
+        projectUserId,
+        is_shadow: !currentValue, // send updated value
+      }).unwrap();
+    } catch (err) {
+      console.error("Failed to toggle shadow status", err);
+      alert("Could not update shadow status.");
+    }
+  };
+
+
 
   const formatDate = (dateString: string | Date | undefined) => {
     if (!dateString) return "N/A";
@@ -356,12 +379,31 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                         {projectUser.designation?.name || "Engineer"}
                       </p>
                     </div>
-                    {projectUser.is_shadow && (
-                      <span className="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                        Shadow
-                      </span>
+
+                    {source === "HR" ? (
+                      <button
+                        onClick={() => {
+                          if (projectUser.id !== undefined) {
+                            handleToggleShadow(projectUser.id, projectUser.is_shadow);
+                          }
+                        }}
+                        className={`ml-3 px-3 py-1 text-xs rounded-full font-medium border transition-colors ${
+                          projectUser.is_shadow
+                            ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                            : "bg-muted text-muted-foreground border-gray-300 hover:bg-gray-100"
+                        }`}
+                      >
+                        {projectUser.is_shadow ? "Shadow" : "Mark Shadow"}
+                      </button>
+                    ) : (
+                      projectUser.is_shadow && (
+                        <span className="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                          Shadow
+                        </span>
+                      )
                     )}
                   </div>
+
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Start Date</p>
                     <p className="text-sm font-medium">
@@ -374,6 +416,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
           </CardContent>
         </Card>
       )}
+
 
       {/* Notes Section */}
       <Card>
