@@ -9,6 +9,7 @@ import {
   Trash2,
   Edit,
 } from "lucide-react";
+import { useAppSelector } from "@/store/store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -48,6 +49,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
     skip: !id,
   });
 
+  const currentUser = useAppSelector((state) => state.user.currentUser);
+  
   // Extract the project_id (string) from the fetched project data
   const projectId = project?.project_id;
 
@@ -255,10 +258,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             </p>
           </div>
         </div>
+      {(project.pm?.id === currentUser.id || project.lead?.id === currentUser.id) && (
         <Button onClick={() => navigate(`/hr/projects/${id}/edit`)}>
           <Edit className="h-4 w-4" />
           Edit
         </Button>
+      )}
       </div>
 
       {/* Overview Section */}
