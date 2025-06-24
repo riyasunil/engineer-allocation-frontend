@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { data, useNavigate } from "react-router-dom";
+import { data, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -76,6 +76,13 @@ const EditProject = () => {
   const { data: skillsWithIds } = useGetSkillsQuery();
   const { data: availableEngineers } = useGetAllAvailableUsersQuery();
   // const [fetchSkillsForRequirement, {isLoading: isLoadingSkills}] = useLazyGetSkillbyRequirementIdQuery();
+
+  const location = useLocation();
+  
+  // Add this helper function
+  const getBaseUrl = () => {
+    return location.pathname.replace('/edit', '');
+  };
 
   const [requirementSkills, setRequirementSkills] = useState<
     Record<number, string[]>
@@ -419,7 +426,7 @@ const EditProject = () => {
       });
 
       alert("Project updated successfully");
-      navigate("/hr/projects");
+      navigate(getBaseUrl())
     } catch (error: any) {
       console.error("Error updating project:", error);
       alert(error?.data?.message || "Failed to update project");
@@ -449,7 +456,7 @@ const EditProject = () => {
         <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/hr/projects/${id}`)}
+                    onClick={() => navigate(getBaseUrl())}
                     className="flex items-center gap-2"
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -593,7 +600,7 @@ const EditProject = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate("/hr/projects")}
+            onClick={() => navigate(getBaseUrl())}
             className="w-48"
           >
             Cancel
@@ -804,7 +811,7 @@ const EditProject = () => {
                       <span className="text-sm font-medium">
                         {requiredCount} × {designationName} --
                         {req.requirementSkills?.map((skill) => {
-                const skillName= skillsWithIds?.find(s => s.id === skill.skill.id)?.skill_name
+                const skillName= skillsWithIds?.find(s => s.id === skill.id)?.skill_name
                 console.log(skill,skillName)
                 return(
                   <span
