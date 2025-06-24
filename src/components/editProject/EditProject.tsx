@@ -67,8 +67,8 @@ const projectStatuses = ["NEW", "IN PROGRESS", "CLOSED"];
 
 const EditProject = () => {
 
-  const { paramid } = useParams();
-  console.log(paramid)
+  const { id } = useParams();
+  console.log(id)
   const navigate = useNavigate();
   const [updateProject, { isLoading: isUpdatingProject }] =
     useUpdateProjectMutation();
@@ -113,7 +113,6 @@ const EditProject = () => {
   >(new Set());
 
   console.log("Assignale engineers", assignableEngineers);
-  const { id } = useParams();
   const {
     data: project,
     isLoading: projectLoading,
@@ -454,7 +453,7 @@ const EditProject = () => {
         <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/hr/projects/${paramid}`)}
+                    onClick={() => navigate(`/hr/projects/${id}`)}
                     className="flex items-center gap-2"
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -807,7 +806,19 @@ const EditProject = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-medium">
-                        {requiredCount} × {designationName}
+                        {requiredCount} × {designationName} --
+                        {req.requirementSkills?.map((skill) => {
+                const skillName= skillsWithIds?.find(s => s.id === skill.skill.id)?.skill_name
+                console.log(skill,skillName)
+                return(
+                  <span
+                    className="bg-gray-400 text-white text-xs px-1.5 py-1 rounded  ml-1 "
+                  >
+                    {skillName}
+               </span>
+              ) }
+            )
+            }
                       </span>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
