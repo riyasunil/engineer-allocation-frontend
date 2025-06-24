@@ -1,4 +1,4 @@
-import { Project, User, UserData } from "@/utils/types";
+import { Project, User, UserData, UserSkill } from "@/utils/types";
 import baseApi from "../api";
 
 interface AssignableUserPayload {
@@ -75,6 +75,15 @@ export const userApi = baseApi.injectEndpoints({
       }),
         invalidatesTags: (result, error, payload) => [{ type: "USERS", id: payload.id }],
     }),
+
+    userSkill: builder.query< UserSkill[] ,{ id: number }>({   //change response type
+      query: (payload) => ({
+        url: `skills/${payload.id}`,
+        method: "GET",
+        body: payload,
+      }),
+    }),
+
   }),
 });
 
@@ -88,5 +97,6 @@ export const {
   useLazyGetAssignableUsersQuery,
   useGetAllEngineersQuery,
   useGetAllAvailableUsersQuery,
-  useUpdateExperienceMutation
+  useUpdateExperienceMutation,
+  useUserSkillQuery
 } = userApi;

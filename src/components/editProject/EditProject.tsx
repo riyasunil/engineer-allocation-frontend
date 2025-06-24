@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { data, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import {
   useAssignEngineerToProjectMutation,
   useCreateProjectMutation,
@@ -9,12 +10,14 @@ import {
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
 import { useParams } from "react-router-dom";
+
 import { useGetProjectByIdQuery } from "@/api-service/projects/projects.api";
 import {
   useGetAllAvailableUsersQuery,
   useGetAssignableUsersQuery,
   useLazyGetAssignableUsersQuery,
   userApi,
+  useUserSkillQuery,
 } from "@/api-service/user/user.api";
 import { useGetEngineersQuery } from "@/api-service/user/user.api";
 import { Separator } from "@radix-ui/react-separator";
@@ -63,6 +66,9 @@ interface UpdateProjectDto {
 const projectStatuses = ["NEW", "IN PROGRESS", "CLOSED"];
 
 const EditProject = () => {
+
+  const { paramid } = useParams();
+  console.log(paramid)
   const navigate = useNavigate();
   const [updateProject, { isLoading: isUpdatingProject }] =
     useUpdateProjectMutation();
@@ -444,7 +450,17 @@ const EditProject = () => {
   return (
     <div className="mx-auto px-4 py-8">
       <div className="mb-10">
+        <div className="flex items-center gap-4">
+        <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/hr/projects/${paramid}`)}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>  
         <h1 className="text-3xl font-bold text-foreground">Edit Project</h1>
+        </div>
         <p className="text-muted-foreground">
           Update project details, assign leads, and set requirements
         </p>
