@@ -78,11 +78,13 @@ const EditProject = () => {
   // const [fetchSkillsForRequirement, {isLoading: isLoadingSkills}] = useLazyGetSkillbyRequirementIdQuery();
   const {data : availableUsers} = useGetAllAvailableUsersQuery();
 
-const [requirementSkills, setRequirementSkills] = useState<Record<number, string[]>>({});  
+  const [requirementSkills, setRequirementSkills] = useState<
+    Record<number, string[]>
+  >({});
+  const [selectedEngineersForAssignment, setSelectedEngineersForAssignment] = useState<{
+  [requirementId: number]: number[]
+}>({});
 
-const [pendingRequirements, setPendingRequirements] = useState<ProjectRequirement[]>([]);
-
-  
 
   const unassignEngineer = async (...args: any[]) => {
     console.log("Mock unassignEngineer called with:", args);
@@ -812,43 +814,52 @@ const [pendingRequirements, setPendingRequirements] = useState<ProjectRequiremen
                     className="bg-gray-400 text-white text-xs px-1.5 py-1 rounded  ml-1 "
                   >
                     {skillName}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className="text-sm text-gray-500">
-                {isLoadingSkills ? "Loading..." : "No skills specified"}
-              </span>
-            )}
-          </div> */}
-          {/* Display assigned users from projectAssignments */}
-          {req.projectAssignments?.length > 0 && (
-            <div className="mt-2">
-              <span className="text-sm font-medium text-gray-600">
-                Assigned Engineers:{" "}
-              </span>
-              <div className="flex gap-1 flex-wrap mt-1">
-                {req.projectAssignments.map((assignment) => (
-                  <span
-                    key={assignment.id}
-                    className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"
-                  >
-                    {assignment.user.name} ({assignment.user.user_id})
-                    <button
-                      type="button"
-                      onClick={() => handleUnassignEngineerFromProject(assignment.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+               </span>
+              ) }
+            )
+            }
+                      </span>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          isUnderStaffed
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {assignedCount}/{requiredCount} assigned
+                      </span>
+                    </div>
 
-          
-        </div>
+                    {/* Display assigned engineers */}
+                    {req.projectAssignments?.length > 0 && (
+                      <div className="mt-2">
+                        <span className="text-sm font-medium text-gray-600">
+                          Assigned Engineers:{" "}
+                        </span>
+                        <div className="flex gap-1 flex-wrap mt-1">
+                          {req.projectAssignments.map((assignment) => (
+                            <span
+                              key={assignment.id}
+                              className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"
+                            >
+                              {assignment.user.name} ({assignment.user.user_id})
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleUnassignEngineerFromProject(
+                                    assignment.id
+                                  )
+                                }
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   <div>
                     <button
@@ -862,39 +873,147 @@ const [pendingRequirements, setPendingRequirements] = useState<ProjectRequiremen
                   </div>
                 </div>
 
-      {/* Add Engineer Section */}
-      {/* <div className="mt-3 pt-3">
-        <div className="flex items-center gap-2">
-          <select
-            onChange={(e) => {
-              const engineerId = parseInt(e.target.value);
-              if (engineerId) {
-                handleAssignEngineerToProject(engineerId);
-                e.target.value = "";
-              }
-            }}
-            className="flex-1 max-w-xs px-3 py-1 border border-gray-300 rounded text-sm"
-            disabled={isAssigningEngineer}
-          >
-            <option value="">Assign Engineer</option>
-            {availableEngineers
-              ?.filter(eng => 
-                !req.projectAssignments?.some(pa => pa.user.id === eng.id)
-              )
-              .map((eng) => (
-                <option key={eng.id} value={eng.id}>
-                  {eng.name} ({eng.user_id})
-                </option>
-              ))}
-          </select>
-          {isAssigningEngineer && (
-            <span className="text-xs text-gray-500">Assigning...</span>
-          )}
+                {isUnderStaffed && (
+  <div className="mt-3 pt-3 border-t border-gray-200">
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-700">
+          Need {requiredCount - assignedCount} more engineer(s):
+        </span>
+        <select
+          onChange={(e) => {
+            const engineerId = parseInt(e.target.value);
+            if (engineerId) {
+              setSelectedEngineersForAssignment(prev => ({
+                ...prev,
+                [req.id]: [...(prev[req.id] || []), engineerId]
+              }));
+              e.target.value = "";
+            }
+          }}
+          className="flex-1 max-w-xs px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          disabled={isAssigningEngineer}
+        >
+          <option value="">Select Engineer to Assign</option>
+          {availableEngineers
+            ?.filter(
+              (eng) =>
+                eng.role.role_name === "ENGINEER" &&
+                !req.projectAssignments?.some(
+                  (pa) => pa.user.id === eng.id
+                ) &&
+                !(selectedEngineersForAssignment[req.id] || []).includes(eng.id)
+            )
+            .map((eng) => (
+              <option key={eng.id} value={eng.id}>
+                {eng.name} ({eng.user_id})
+              </option>
+            ))}
+        </select>
+      </div>
+
+      {selectedEngineersForAssignment[req.id]?.length > 0 && (
+        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-blue-800">
+              Selected Engineers to Assign:
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedEngineersForAssignment(prev => ({
+                  ...prev,
+                  [req.id]: []
+                }));
+              }}
+              className="text-xs text-blue-600 hover:text-blue-800"
+            >
+              Clear All
+            </button>
+          </div>
+          
+          <div className="flex gap-1 flex-wrap mb-3">
+            {selectedEngineersForAssignment[req.id].map((engineerId) => {
+              const engineer = availableEngineers?.find(
+                (eng) => eng.id === engineerId
+              );
+              return (
+                <span
+                  key={engineerId}
+                  className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"
+                >
+                  {engineer?.name} ({engineer?.user_id})
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedEngineersForAssignment(prev => ({
+                        ...prev,
+                        [req.id]: (prev[req.id] || []).filter(id => id !== engineerId)
+                      }));
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                const engineersToAssign = selectedEngineersForAssignment[req.id] || [];
+                
+                try {
+                  for (const engineerId of engineersToAssign) {
+                    await handleAssignEngineerToProject(engineerId, req.id);
+                  }
+                  
+                  setSelectedEngineersForAssignment(prev => ({
+                    ...prev,
+                    [req.id]: []
+                  }));
+                  
+                } catch (error) {
+                  console.error("Error assigning engineers:", error);
+                }
+              }}
+              className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+              disabled={isAssigningEngineer || !selectedEngineersForAssignment[req.id]?.length}
+            >
+              {isAssigningEngineer ? "Assigning..." : `Assign ${selectedEngineersForAssignment[req.id]?.length || 0} Engineer(s)`}
+            </button>
+            
+            <span className="text-xs text-gray-600 self-center">
+              {selectedEngineersForAssignment[req.id]?.length || 0} of {requiredCount - assignedCount} needed
+            </span>
+          </div>
         </div>
-      </div> */}
+      )}
+
+      {isAssigningEngineer && (
+        <span className="text-xs text-gray-500">
+          Assigning engineer(s)...
+        </span>
+      )}
     </div>
-  );
-})}
+  </div>
+)}
+                {!isUnderStaffed && assignedCount > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-2 text-green-600">
+                      <span className="text-sm">
+                        ✓ Requirement fully satisfied
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
           {originalRequirements?.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <p>No requirements added yet</p>
