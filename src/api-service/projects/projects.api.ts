@@ -8,8 +8,8 @@ interface CreateProjectDto {
   startdate?: Date;
   enddate?: Date;
   status?: string;
-  pmId: number; // User ID
-  leadId: number; // User ID
+  pmId: number;
+  leadId: number;
 }
 
 interface UpdateProjectDto {
@@ -17,8 +17,8 @@ interface UpdateProjectDto {
   startdate?: Date;
   enddate?: Date;
   status?: string;
-  pmId?: number; // User ID
-  leadId?: number; // User ID
+  pmId?: number;
+  leadId?: number;
 }
 
 interface AssignEngineerRequest {
@@ -69,7 +69,7 @@ export const projectApi = baseApi.injectEndpoints({
     // Get projects by user ID
     getProjectsByUserId: builder.query<
       Project[],
-      { userId: number | number; filter?: string }
+      { userId: number; filter?: string }
     >({
       query: ({ userId, filter }) => ({
         url: `/project/user/${userId}?filter=${filter || ""}`,
@@ -83,7 +83,7 @@ export const projectApi = baseApi.injectEndpoints({
     // Update project
     updateProject: builder.mutation<
       ApiResponse<Project>,
-      { id: number | number; data: UpdateProjectDto }
+      { id: number; data: UpdateProjectDto }
     >({
       query: ({ id, data }) => ({
         url: `/project/${id}`,
@@ -124,7 +124,27 @@ export const projectApi = baseApi.injectEndpoints({
       ],
     }),
 
-    getAdditionalRequests: builder.query<ApiResponse<ProjectEngineerRequirement[]>, void>({
+    // Toggle is_shadow for a specific engineer in a project
+    toggleShadowStatus: builder.mutation<
+      { message: string },
+      { projectId: string | number; projectUserId: number; is_shadow: boolean }
+    >({
+      query: ({ projectId, projectUserId, is_shadow }) => ({
+        url: `/project/engineer/shadow/${projectUserId}`,
+        method: "PUT",
+        body: { is_shadow },
+      }),
+      invalidatesTags: (result, error, { projectId }) => [
+        { type: "PROJECT", id: projectId },
+      ],
+    }),
+
+
+    // Get additional requests
+    getAdditionalRequests: builder.query<
+      ApiResponse<ProjectEngineerRequirement[]>,
+      void
+    >({
       query: () => ({
         url: "/project/requests",
         method: "GET",
@@ -141,5 +161,6 @@ export const {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
   useAssignEngineerToProjectMutation,
+  useToggleShadowStatusMutation,
   useGetAdditionalRequestsQuery,
 } = projectApi;
