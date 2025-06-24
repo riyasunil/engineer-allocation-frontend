@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { data, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import {
   useAssignEngineerToProjectMutation,
   useCreateProjectMutation,
@@ -9,12 +10,14 @@ import {
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
 import { useParams } from "react-router-dom";
+
 import { useGetProjectByIdQuery } from "@/api-service/projects/projects.api";
 import {
   useGetAllAvailableUsersQuery,
   useGetAssignableUsersQuery,
   useLazyGetAssignableUsersQuery,
   userApi,
+  useUserSkillQuery,
 } from "@/api-service/user/user.api";
 import { useGetEngineersQuery } from "@/api-service/user/user.api";
 import { Separator } from "@radix-ui/react-separator";
@@ -64,6 +67,9 @@ interface UpdateProjectDto {
 const projectStatuses = ["NEW", "IN PROGRESS", "CLOSED"];
 
 const EditProject = () => {
+
+  const { paramid } = useParams();
+  console.log(paramid)
   const navigate = useNavigate();
   const [updateProject, { isLoading: isUpdatingProject }] =
     useUpdateProjectMutation();
@@ -417,7 +423,17 @@ const handleAddRequirement = async () => {
   return (
     <div className="mx-auto px-4 py-8">
       <div className="mb-10">
+        <div className="flex items-center gap-4">
+        <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/hr/projects/${paramid}`)}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>  
         <h1 className="text-3xl font-bold text-foreground">Edit Project</h1>
+        </div>
         <p className="text-muted-foreground">
           Update project details, assign leads, and set requirements
         </p>
@@ -754,7 +770,24 @@ const handleAddRequirement = async () => {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-medium">
-              {req.required_count || req.count} × {designationName}
+              {req.required_count || req.count} × {designationName}  --  
+              
+              {req.requirementSkills?.map((skill) => {
+                const skillName= skillsWithIds?.find(s => s.id === skill.skill.id)?.skill_name 
+                console.log(skill,skillName)
+                return(
+                  <span
+                    
+                    className="bg-gray-400 text-white text-xs px-1.5 py-1 rounded  ml-1 "
+                  >
+                    {skillName}
+               </span>     
+              ) }
+            )
+            }
+              
+
+              
             </span>
             {/* {isLoadingSkills && requirementSkills[req.id] === undefined && (
               <span className="text-xs text-gray-500">Loading skills...</span>
@@ -790,9 +823,10 @@ const handleAddRequirement = async () => {
                 {req.projectAssignments.map((assignment) => (
                   <span
                     key={assignment.id}
+                    
                     className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1"
                   >
-                    {assignment.user.name} ({assignment.user.user_id})
+                    {assignment.user.name} ({assignment.user.user_id}) 
                     <button
                       type="button"
                       onClick={() => handleUnassignEngineerFromProject(assignment.id)}
