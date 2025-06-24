@@ -14,6 +14,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "POST",
         body: payload,
       }),
+       invalidatesTags: ["USERS"],
     }),
 
     getEngineers: builder.query<User[], void>({
@@ -21,13 +22,15 @@ export const userApi = baseApi.injectEndpoints({
         url: "/users",
         method: "GET",
       }),
+       providesTags: ["USERS"],
     }),
 
-    getUserById: builder.query<User, String>({
+    getUserById: builder.query<User, string>({
       query: (id) => ({
         url: `/users/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, id) => [{ type: "USERS", id }],
     }),
 
     updateEngineer: builder.mutation<void, UserData>({
@@ -36,6 +39,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "PUT",
         body: payload,
       }),
+         invalidatesTags: (result, error, payload) => [{ type: "USERS", id: payload.user_id }],
     }),
 
     getAssignableUsers: builder.query<User[], AssignableUserPayload>({
@@ -44,6 +48,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "POST", // Using POST since it requires a payload
         body: payload,
       }),
+      providesTags: ["USERS"],
     }),
 
     getAllEngineers: builder.query<User[], void>({
@@ -51,6 +56,7 @@ export const userApi = baseApi.injectEndpoints({
         url: "/users/engineer",
         method: "GET",
       }),
+             providesTags: ["USERS"],
     }),
 
     getAllAvailableUsers: builder.query<User[], void>({
@@ -58,6 +64,7 @@ export const userApi = baseApi.injectEndpoints({
         url: "/users/available",
         method: "GET",
       }),
+        providesTags: ["USERS"],
     }),
 
     updateExperience: builder.mutation<User, { id: string; experience: number }>({
@@ -66,6 +73,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: payload,
       }),
+        invalidatesTags: (result, error, payload) => [{ type: "USERS", id: payload.id }],
     }),
   }),
 });

@@ -15,6 +15,7 @@ import baseApi from "../api";interface CreateRequirementDto {
         method: 'POST',
         body,
       }),
+      invalidatesTags: ["REQUIREMENTS"],
     }),
     updateRequirement: builder.mutation<any, { id: number; data: UpdateRequirementDto }>({
       query: ({ id, data }) => ({
@@ -22,18 +23,21 @@ import baseApi from "../api";interface CreateRequirementDto {
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ["REQUIREMENTS"],
     }),
     deleteRequirement: builder.mutation<any, number>({
       query: (id) => ({
         url: `/project/requirement/${id}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ["REQUIREMENTS"],
     }),
     getSkillbyRequirementId: builder.query<string, string | number>({
           query: (id) => ({
             url: `/skill-requirements/${id}`,
             method: "GET",
           }),
+           providesTags: ["REQUIREMENTS"],
         }),
   }),
 });export const {

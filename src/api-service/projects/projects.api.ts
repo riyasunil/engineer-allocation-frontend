@@ -111,7 +111,7 @@ export const projectApi = baseApi.injectEndpoints({
     // Assign engineer to project
     assignEngineerToProject: builder.mutation<
       { message: string },
-      { id: string | number; engineers: AssignEngineerRequest["engineers"] }
+      { id: string; engineers: AssignEngineerRequest["engineers"] }
     >({
       query: ({ id, engineers }) => ({
         url: `/project/${id}/engineer`,
