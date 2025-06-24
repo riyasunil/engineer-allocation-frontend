@@ -7,6 +7,7 @@ import {
   History,
   User,
   MoreVertical,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -129,14 +130,6 @@ export default function DashboardSidebar({
                       >
                         <item.icon className="h-5 w-5" />
                         <span className="flex-1">{item.title}</span>
-                        {/* {item.hasNotification && (
-                          <Badge
-                            variant="destructive"
-                            className="text-xs ml-auto min-w-5 h-5 flex items-center justify-center p-1"
-                          >
-                            {item.notificationCount}
-                          </Badge>
-                        )} */}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -170,18 +163,7 @@ export default function DashboardSidebar({
           </div>
         </NavLink>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="ml-auto p-2 rounded-md hover:bg-muted">
-              <MoreVertical className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem onClick={() => handleLogout()}>
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <LogOut onClick={() => handleLogout()} size={18} className="mr-4"/>
       </div>
     </Sidebar>
   );

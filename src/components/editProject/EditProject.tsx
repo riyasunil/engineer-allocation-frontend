@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { data, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import {
   useAssignEngineerToProjectMutation,
   useCreateProjectMutation,
@@ -9,12 +10,14 @@ import {
 import { useGetDesignationQuery } from "@/api-service/designation/designation.api";
 import { useGetSkillsQuery } from "@/api-service/skill/skill.api";
 import { useParams } from "react-router-dom";
+
 import { useGetProjectByIdQuery } from "@/api-service/projects/projects.api";
 import {
   useGetAllAvailableUsersQuery,
   useGetAssignableUsersQuery,
   useLazyGetAssignableUsersQuery,
   userApi,
+  useUserSkillQuery,
 } from "@/api-service/user/user.api";
 import { useGetEngineersQuery } from "@/api-service/user/user.api";
 import { Separator } from "@radix-ui/react-separator";
@@ -51,7 +54,6 @@ interface CreateRequirementDto {
   // engineers?: number[];
 }
 
-
 interface UpdateProjectDto {
   name?: string;
   startdate?: string;
@@ -64,6 +66,9 @@ interface UpdateProjectDto {
 const projectStatuses = ["NEW", "IN PROGRESS", "CLOSED"];
 
 const EditProject = () => {
+
+  const { id } = useParams();
+  console.log(id)
   const navigate = useNavigate();
   const [updateProject, { isLoading: isUpdatingProject }] =
     useUpdateProjectMutation();
@@ -96,8 +101,17 @@ const [pendingRequirements, setPendingRequirements] = useState<ProjectRequiremen
   const [trigger, { data: assignableEngineers }] =
     useLazyGetAssignableUsersQuery();
 
-    console.log("Assignale engineers", assignableEngineers)
-  const { id } = useParams();
+  const [deletingRequirements, setDeletingRequirements] = useState<Set<number>>(
+    new Set()
+  );
+  const [assigningToRequirements, setAssigningToRequirements] = useState<
+    Set<number>
+  >(new Set());
+  const [unassigningAssignments, setUnassigningAssignments] = useState<
+    Set<number>
+  >(new Set());
+
+  console.log("Assignale engineers", assignableEngineers);
   const {
     data: project,
     isLoading: projectLoading,
@@ -133,10 +147,6 @@ const [pendingRequirements, setPendingRequirements] = useState<ProjectRequiremen
   });
 
   const [originalRequirements, setOriginalRequirements] = useState<any[]>([]);
-  // const [editingRequirement, setEditingRequirement] = useState<{
-  //   index: number;
-  //   data: any;
-  // } | null>(null);
 
   useEffect(() => {
     if (project) {
@@ -222,67 +232,71 @@ const [pendingRequirements, setPendingRequirements] = useState<ProjectRequiremen
     setNewReqEngineers([]);
   };
 
-
   const handleAddSkillToRequirement = (skillId: string) => {
-  const skill = skillsWithIds?.find((s) => s.id === parseInt(skillId));
-  const skillExists = newReq.skills.some((s) => s.id === parseInt(skillId));
+    const skill = skillsWithIds?.find((s) => s.id === parseInt(skillId));
+    const skillExists = newReq.skills.some((s) => s.id === parseInt(skillId));
 
-  if (skill && !skillExists) {
-    setNewReq((prev) => ({
-      ...prev,
-      skills: [...prev.skills, { id: skill.id, name: skill.skill_name }],
-    }));
-  }
-  setSelectedSkill(""); // Reset the select input
-};
-
-
-const handleAddRequirement = async () => {
-  try {
-    // Prepare the request data in the required format
-    const createReqData = {
-      project_id: parseInt(id!),
-      designation_id: newReq.designation_id,
-      required_count: newReq.count,
-      is_requested: false,
-      requirement_skills: newReq.skills.map(skill => ({
-        skill_id: skill.id
-      }))
-    };
-
-    console.log("Creating requirement with data:", createReqData);
-    const res = await createRequirement(createReqData).unwrap();
-    console.log("API Response:", res);
-
-    // If engineers were selected, assign them to the requirement
-    if (newReqEngineers.length > 0 && res.data?.id) {
-      // Get user_id directly from assignableEngineers
-      const engineersWithUserIds = newReqEngineers.map(engineerId => {
-        const engineer = assignableEngineers?.find(eng => eng.id === engineerId);
-        if (!engineer) {
-          throw new Error(`Engineer with id ${engineerId} not found in assignable engineers`);
-        }
-        return {
-          user_id: engineer.user_id, // Use the user_id from assignableEngineers
-          requirement_id: res.data.id
-        };
-      });
-
-      console.log("Assigning engineers with payload:", { engineers: engineersWithUserIds });
-      await assignEngineer({
-        id: parseInt(id!),
-        engineers: engineersWithUserIds
-      }).unwrap();
+    if (skill && !skillExists) {
+      setNewReq((prev) => ({
+        ...prev,
+        skills: [...prev.skills, { id: skill.id, name: skill.skill_name }],
+      }));
     }
+    setSelectedSkill(""); // Reset the select input
+  };
 
-    refetchProject();
-    handleClearRequirement();
-    alert("Requirement added successfully");
-  } catch (error: any) {
-    console.error("Error creating requirement:", error);
-    alert(error?.data?.message || "Failed to create requirement");
-  }
-};
+  const handleAddRequirement = async () => {
+    try {
+      // Prepare the request data in the required format
+      const createReqData = {
+        project_id: parseInt(id!),
+        designation_id: newReq.designation_id,
+        required_count: newReq.count,
+        is_requested: false,
+        requirement_skills: newReq.skills.map((skill) => ({
+          skill_id: skill.id,
+        })),
+      };
+
+      console.log("Creating requirement with data:", createReqData);
+      const res = await createRequirement(createReqData).unwrap();
+      console.log("API Response:", res);
+
+      // If engineers were selected, assign them to the requirement
+      if (newReqEngineers.length > 0 && res.data?.id) {
+        // Get user_id as string from assignableEngineers
+        const engineersWithUserIds = newReqEngineers.map((engineerId) => {
+          const engineer = assignableEngineers?.find(
+            (eng) => eng.id === engineerId
+          );
+          if (!engineer) {
+            throw new Error(
+              `Engineer with id ${engineerId} not found in assignable engineers`
+            );
+          }
+          return {
+            user_id: engineer.user_id, // Keep as string - matches backend expectation
+            requirement_id: res.data.id,
+          };
+        });
+
+        console.log("Assigning engineers with payload:", {
+          engineers: engineersWithUserIds,
+        });
+        await assignEngineer({
+          id: parseInt(id!),
+          engineers: engineersWithUserIds,
+        }).unwrap();
+      }
+
+      refetchProject();
+      handleClearRequirement();
+      alert("Requirement added successfully");
+    } catch (error: any) {
+      console.error("Error creating requirement:", error);
+      alert(error?.data?.message || "Failed to create requirement");
+    }
+  };
 
   const handleRemoveRequirement = async (requirementId: number) => {
     if (window.confirm("Are you sure you want to delete this requirement?")) {
@@ -312,10 +326,22 @@ const handleAddRequirement = async () => {
     requirementId: number
   ) => {
     try {
+      // Find the engineer to get their user_id (string format)
+      const engineer = availableEngineers?.find((eng) => eng.id === engineerId);
+      if (!engineer) {
+        throw new Error(`Engineer with id ${engineerId} not found`);
+      }
+
       await assignEngineer({
         id: parseInt(id!),
-        engineers: [{ user_id: engineerId, requirement_id: requirementId }],
+        engineers: [
+          {
+            user_id: engineer.user_id, // Use string user_id from engineer object
+            requirement_id: requirementId,
+          },
+        ],
       }).unwrap();
+
       refetchProject();
       alert("Engineer assigned successfully");
     } catch (error: any) {
@@ -355,22 +381,21 @@ const handleAddRequirement = async () => {
         updateData.name = formData.name;
       }
 
+      // Fixed: Consistent date formatting for comparison
       const formattedStart = formatDate(formData.startdate);
-      const projectStart = formatDate(
-        project?.startdate
-          ? new Date(project.startdate).toISOString().split("T")[0]
-          : undefined
-      );
+      const projectStart = project?.startdate
+        ? new Date(project.startdate).toISOString().split("T")[0]
+        : undefined;
+
       if (formattedStart !== projectStart) {
         updateData.startdate = formattedStart;
       }
 
       const formattedEnd = formatDate(formData.enddate);
-      const projectEnd = formatDate(
-        project?.enddate
-          ? new Date(project.enddate).toISOString().split("T")[0]
-          : undefined
-      );
+      const projectEnd = project?.enddate
+        ? new Date(project.enddate).toISOString().split("T")[0]
+        : undefined;
+
       if (formattedEnd !== projectEnd) {
         updateData.enddate = formattedEnd;
       }
@@ -415,15 +440,23 @@ const handleAddRequirement = async () => {
     console.log("Assignable engineers:", assignableEngineers);
   }, [assignableEngineers]);
 
-  const startEditingRequirement = (index: number, requirement: any) => {
-
-};
+  const startEditingRequirement = (index: number, requirement: any) => {};
 
   console.log("originalRequirements", originalRequirements);
   return (
     <div className="mx-auto px-4 py-8">
       <div className="mb-10">
+        <div className="flex items-center gap-4">
+        <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/hr/projects/${id}`)}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>  
         <h1 className="text-3xl font-bold text-foreground">Edit Project</h1>
+        </div>
         <p className="text-muted-foreground">
           Update project details, assign leads, and set requirements
         </p>
@@ -748,33 +781,35 @@ const handleAddRequirement = async () => {
           <h3 className="text-md font-semibold mb-3 text-gray-800">
             Current Requirements
           </h3>
-{originalRequirements?.map((req, i) => {
-  const designationName = 
-    designationsWithIds?.find(d => d.id === req.designation_id)?.name || 
-    req.designation?.name || 
-    "Unknown";
+          {originalRequirements?.map((req, i) => {
+            const designationName =
+              designationsWithIds?.find((d) => d.id === req.designation_id)
+                ?.name ||
+              req.designation?.name ||
+              "Unknown";
 
-  return (
-    <div key={req.id || i} className="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-200">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium">
-              {req.required_count || req.count} × {designationName}
-            </span>
-            {/* {isLoadingSkills && requirementSkills[req.id] === undefined && (
-              <span className="text-xs text-gray-500">Loading skills...</span>
-            )} */}
-          </div>
+            const requiredCount = req.required_count || req.count;
+            const assignedCount = req.projectAssignments?.length || 0;
+            const isUnderStaffed = assignedCount < requiredCount;
+            const isDeleting = deletingRequirements.has(req.id);
+            const isAssigning = assigningToRequirements.has(req.id);
 
-          {/* <div className="mb-2">
-            <span className="text-sm font-medium text-gray-600">Skills: </span>
-            {requirementSkills[req.id]?.length > 0 ? (
-              <div className="flex gap-1 flex-wrap mt-1">
-                {requirementSkills[req.id].map((skillName, skillIndex) => (
+            return (
+              <div
+                key={req.id || i}
+                className="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-200"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm font-medium">
+                        {requiredCount} × {designationName} --
+                        {req.requirementSkills?.map((skill) => {
+                const skillName= skillsWithIds?.find(s => s.id === skill.skill.id)?.skill_name
+                console.log(skill,skillName)
+                return(
                   <span
-                    key={skillIndex}
-                    className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                    className="bg-gray-400 text-white text-xs px-1.5 py-1 rounded  ml-1 "
                   >
                     {skillName}
                   </span>
@@ -815,17 +850,17 @@ const handleAddRequirement = async () => {
           
         </div>
 
-        <div>
-          <button
-            type="button"
-            onClick={() => handleRemoveRequirement(req.id)}
-            className="text-red-500 hover:text-red-700 text-sm"
-            disabled={isDeletingRequirement}
-          >
-            {isDeletingRequirement ? "Deleting..." : "Delete"}
-          </button>
-        </div>
-      </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRequirement(req.id)}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </div>
 
       {/* Add Engineer Section */}
       {/* <div className="mt-3 pt-3">
